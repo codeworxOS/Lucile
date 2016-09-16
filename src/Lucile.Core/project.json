@@ -1,0 +1,47 @@
+{
+  "version": "1.0.0-*",
+  "title": "Lucile Framework Core Library",
+  "copyright": "copyright © codeworx gmbh 2016",
+  "description": "Core components for the Lucile Framework. For detailed Documentation visit http://www.github.com/codeworxOS/Lucile",
+  "authors": [ "Raphael Schwarz" ],
+  "packOptions": {
+    "owners": [ "codeworx gmbh" ],
+    "summary": "Core components for the Lucile Framework. For detailed Documentation visit http://www.github.com/codeworxOS/Lucile"
+  },
+  "dependencies": {
+    "StyleCop.Analyzers": {
+      "version": "1.0.0",
+      "type": "build"
+    },
+    "Lucile.Shared": {
+      "version": "1.0.0",
+      "type": "build"
+    },
+    "Microsoft.NETCore.Platforms": "1.0.1",
+    "Microsoft.Win32.Primitives": "4.0.1",
+    "System.Runtime": "4.1.0",
+    "System.Runtime.InteropServices": "4.1.0",
+    "System.Reflection.Emit": "4.0.0",
+    "System.Reflection.Emit.ILGeneration": "4.0.0",
+    "System.Dynamic.Runtime": "4.0.0",
+    "Lucile.Primitives": "1.0.0-*",
+    "System.Collections.Concurrent": "4.0.12",
+    "System.Linq.Queryable": "4.0.1",
+    "System.Reflection": "4.1.0",
+    "System.Reflection.TypeExtensions": "4.1.0",
+    "System.Runtime.Serialization.Primitives": "4.1.1"
+  },
+
+  "frameworks": {
+    "netstandard1.3": {
+      "imports": "dnxcore50"
+    }
+  },
+  "buildOptions": {
+    "compile": {
+      "exclude": [ "Temp" ]
+    },
+    "warningsAsErrors": true,
+    "additionalArguments": [ "/ruleset:..\\..\\global\\Stylecop.ruleset", "/additionalfile:..\\..\\global\\stylecop.json" ]
+  }
+}
