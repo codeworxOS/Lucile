@@ -1,0 +1,35 @@
+﻿{
+  "title": "Lucile Framework Entity Framework Core Library",
+  "copyright": "copyright © codeworx gmbh 2016",
+  "description": "Entity Framework Core components for the Lucile Framework. For detailed Documentation visit http://www.github.com/codeworxOS/Lucile",
+  "authors": [ "Raphael Schwarz" ],
+  "packOptions": {
+    "owners": [ "codeworx gmbh" ],
+    "summary": "Entity Framework Core components for the Lucile Framework. For detailed Documentation visit http://www.github.com/codeworxOS/Lucile"
+  },
+  "dependencies": {
+    "StyleCop.Analyzers": {
+      "version": "1.0.0",
+      "type": "build"
+    },
+    "Lucile.Shared": {
+      "version": "1.0.0",
+      "type": "build"
+    },
+    "Microsoft.NETCore.Platforms": "1.0.1",
+    "Microsoft.Win32.Primitives": "4.0.1",
+    "System.Runtime": "4.1.0",
+    "Lucile.Core": "1.0.0-*",
+    "Microsoft.EntityFrameworkCore": "1.0.1"
+  },
+
+  "frameworks": {
+    "netstandard1.3": {
+      "imports": "dnxcore50"
+    }
+  },
+  "buildOptions": {
+    "warningsAsErrors": true,
+    "additionalArguments": [ "/ruleset:..\\..\\global\\Stylecop.ruleset", "/additionalfile:..\\..\\global\\stylecop.json" ]
+  }
+}

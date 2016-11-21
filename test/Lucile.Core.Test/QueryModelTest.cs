@@ -1,10 +1,12 @@
 ﻿using System;
+using System.IO;
 using System.Linq;
+using System.Linq.Expressions;
 using System.Reflection;
 using System.Threading.Tasks;
-using Lucile.Core.Test.Model;
 using Lucile.Linq;
 using Lucile.Linq.Configuration;
+using Lucile.Test.Model;
 using Xunit;
 
 namespace Tests
@@ -82,6 +84,32 @@ namespace Tests
             Assert.Equal<string>(new string[] { "ArticleStatistics" }, soldLastMonthProp.DependsOn);
             Assert.Equal<string>(new string[] { "CustomerStatistics" }, lastPurchaseProp.DependsOn);
             Assert.Equal<string>(new string[] { "Whatever", "ReceiptDetail" }, whateverProp.DependsOn);
+        }
+
+        [Fact]
+        public void QueryModelBooleanFilterAsync()
+        {
+            var model = GetSampleModel();
+
+            var receipt = CreateDummyReceipt();
+            var source = new DummyQuerySource();
+            source.RegisterData(receipt.Details);
+
+            FilterItem[] filterItems = {
+                new BooleanFilterItem(new PathValueExpression("ReceiptDetail.Enabled"),BooleanOperator.IsTrue)
+            };
+            var config = new QueryConfiguration(filterItems);
+
+            var query = model.GetQuery(source, config);
+            Assert.Equal(1, query.Cast<object>().Count());
+
+            filterItems = new[] {
+                new BooleanFilterItem(new PathValueExpression("ReceiptDetail.Enabled"),BooleanOperator.IsFalse)
+            };
+            config = new QueryConfiguration(filterItems);
+
+            query = model.GetQuery(source, config);
+            Assert.Equal(1, query.Cast<object>().Count());
         }
 
         [Fact]
@@ -190,102 +218,163 @@ namespace Tests
         }
 
         [Fact]
-        public async Task QueryModelBuildSimpleAsync()
+        public void QueryModelBuildSimpleAsync()
         {
-            var builder = QueryModel.Build(
-                p => new
-                {
-                    ReceiptDetail = p.Get<ReceiptDetail>(),
-                    CustomerStatistics = p.Get<CustomerStatistics>(),
-                    ArticleStatistics = p.Get<ArticleStatistics>()
-                },
-                p => new
-                {
-                    ReceiptDetailId = p.ReceiptDetail.Id,
-                    ReceiptNumber = p.ReceiptDetail.Receipt.ReceiptNumber,
-                    ArticleNumber = p.ReceiptDetail.Article.ArticleNumber,
-                    ArticleSoldYear = p.ArticleStatistics.SoldCurrentYear,
-                    ArticleSoldMonth = p.ArticleStatistics.SoldCurrentMonth,
-                    ArticleSoldLastMonth = p.ArticleStatistics.SoldLastMonth,
-                    ArticleRevenueYear = p.ReceiptDetail.Article.Price * p.ArticleStatistics.SoldCurrentYear,
-                    ArticleRevenueMonth = p.ReceiptDetail.Article.Price * p.ArticleStatistics.SoldCurrentMonth,
-                    ArticleRevenueLastMonth = p.ReceiptDetail.Article.Price * p.ArticleStatistics.SoldLastMonth,
-                    Supplier = p.ReceiptDetail.Article.Supplier.FirstName + " " + p.ReceiptDetail.Article.Supplier.LastName,
-                    Customer = p.ReceiptDetail.Receipt.Customer.FirstName + " " + p.ReceiptDetail.Receipt.Customer.LastName + " (" + p.ReceiptDetail.Receipt.Customer.Identity + ")",
-                    CustomerRevenueYear = p.CustomerStatistics.ReceiptAmountCurrentYear,
-                    CustomerRevenueMonth = p.CustomerStatistics.ReceiptAmountCurrentMonth,
-                    CustomerRevenueLastMonth = p.CustomerStatistics.ReceiptAmountLastMonth,
-                    CustomerLastPurchase = p.CustomerStatistics.LastPurchase
-                });
-
-            builder.Source(p => p.CustomerStatistics)
-                .Query(p =>
-                        from rd in p.Query<ReceiptDetail>()
-                        group rd by rd.Receipt.CustomerId into grp
-                        join y in p.Query<ReceiptDetail>().Where(x => x.Receipt.ReceiptDate.Year == DateTime.Today.Year).GroupBy(x => x.Receipt.CustomerId) on grp.Key equals y.Key into tmpy
-                        from year in tmpy.DefaultIfEmpty()
-                        join cm in p.Query<ReceiptDetail>().Where(x => x.Receipt.ReceiptDate.Year == DateTime.Today.Year).GroupBy(x => x.Receipt.CustomerId) on grp.Key equals cm.Key into tmpcm
-                        from currentMonth in tmpcm.DefaultIfEmpty()
-                        join lm in p.Query<ReceiptDetail>().Where(x => x.Receipt.ReceiptDate.Year == DateTime.Today.Year).GroupBy(x => x.Receipt.CustomerId) on grp.Key equals lm.Key into tmplm
-                        from lastMonth in tmplm.DefaultIfEmpty()
-                        select new CustomerStatistics
-                        {
-                            CustomerId = grp.Key,
-                            LastPurchase = grp.Max(x => x.Receipt.ReceiptDate),
-                            ReceiptAmountCurrentYear = year.Sum(x => x.Amount),
-                            ReceiptAmountCurrentMonth = currentMonth.Sum(x => x.Amount),
-                            ReceiptAmountLastMonth = lastMonth.Sum(x => x.Amount)
-                        }
-                      )
-                      .Join(p => p.CustomerId, p => p.ReceiptDetail.Receipt.CustomerId);
-
-            builder.Source(p => p.ArticleStatistics)
-                .Query(p =>
-                        from rd in p.Query<ReceiptDetail>()
-                        where rd.ArticleId.HasValue
-                        group rd by rd.ArticleId.Value into grp
-                        join y in p.Query<ReceiptDetail>().Where(x => x.Receipt.ReceiptDate.Year == DateTime.Today.Year).GroupBy(x => x.Receipt.CustomerId) on grp.Key equals y.Key into tmpy
-                        from year in tmpy.DefaultIfEmpty()
-                        join cm in p.Query<ReceiptDetail>().Where(x => x.Receipt.ReceiptDate.Year == DateTime.Today.Year).GroupBy(x => x.Receipt.CustomerId) on grp.Key equals cm.Key into tmpcm
-                        from currentMonth in tmpcm.DefaultIfEmpty()
-                        join lm in p.Query<ReceiptDetail>().Where(x => x.Receipt.ReceiptDate.Year == DateTime.Today.Year).GroupBy(x => x.Receipt.CustomerId) on grp.Key equals lm.Key into tmplm
-                        from lastMonth in tmplm.DefaultIfEmpty()
-                        select new ArticleStatistics
-                        {
-                            ArticleId = grp.Key,
-                            SoldCurrentYear = year.Sum(x => x.Amount),
-                            SoldCurrentMonth = year.Sum(x => x.Amount),
-                            SoldLastMonth = year.Sum(x => x.Amount)
-                        }
-                      )
-                      .Join(p => p.ArticleId, p => p.ReceiptDetail.ArticleId);
-
-            var qs = new DummyQuerySource();
-
-            var test = from rd in qs.Query<ReceiptDetail>()
-                       join artstat in qs.Query<ArticleStatistics>() on rd.ArticleId equals artstat.ArticleId into tmpArtStat
-                       from ast in tmpArtStat.DefaultIfEmpty()
-                       join custstat in qs.Query<CustomerStatistics>() on rd.Receipt.CustomerId equals custstat.CustomerId into tmpCustStat
-                       from cst in tmpCustStat.DefaultIfEmpty()
-                       select new
-                       {
-                           ReceiptDetail = rd,
-                           ArticleStatistics = ast,
-                           CustomerStatistics = cst
-                       };
-
-            var model = builder.ToModel();
+            QueryModel model = GetSampleModel();
 
             Assert.NotNull(model);
 
             var selectItems = model.ResultType.GetProperties().OrderBy(p => p.Name).Skip(2).Select(p => new SelectItem(p.Name, Aggregate.None));
 
-            var config = new QueryConfiguration(selectItems, Enumerable.Empty<SortItem>());
-            var query = model.GetQuery(new DummyQuerySource(), config);
+            var dataSource = new DummyQuerySource();
+            var dummyReceipt = CreateDummyReceipt();
+
+            dataSource.RegisterData(dummyReceipt.Details);
+
+            var config = new QueryConfiguration(selectItems, Enumerable.Empty<SortItem>(), Enumerable.Empty<FilterItem>());
+            var query = model.GetQuery(dataSource, config);
 
             var result = query.Cast<object>().ToList();
 
             Assert.NotEmpty(result);
+        }
+
+        [Fact]
+        public void QueryModelDateTimeFilterAsync()
+        {
+            var model = GetSampleModel();
+
+            var receipt = CreateDummyReceipt();
+            var source = new DummyQuerySource();
+            source.RegisterData(receipt.Details);
+
+            FilterItem[] filterItems = {
+                new DateTimeBinaryFilterItem(new PathValueExpression("ReceiptDetail.DeliveryTime"),new ConstantValueExpression<DateTime>(DateTime.Today.AddDays(-150)),RelationalCompareOperator.Equal)
+            };
+            var config = new QueryConfiguration(filterItems);
+
+            var query = model.GetQuery(source, config);
+            Assert.Equal(1, query.Cast<object>().Count());
+
+            filterItems = new[] {
+                new DateTimeBinaryFilterItem(new PathValueExpression("ReceiptDetail.DeliveryTime"),new ConstantValueExpression<DateTime>(DateTime.Today.AddDays(-150)),RelationalCompareOperator.NotEqual)
+            };
+            config = new QueryConfiguration(filterItems);
+
+            query = model.GetQuery(source, config);
+            Assert.Equal(1, query.Cast<object>().Count());
+
+            filterItems = new[] {
+                new DateTimeBinaryFilterItem(new PathValueExpression("ReceiptDetail.DeliveryTime"),new ConstantValueExpression<DateTime>(DateTime.Today.AddDays(-110)),RelationalCompareOperator.NotEqual)
+            };
+            config = new QueryConfiguration(filterItems);
+
+            query = model.GetQuery(source, config);
+            Assert.Equal(2, query.Cast<object>().Count());
+
+            filterItems = new[] {
+                new DateTimeBinaryFilterItem(new PathValueExpression("ReceiptDetail.DeliveryTime"),new ConstantValueExpression<DateTime>(DateTime.Today.AddDays(-160)),RelationalCompareOperator.GreaterThen)
+            };
+            config = new QueryConfiguration(filterItems);
+
+            query = model.GetQuery(source, config);
+            Assert.Equal(1, query.Cast<object>().Count());
+
+            filterItems = new[] {
+                new DateTimeBinaryFilterItem(new PathValueExpression("ReceiptDetail.DeliveryTime"),new ConstantValueExpression<DateTime>(DateTime.Today.AddDays(-160)),RelationalCompareOperator.GreaterThenOrEqual)
+            };
+            config = new QueryConfiguration(filterItems);
+
+            query = model.GetQuery(source, config);
+            Assert.Equal(2, query.Cast<object>().Count());
+
+            filterItems = new[] {
+                new DateTimeBinaryFilterItem(new PathValueExpression("ReceiptDetail.DeliveryTime"),new ConstantValueExpression<DateTime>(DateTime.Today.AddDays(-150)),RelationalCompareOperator.LessThen)
+            };
+            config = new QueryConfiguration(filterItems);
+
+            query = model.GetQuery(source, config);
+            Assert.Equal(1, query.Cast<object>().Count());
+
+            filterItems = new[] {
+                new DateTimeBinaryFilterItem(new PathValueExpression("ReceiptDetail.DeliveryTime"),new ConstantValueExpression<DateTime>(DateTime.Today.AddDays(-150)),RelationalCompareOperator.LessThenOrEqual)
+            };
+            config = new QueryConfiguration(filterItems);
+
+            query = model.GetQuery(source, config);
+            Assert.Equal(2, query.Cast<object>().Count());
+        }
+
+        [Fact]
+        public void QueryModelInvalidPathException()
+        {
+            Assert.Throws<InvalidPathException>(() => new PathValueExpression("Article.Nonexistant").GetExpression(Expression.Parameter(typeof(ReceiptDetail))));
+        }
+
+        [Fact]
+        public void QueryModelNumericFilterAsync()
+        {
+            var model = GetSampleModel();
+
+            var receipt = CreateDummyReceipt();
+            var source = new DummyQuerySource();
+            source.RegisterData(receipt.Details);
+
+            FilterItem[] filterItems = {
+                new NumericBinaryFilterItem(new PathValueExpression("ReceiptDetail.Amount"),new ConstantValueExpression<int>(120),RelationalCompareOperator.Equal)
+            };
+            var config = new QueryConfiguration(filterItems);
+
+            var query = model.GetQuery(source, config);
+            Assert.Equal(1, query.Cast<object>().Count());
+
+            filterItems = new[] {
+                new NumericBinaryFilterItem(new PathValueExpression("ReceiptDetail.Amount"),new ConstantValueExpression<int>(90),RelationalCompareOperator.NotEqual)
+            };
+            config = new QueryConfiguration(filterItems);
+
+            query = model.GetQuery(source, config);
+            Assert.Equal(1, query.Cast<object>().Count());
+
+            filterItems = new[] {
+                new NumericBinaryFilterItem(new PathValueExpression("ReceiptDetail.Amount"),new ConstantValueExpression<int>(91),RelationalCompareOperator.NotEqual)
+            };
+            config = new QueryConfiguration(filterItems);
+
+            query = model.GetQuery(source, config);
+            Assert.Equal(2, query.Cast<object>().Count());
+
+            filterItems = new[] {
+                new NumericBinaryFilterItem(new PathValueExpression("ReceiptDetail.Amount"),new ConstantValueExpression<decimal>(90),RelationalCompareOperator.GreaterThen)
+            };
+            config = new QueryConfiguration(filterItems);
+
+            query = model.GetQuery(source, config);
+            Assert.Equal(1, query.Cast<object>().Count());
+
+            filterItems = new[] {
+                new NumericBinaryFilterItem(new PathValueExpression("ReceiptDetail.Amount"),new ConstantValueExpression<decimal>(90),RelationalCompareOperator.GreaterThenOrEqual)
+            };
+            config = new QueryConfiguration(filterItems);
+
+            query = model.GetQuery(source, config);
+            Assert.Equal(2, query.Cast<object>().Count());
+
+            filterItems = new[] {
+                new NumericBinaryFilterItem(new PathValueExpression("ReceiptDetail.Amount"),new ConstantValueExpression<double>(120),RelationalCompareOperator.LessThen)
+            };
+            config = new QueryConfiguration(filterItems);
+
+            query = model.GetQuery(source, config);
+            Assert.Equal(1, query.Cast<object>().Count());
+
+            filterItems = new[] {
+                new NumericBinaryFilterItem(new PathValueExpression("ReceiptDetail.Amount"),new ConstantValueExpression<float>(120),RelationalCompareOperator.LessThenOrEqual)
+            };
+            config = new QueryConfiguration(filterItems);
+
+            query = model.GetQuery(source, config);
+            Assert.Equal(2, query.Cast<object>().Count());
         }
 
         [Fact]
@@ -337,7 +426,65 @@ namespace Tests
         }
 
         [Fact]
-        public void SourceEnittyConfigurationConstructorTest()
+        public void QueryModelStringFilterAsync()
+        {
+            var model = GetSampleModel();
+
+            var receipt = CreateDummyReceipt();
+            var source = new DummyQuerySource();
+            source.RegisterData(receipt.Details);
+
+            FilterItem[] filterItems = {
+                new StringBinaryFilterItem(new PathValueExpression("ReceiptDetail.Description"),new ConstantValueExpression<string>("Testdescription"),StringOperator.Equal)
+            };
+            var config = new QueryConfiguration(filterItems);
+
+            var query = model.GetQuery(source, config);
+            Assert.Equal(1, query.Cast<object>().Count());
+
+            filterItems = new[] {
+                new StringBinaryFilterItem(new PathValueExpression("ReceiptDetail.Description"),new ConstantValueExpression<string>("Testdescription"),StringOperator.NotEqual)
+            };
+            config = new QueryConfiguration(filterItems);
+
+            query = model.GetQuery(source, config);
+            Assert.Equal(1, query.Cast<object>().Count());
+
+            filterItems = new[] {
+                new StringBinaryFilterItem(new PathValueExpression("ReceiptDetail.Description"),new ConstantValueExpression<string>("Testdescription2"),StringOperator.NotEqual)
+            };
+            config = new QueryConfiguration(filterItems);
+
+            query = model.GetQuery(source, config);
+            Assert.Equal(1, query.Cast<object>().Count());
+
+            filterItems = new[] {
+                new StringBinaryFilterItem(new PathValueExpression("ReceiptDetail.Description"),new ConstantValueExpression<string>("TEST"),StringOperator.StartsWith)
+            };
+            config = new QueryConfiguration(filterItems);
+
+            query = model.GetQuery(source, config);
+            Assert.Equal(2, query.Cast<object>().Count());
+
+            filterItems = new[] {
+                new StringBinaryFilterItem(new PathValueExpression("ReceiptDetail.Description"),new ConstantValueExpression<string>("ION"),StringOperator.EndsWith)
+            };
+            config = new QueryConfiguration(filterItems);
+
+            query = model.GetQuery(source, config);
+            Assert.Equal(1, query.Cast<object>().Count());
+
+            filterItems = new[] {
+                new StringBinaryFilterItem(new PathValueExpression("ReceiptDetail.Description"),new ConstantValueExpression<string>("descri"),StringOperator.Contains)
+            };
+            config = new QueryConfiguration(filterItems);
+
+            query = model.GetQuery(source, config);
+            Assert.Equal(2, query.Cast<object>().Count());
+        }
+
+        [Fact]
+        public void SourceEntityConfigurationConstructorTest()
         {
             var builder = QueryModel.Build(
                p => new
@@ -388,6 +535,159 @@ namespace Tests
             Assert.False(toTest3.IsRootQuery);
             Assert.Contains(toTest3.DependsOn, p => p == "ReceiptDetail");
             Assert.Equal(1, toTest3.DependsOn.Count);
+        }
+
+        private static QueryModel GetSampleModel()
+        {
+            var builder = QueryModel.Build(
+                            p => new
+                            {
+                                ReceiptDetail = p.Get<ReceiptDetail>(),
+                                CustomerStatistics = p.Get<CustomerStatistics>(),
+                                ArticleStatistics = p.Get<ArticleStatistics>()
+                            },
+                            p => new
+                            {
+                                ReceiptDetailId = p.ReceiptDetail.Id,
+                                ReceiptNumber = p.ReceiptDetail.Receipt.ReceiptNumber,
+                                ArticleNumber = p.ReceiptDetail.Article.ArticleNumber,
+                                ArticleSoldYear = p.ArticleStatistics.SoldCurrentYear,
+                                ArticleSoldMonth = p.ArticleStatistics.SoldCurrentMonth,
+                                ArticleSoldLastMonth = p.ArticleStatistics.SoldLastMonth,
+                                ArticleRevenueYear = p.ReceiptDetail.Article.Price * p.ArticleStatistics.SoldCurrentYear,
+                                ArticleRevenueMonth = p.ReceiptDetail.Article.Price * p.ArticleStatistics.SoldCurrentMonth,
+                                ArticleRevenueLastMonth = p.ReceiptDetail.Article.Price * p.ArticleStatistics.SoldLastMonth,
+                                Supplier = p.ReceiptDetail.Article.Supplier.FirstName + " " + p.ReceiptDetail.Article.Supplier.LastName,
+                                Customer = p.ReceiptDetail.Receipt.Customer.FirstName + " " + p.ReceiptDetail.Receipt.Customer.LastName + " (" + p.ReceiptDetail.Receipt.Customer.Identity + ")",
+                                CustomerRevenueYear = p.CustomerStatistics.ReceiptAmountCurrentYear,
+                                CustomerRevenueMonth = p.CustomerStatistics.ReceiptAmountCurrentMonth,
+                                CustomerRevenueLastMonth = p.CustomerStatistics.ReceiptAmountLastMonth,
+                                CustomerLastPurchase = p.CustomerStatistics.LastPurchase
+                            });
+
+            builder.Source(p => p.CustomerStatistics)
+                .Query(p =>
+                        from rd in p.Query<ReceiptDetail>()
+                        group rd by rd.Receipt.CustomerId into grp
+                        join y in p.Query<ReceiptDetail>().Where(x => x.Receipt.ReceiptDate.Year == DateTime.Today.Year).GroupBy(x => x.Receipt.CustomerId) on grp.Key equals y.Key into tmpy
+                        from year in tmpy.DefaultIfEmpty()
+                        join cm in p.Query<ReceiptDetail>().Where(x => x.Receipt.ReceiptDate.Year == DateTime.Today.Year).GroupBy(x => x.Receipt.CustomerId) on grp.Key equals cm.Key into tmpcm
+                        from currentMonth in tmpcm.DefaultIfEmpty()
+                        join lm in p.Query<ReceiptDetail>().Where(x => x.Receipt.ReceiptDate.Year == DateTime.Today.Year).GroupBy(x => x.Receipt.CustomerId) on grp.Key equals lm.Key into tmplm
+                        from lastMonth in tmplm.DefaultIfEmpty()
+                        select new CustomerStatistics
+                        {
+                            CustomerId = grp.Key,
+                            LastPurchase = grp.Max(x => x.Receipt.ReceiptDate),
+                            ReceiptAmountCurrentYear = year != null ? year.Sum(x => x.Amount) : 0,
+                            ReceiptAmountCurrentMonth = currentMonth != null ? currentMonth.Sum(x => x.Amount) : 0,
+                            ReceiptAmountLastMonth = lastMonth != null ? lastMonth.Sum(x => x.Amount) : 0
+                        }
+                      )
+                      .Join(p => p.CustomerId, p => p.ReceiptDetail.Receipt.CustomerId);
+
+            builder.Source(p => p.ArticleStatistics)
+                .Query(p =>
+                        from rd in p.Query<ReceiptDetail>()
+                        where rd.ArticleId.HasValue
+                        group rd by rd.ArticleId.Value into grp
+                        join y in p.Query<ReceiptDetail>().Where(x => x.Receipt.ReceiptDate.Year == DateTime.Today.Year).GroupBy(x => x.Receipt.CustomerId) on grp.Key equals y.Key into tmpy
+                        from year in tmpy.DefaultIfEmpty()
+                        join cm in p.Query<ReceiptDetail>().Where(x => x.Receipt.ReceiptDate.Year == DateTime.Today.Year).GroupBy(x => x.Receipt.CustomerId) on grp.Key equals cm.Key into tmpcm
+                        from currentMonth in tmpcm.DefaultIfEmpty()
+                        join lm in p.Query<ReceiptDetail>().Where(x => x.Receipt.ReceiptDate.Year == DateTime.Today.Year).GroupBy(x => x.Receipt.CustomerId) on grp.Key equals lm.Key into tmplm
+                        from lastMonth in tmplm.DefaultIfEmpty()
+                        select new ArticleStatistics
+                        {
+                            ArticleId = grp.Key,
+                            SoldCurrentYear = year != null ? year.Sum(x => x.Amount) : 0,
+                            SoldCurrentMonth = currentMonth != null ? currentMonth.Sum(x => x.Amount) : 0,
+                            SoldLastMonth = lastMonth != null ? lastMonth.Sum(x => x.Amount) : 0
+                        }
+                      )
+                      .Join(p => p.ArticleId, p => p.ReceiptDetail.ArticleId);
+
+            QueryModel model = builder.ToModel();
+            return model;
+        }
+
+        private Receipt CreateDummyReceipt()
+        {
+            var country = new Country { Id = 1, CountryName = "Austria" };
+
+            var customer = new Contact
+            {
+                Id = Guid.NewGuid(),
+                Country = country,
+                CountryId = country.Id,
+                FirstName = "Demo",
+                LastName = "Customer",
+                Identity = "democustomer",
+                Street = "demostreet"
+            };
+
+            var receipt = new Invoice
+            {
+                Id = Guid.NewGuid(),
+                Customer = customer,
+                CustomerId = customer.Id,
+                ReceiptDate = DateTime.Today.AddDays(-10),
+                ReceiptNumber = "123456"
+            };
+
+            var supplier = new Contact
+            {
+                Id = Guid.NewGuid(),
+                Country = country,
+                CountryId = country.Id,
+                FirstName = "Demo",
+                LastName = "Supplier",
+                Identity = "demosupplier",
+                Street = "demostreet"
+            };
+
+            var article = new Article
+            {
+                Id = Guid.NewGuid(),
+                ArticleDescription = "ArticleDemodDescription",
+                ArticleNumber = "12345",
+                Price = 12,
+                Supplier = supplier,
+                SupplierId = supplier.Id
+            };
+
+            var detail = new ReceiptDetail
+            {
+                Id = Guid.NewGuid(),
+                Amount = 120.0m,
+                Description = "Testdescription",
+                Price = 12,
+                Receipt = receipt,
+                ReceiptId = receipt.Id,
+                Article = article,
+                ArticleId = article.Id,
+                DeliveryTime = DateTime.Today.AddDays(-150),
+                Enabled = true
+            };
+            receipt.Details.Add(detail);
+
+            var detail2 = new ReceiptDetail
+            {
+                Id = Guid.NewGuid(),
+                Amount = 90.0m,
+                Description = "Testdescription2",
+                Price = 12,
+                Receipt = receipt,
+                ReceiptId = receipt.Id,
+                Article = article,
+                ArticleId = article.Id,
+                DeliveryTime = DateTime.Today.AddDays(-160),
+                Enabled = false
+            };
+
+            receipt.Details.Add(detail2);
+
+            return receipt;
         }
 
         private class AmountResult

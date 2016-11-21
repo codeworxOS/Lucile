@@ -1,5 +1,8 @@
-﻿namespace Lucile.Data.Metadata
+﻿using System;
+
+namespace Lucile.Data.Metadata
 {
+    [Flags]
     public enum NumericPropertyType
     {
         Byte = 0x00,
@@ -10,5 +13,9 @@
         Int64 = 0x10,
         SByte = 0x20,
         Single = 0x40,
+        Unsigned = 0x80,
+        UInt16 = Int16 | Unsigned,
+        UInt32 = Int32 | Unsigned,
+        UInt64 = Int64 | Unsigned,
     }
 }

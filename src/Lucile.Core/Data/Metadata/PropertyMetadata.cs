@@ -1,117 +1,105 @@
 ﻿using System;
 using System.Linq.Expressions;
 using System.Reflection;
-using System.Runtime.Serialization;
+using Lucile.Data.Metadata.Builder;
 
 namespace Lucile.Data.Metadata
 {
-    /// <summary>
-    /// Funktionalität für ein Property-Metadata-Element
-    /// </summary>
-    [DataContract(IsReference = true)]
-    [ProtoBuf.ProtoContract(AsReferenceDefault = true)]
-    [KnownType(typeof(ScalarProperty))]
-    [KnownType(typeof(NavigationPropertyMetadata))]
-    [ProtoBuf.ProtoInclude(101, typeof(ScalarProperty))]
-    [ProtoBuf.ProtoInclude(102, typeof(NavigationPropertyMetadata))]
     public abstract class PropertyMetadata : MetadataElement
     {
-        private Func<object> _defaultValueDelegate;
+        private readonly Func<object> _defaultValueDelegate;
 
-        private Func<object, object> _getValueDelegate;
+        private readonly Func<object, object> _getValueDelegate;
 
-        private Action<object, object> _setValueDelegate;
+        private readonly Action<object, object> _setValueDelegate;
 
-        protected PropertyMetadata()
-        {
-        }
-
-        /// <summary>
-        /// Constructor
-        /// </summary>
-        /// <param name="entity"></param>
-        protected PropertyMetadata(EntityMetadata entity)
+        internal PropertyMetadata(EntityMetadata entity, PropertyMetadataBuilder propBuilder)
+            : base(propBuilder.Name)
         {
             this.Entity = entity;
+            this.Nullable = propBuilder.Nullable;
+            var propInfo = this.Entity.ClrType.GetProperty(Name);
+
+            PropertyType = propInfo.PropertyType;
+            _defaultValueDelegate = GetDefaultValueDelegate(propInfo.PropertyType);
+
+            this._getValueDelegate = GetGetValueDelegate(propInfo);
+
+            if (propInfo.CanWrite)
+            {
+                this._setValueDelegate = GetSetValueDelegate(propInfo);
+            }
         }
 
         public object DefaultValue
         {
             get
             {
-                if (_defaultValueDelegate == null)
-                {
-                    _defaultValueDelegate = Expression.Lambda<Func<object>>(
-                        Expression.Convert(
-                            Expression.Default(this.Entity.ClrType.GetProperty(Name).PropertyType), typeof(object)))
-                            .Compile();
-                }
-
                 return _defaultValueDelegate();
             }
         }
 
-        /// <summary>
-        /// Liefert die Entität
-        /// </summary>
-        [DataMember(Order = 1)]
-        public EntityMetadata Entity { get; private set; }
+        public EntityMetadata Entity { get; }
 
-        /// <summary>
-        /// Liefert oder setzt, ob das Property nullable ist
-        /// </summary>
-        [DataMember(Order = 2)]
-        public bool Nullable { get; set; }
+        public bool Nullable { get; }
 
-        /// <summary>
-        /// Liefert den Wert des Propertys
-        /// </summary>
-        /// <param name="parameter"></param>
-        /// <returns></returns>
+        public Type PropertyType { get; }
+
         public object GetValue(object parameter)
         {
-            if (this._getValueDelegate == null)
-            {
-                var parameterExpression = Expression.Parameter(typeof(object));
-                var castExpression = Expression.Convert(parameterExpression, Entity.ClrType);
-                var propertyExpression = Expression.Property(castExpression, this.Name);
-                var lambda = Expression.Lambda<Func<object, object>>(Expression.Convert(propertyExpression, typeof(object)), parameterExpression);
-                this._getValueDelegate = lambda.Compile();
-            }
-
             return this._getValueDelegate(parameter);
         }
 
-        /// <summary>
-        /// Setzt den Wert des Propertys
-        /// </summary>
-        /// <param name="parameter"></param>
-        /// <param name="value"></param>
         public void SetValue(object parameter, object value)
         {
-            if (this._setValueDelegate == null)
+            if (_setValueDelegate == null)
             {
-                var parameterExpression = Expression.Parameter(typeof(object));
-                var valueParameterExpression = Expression.Parameter(typeof(object));
-                Expression castExpression = Expression.Convert(parameterExpression, Entity.ClrType);
-                Expression propertyExpression = Expression.Property(castExpression, this.Name);
-                castExpression = Expression.Convert(valueParameterExpression, propertyExpression.Type);
-                if (this.Nullable && propertyExpression.Type.GetTypeInfo().IsValueType)
-                {
-                    var propType = propertyExpression.Type;
-                    propType = System.Nullable.GetUnderlyingType(propType) ?? propType;
-                    castExpression = Expression.Condition(
-                        Expression.Equal(valueParameterExpression, Expression.Default(typeof(object))),
-                            Expression.Default(propertyExpression.Type),
-                            Expression.Convert(Expression.Convert(valueParameterExpression, propType), propertyExpression.Type));
-                }
-
-                var body = Expression.Assign(propertyExpression, castExpression);
-                var lambda = Expression.Lambda<Action<object, object>>(body, parameterExpression, valueParameterExpression);
-                this._setValueDelegate = lambda.Compile();
+                throw new NotSupportedException($"The property {this.Name} on Entity {Entity} is not writable.");
             }
 
             this._setValueDelegate(parameter, value);
+        }
+
+        private static Func<object> GetDefaultValueDelegate(Type propertyType)
+        {
+            return Expression.Lambda<Func<object>>(
+                            Expression.Convert(
+                                Expression.Default(propertyType), typeof(object)))
+                                .Compile();
+        }
+
+        private static Func<object, object> GetGetValueDelegate(PropertyInfo propInfo)
+        {
+            var parameterExpression = Expression.Parameter(typeof(object));
+            var castExpression = Expression.Convert(parameterExpression, propInfo.DeclaringType);
+            var propertyExpression = Expression.Property(castExpression, propInfo);
+            var lambda = Expression.Lambda<Func<object, object>>(Expression.Convert(propertyExpression, typeof(object)), parameterExpression);
+            return lambda.Compile();
+        }
+
+        private static Action<object, object> GetSetValueDelegate(PropertyInfo propInfo)
+        {
+            var nullableBase = System.Nullable.GetUnderlyingType(propInfo.PropertyType);
+
+            var parameterExpression = Expression.Parameter(typeof(object));
+            var castExpression = Expression.Convert(parameterExpression, propInfo.DeclaringType);
+            var propertyExpression = Expression.Property(castExpression, propInfo);
+            var valueParameterExpression = Expression.Parameter(typeof(object));
+            Expression valuecastExpression = Expression.Convert(valueParameterExpression, propertyExpression.Type);
+            if (nullableBase != null && propInfo.PropertyType.GetTypeInfo().IsValueType)
+            {
+                var propType = propertyExpression.Type;
+                propType = System.Nullable.GetUnderlyingType(propType) ?? propType;
+                valuecastExpression = Expression.Condition(
+                    Expression.Equal(valueParameterExpression, Expression.Default(typeof(object))),
+                        Expression.Default(propertyExpression.Type),
+                        Expression.Convert(Expression.Convert(valueParameterExpression, propType), propertyExpression.Type));
+            }
+
+            var body = Expression.Assign(propertyExpression, valuecastExpression);
+            var setLambda = Expression.Lambda<Action<object, object>>(body, parameterExpression, valueParameterExpression);
+
+            return setLambda.Compile();
         }
     }
 }

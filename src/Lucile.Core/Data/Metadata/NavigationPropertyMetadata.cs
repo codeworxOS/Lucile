@@ -1,66 +1,54 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
-using System.Runtime.Serialization;
+using Lucile.Data.Metadata.Builder;
 
 namespace Lucile.Data.Metadata
 {
-    /// <summary>
-    /// Funktionalität Metadaten für ein Navigation-Property
-    /// </summary>
-    [DataContract(IsReference = true)]
-    [ProtoBuf.ProtoContract(AsReferenceDefault = true)]
     public class NavigationPropertyMetadata : PropertyMetadata
     {
         private Action<object, object> _addItemDelegate;
         private Func<object, object, bool> _matchForeignKeyDelegate;
         private Action<object, object> _removeItemDelegate;
 
-        /// <summary>
-        /// Constructor
-        /// </summary>
-        /// <param name="enity"></param>
-        public NavigationPropertyMetadata(EntityMetadata enity)
-            : base(enity)
+        internal NavigationPropertyMetadata(ModelCreationScope scope, EntityMetadata entity, NavigationPropertyBuilder builder)
+            : base(entity, builder)
         {
-            this.ForeignKeyProperties = new Dictionary<ScalarProperty, ScalarProperty>();
+            scope.AddNavigationProperty(entity, builder.Name, this);
+
+            this.Multiplicity = builder.Multiplicity.Value;
+            this.TargetMultiplicity = builder.TargetMultiplicity.Value;
+            this.TargetEntity = scope.GetEntity(builder.Target.ClrType);
+            if (builder.TargetProperty != null)
+            {
+                this.TargetNavigationProperty = scope.NavigationProperties[this.TargetEntity][builder.TargetProperty];
+            }
+
+            var foreignKeyBuilder = ImmutableList.CreateBuilder<ForeignKey>();
+
+            var principalKeys = this.TargetEntity.Properties.Where(p => p.IsPrimaryKey).ToList();
+            for (int i = 0; i < builder.ForeignKey.Count; i++)
+            {
+                var fk = builder.ForeignKey[i];
+                foreignKeyBuilder.Add(new ForeignKey(principalKeys[i], entity.Properties.First(p => p.Name == fk)));
+            }
+
+            ForeignKeyProperties = foreignKeyBuilder.ToImmutable();
         }
 
-        internal NavigationPropertyMetadata()
-        {
-        }
+        public ImmutableList<ForeignKey> ForeignKeyProperties { get; }
 
-        /// <summary>
-        /// Liefert doe Fremdschlüssel-Properties
-        /// </summary>
-        [DataMember(Order = 2)]
-        public IDictionary<ScalarProperty, ScalarProperty> ForeignKeyProperties { get; private set; }
+        public NavigationPropertyMultiplicity Multiplicity { get; }
 
-        /// <summary>
-        /// Liefert oder setzt die Multiplicity
-        /// </summary>
-        [DataMember(Order = 1)]
-        public NavigationPropertyMultiplicity Multiplicity { get; set; }
+        public EntityMetadata TargetEntity { get; }
 
-        /// <summary>
-        /// Liefert oder setzt die Ziel-Entität
-        /// </summary>
-        [DataMember(Order = 4)]
-        public EntityMetadata TargetEntity { get; set; }
+        public NavigationPropertyMultiplicity TargetMultiplicity { get; }
 
-        /// <summary>
-        /// Liefert oder setzt das Ziel-Navigation-Property
-        /// </summary>
-        [DataMember(Order = 3)]
-        public NavigationPropertyMetadata TargetNavigationProperty { get; set; }
+        public NavigationPropertyMetadata TargetNavigationProperty { get; }
 
-        /// <summary>
-        /// Fügt ein Item für ein Navigation-Property vom Typ Many hinzu
-        /// </summary>
-        /// <param name="parameter"></param>
-        /// <param name="value"></param>
         public void AddItem(object parameter, object value)
         {
             if (this.Multiplicity != NavigationPropertyMultiplicity.Many)
@@ -77,12 +65,27 @@ namespace Lucile.Data.Metadata
             this._addItemDelegate(parameter, value);
         }
 
-        /// <summary>
-        /// Liefert, ob die Fremdschlüssel-Keys passen
-        /// </summary>
-        /// <param name="parameter"></param>
-        /// <param name="navigationValue"></param>
-        /// <returns></returns>
+        public object GetForeignKeyObject(object result)
+        {
+            if (!ForeignKeyProperties.Any() || ForeignKeyProperties.Count > 1)
+            {
+                throw new NotImplementedException("Currently only single Primary Key objects are supported!");
+            }
+
+            return ForeignKeyProperties.First().Dependant.GetValue(result);
+        }
+
+        public IEnumerable<object> GetItems(object entity)
+        {
+            var current = GetValue(entity);
+            if (Multiplicity == NavigationPropertyMultiplicity.Many)
+            {
+                return (IEnumerable<object>)current ?? Enumerable.Empty<object>();
+            }
+
+            return current != null ? new[] { current } : Enumerable.Empty<object>();
+        }
+
         public bool MatchForeignKeys(object parameter, object navigationValue)
         {
             if (Multiplicity == NavigationPropertyMultiplicity.Many)
@@ -117,7 +120,7 @@ namespace Lucile.Data.Metadata
 
                 if (keyProperties == null)
                 {
-                    keyProperties = this.ForeignKeyProperties;
+                    keyProperties = this.ForeignKeyProperties.ToDictionary(p => p.Dependant, p => p.Principal);
                 }
 
                 foreach (var item in keyProperties)
@@ -144,11 +147,6 @@ namespace Lucile.Data.Metadata
             return this._matchForeignKeyDelegate(parameter, navigationValue);
         }
 
-        /// <summary>
-        /// Entfernt ein Item für ein Navigation-Property vom Typ Many
-        /// </summary>
-        /// <param name="parameter"></param>
-        /// <param name="value"></param>
         public void RemoveItem(object parameter, object value)
         {
             if (this.Multiplicity != NavigationPropertyMultiplicity.Many)
@@ -163,6 +161,30 @@ namespace Lucile.Data.Metadata
             }
 
             this._removeItemDelegate(parameter, value);
+        }
+
+        public bool ReplaceItem(object entity, object source, object target)
+        {
+            var current = GetValue(entity);
+            if (this.Multiplicity == NavigationPropertyMultiplicity.Many)
+            {
+                if (((IEnumerable<object>)current).Contains(source))
+                {
+                    RemoveItem(entity, source);
+                    AddItem(entity, target);
+                    return true;
+                }
+            }
+            else
+            {
+                if (object.Equals(current, source))
+                {
+                    SetValue(entity, target);
+                    return true;
+                }
+            }
+
+            return false;
         }
 
         private Expression<Action<object, object>> GetCollectionOperationExpression(string methodName)

@@ -1,4 +1,4 @@
-﻿namespace Lucile.Core.Test.Model
+﻿namespace Lucile.Test.Model
 {
     public class Country
     {

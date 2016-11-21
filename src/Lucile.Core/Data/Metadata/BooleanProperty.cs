@@ -1,23 +1,11 @@
-﻿using System.Runtime.Serialization;
+﻿using Lucile.Data.Metadata.Builder;
 
 namespace Lucile.Data.Metadata
 {
-    /// <summary>
-    /// Funktionalität Metadata für ein Boolean-Property
-    /// </summary>
-    [DataContract(IsReference = true)]
     public class BooleanProperty : ScalarProperty
     {
-        /// <summary>
-        /// Constructor
-        /// </summary>
-        /// <param name="enity"></param>
-        public BooleanProperty(EntityMetadata enity)
-            : base(enity)
-        {
-        }
-
-        internal BooleanProperty()
+        internal BooleanProperty(EntityMetadata enity, BooleanPropertyBuilder builder, bool isPrimaryKey)
+            : base(enity, builder, isPrimaryKey)
         {
         }
     }

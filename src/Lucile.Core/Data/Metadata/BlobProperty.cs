@@ -1,30 +1,15 @@
-﻿using System.Runtime.Serialization;
+﻿using Lucile.Data.Metadata.Builder;
 
 namespace Lucile.Data.Metadata
 {
-    /// <summary>
-    /// Funktionalität Metadaten für ein Blob-Property
-    /// </summary>
-    [DataContract(IsReference = true)]
     public class BlobProperty : ScalarProperty
     {
-        /// <summary>
-        /// Constructor
-        /// </summary>
-        /// <param name="enity"></param>
-        public BlobProperty(EntityMetadata enity)
-            : base(enity)
+        internal BlobProperty(EntityMetadata enity, BlobPropertyBuilder builder, bool isPrimaryKey)
+            : base(enity, builder, isPrimaryKey)
         {
+            Length = builder.MaxLength;
         }
 
-        internal BlobProperty()
-        {
-        }
-
-        /// <summary>
-        /// Liefert oder setzt die Länge
-        /// </summary>
-        [DataMember(Order = 1)]
-        public int? Length { get; set; }
+        public int? Length { get; }
     }
 }

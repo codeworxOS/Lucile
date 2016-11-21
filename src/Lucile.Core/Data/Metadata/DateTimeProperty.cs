@@ -1,20 +1,15 @@
-﻿using System.Runtime.Serialization;
+﻿using Lucile.Data.Metadata.Builder;
 
 namespace Lucile.Data.Metadata
 {
-    [DataContract(IsReference = true)]
     public class DateTimeProperty : ScalarProperty
     {
-        public DateTimeProperty(EntityMetadata entity)
-            : base(entity)
+        internal DateTimeProperty(EntityMetadata entity, DateTimePropertyBuilder builder, bool isPrimaryKey)
+            : base(entity, builder, isPrimaryKey)
         {
+            DateTimePropertyType = builder.DateTimeType;
         }
 
-        internal DateTimeProperty()
-        {
-        }
-
-        [DataMember(Order = 1)]
-        public DateTimePropertyType DateTimePropertyType { get; set; }
+        public DateTimePropertyType DateTimePropertyType { get; }
     }
 }

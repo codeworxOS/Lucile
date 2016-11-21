@@ -1,30 +1,21 @@
-﻿using System.Runtime.Serialization;
+﻿using Lucile.Data.Metadata.Builder;
 
 namespace Lucile.Data.Metadata
 {
-    /// <summary>
-    /// Funktionalität Metadaten für TextProperty
-    /// </summary>
-    [DataContract]
     public class TextProperty : ScalarProperty
     {
-        /// <summary>
-        /// Constructor
-        /// </summary>
-        /// <param name="enity"></param>
-        public TextProperty(EntityMetadata enity)
-            : base(enity)
+        internal TextProperty(EntityMetadata enity, TextPropertyBuilder builder, bool isPrimaryKey)
+            : base(enity, builder, isPrimaryKey)
         {
+            Unicode = builder.Unicode;
+            MaxLength = builder.MaxLength;
+            IsFixedLength = builder.FixedLength;
         }
 
-        internal TextProperty()
-        {
-        }
+        public bool IsFixedLength { get; }
 
-        /// <summary>
-        /// Liefert oder setzt die String-Länge
-        /// </summary>
-        [DataMember(Order = 1)]
-        public int? StringLength { get; set; }
+        public int? MaxLength { get; }
+
+        public bool Unicode { get; }
     }
 }

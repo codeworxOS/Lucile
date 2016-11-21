@@ -7,14 +7,37 @@ namespace Lucile.Linq
 {
     public class QueryConfiguration
     {
-        public QueryConfiguration(IEnumerable<SelectItem> selectItems, IEnumerable<SortItem> sortItems)
+        public QueryConfiguration()
+            : this(Enumerable.Empty<SelectItem>(), Enumerable.Empty<SortItem>(), Enumerable.Empty<FilterItem>())
+        {
+        }
+
+        public QueryConfiguration(IEnumerable<FilterItem> filterItems)
+            : this(Enumerable.Empty<SelectItem>(), Enumerable.Empty<SortItem>(), filterItems)
+        {
+        }
+
+        public QueryConfiguration(IEnumerable<SelectItem> selectItems)
+            : this(selectItems, Enumerable.Empty<SortItem>(), Enumerable.Empty<FilterItem>())
+        {
+        }
+
+        public QueryConfiguration(IEnumerable<SortItem> sortItems, IEnumerable<FilterItem> filterItems)
+            : this(Enumerable.Empty<SelectItem>(), sortItems, filterItems)
+        {
+        }
+
+        public QueryConfiguration(IEnumerable<SelectItem> selectItems, IEnumerable<SortItem> sortItems, IEnumerable<FilterItem> filterItems)
         {
             Select = ImmutableArray.Create<SelectItem>(selectItems.ToArray());
             Sort = ImmutableArray.Create<SortItem>(sortItems.ToArray());
+            FilterItems = ImmutableArray.Create<FilterItem>(filterItems.ToArray());
         }
+
+        public IReadOnlyCollection<FilterItem> FilterItems { get; }
 
         public IReadOnlyCollection<SelectItem> Select { get; }
 
-        public IReadOnlyCollection<SortItem> Sort { get; set; }
+        public IReadOnlyCollection<SortItem> Sort { get; }
     }
 }

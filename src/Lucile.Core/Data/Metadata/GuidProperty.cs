@@ -1,16 +1,11 @@
-﻿using System.Runtime.Serialization;
+﻿using Lucile.Data.Metadata.Builder;
 
 namespace Lucile.Data.Metadata
 {
-    [DataContract(IsReference = true)]
     public class GuidProperty : ScalarProperty
     {
-        public GuidProperty(EntityMetadata entity)
-            : base(entity)
-        {
-        }
-
-        internal GuidProperty()
+        public GuidProperty(EntityMetadata entity, GuidPropertyBuilder builder, bool isPrimaryKey)
+            : base(entity, builder, isPrimaryKey)
         {
         }
     }

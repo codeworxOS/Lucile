@@ -1,16 +1,11 @@
-﻿using System.Runtime.Serialization;
+﻿using Lucile.Data.Metadata.Builder;
 
 namespace Lucile.Data.Metadata
 {
-    [DataContract(IsReference = true)]
     public class GeometryProperty : ScalarProperty
     {
-        public GeometryProperty(EntityMetadata entity)
-            : base(entity)
-        {
-        }
-
-        internal GeometryProperty()
+        internal GeometryProperty(EntityMetadata entity, GeometryPropertyBuilder builder, bool isPrimaryKey)
+            : base(entity, builder, isPrimaryKey)
         {
         }
     }

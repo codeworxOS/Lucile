@@ -11,9 +11,11 @@ namespace Lucile.Linq
 {
     public abstract class QueryModel : IQueryModel
     {
+        private static readonly MethodInfo _enumerableDefaultIfEmpty;
         private static readonly MethodInfo _queryableGroupJoinMethod;
         private static readonly MethodInfo _queryableSelectManyMethod;
         private static readonly MethodInfo _queryableSelectMethod;
+        private static readonly MethodInfo _queryableWhereMethod;
 
         static QueryModel()
         {
@@ -23,6 +25,11 @@ namespace Lucile.Linq
             _queryableSelectManyMethod = ((MethodCallExpression)querySelectMany.Body).Method.GetGenericMethodDefinition();
             Expression<Func<IQueryable<object>, IQueryable<object>>> queryGroupJoin = p => p.GroupJoin(Enumerable.Empty<object>(), x => x, x => x, (parent, child) => parent);
             _queryableGroupJoinMethod = ((MethodCallExpression)queryGroupJoin.Body).Method.GetGenericMethodDefinition();
+            Expression<Func<IQueryable<object>, IQueryable<object>>> queryWhere = p => p.Where(x => true);
+            _queryableWhereMethod = ((MethodCallExpression)queryWhere.Body).Method.GetGenericMethodDefinition();
+
+            Expression<Func<IEnumerable<object>, IEnumerable<object>>> enumDefaultIfEmptyJoin = p => p.DefaultIfEmpty();
+            _enumerableDefaultIfEmpty = ((MethodCallExpression)enumDefaultIfEmptyJoin.Body).Method.GetGenericMethodDefinition();
         }
 
         public QueryModel(EntityMetadata entity, IEnumerable<SourceEntityConfiguration> sourceEntityConfigs, IEnumerable<PropertyConfiguration> propConfigs)
@@ -43,6 +50,7 @@ namespace Lucile.Linq
         public abstract Type SourceType { get; }
 
         public static QueryModelBuilder<TSource, TModel> Build<TSource, TModel>(Expression<Func<QuerySourceBuilder, TSource>> sourceSelector, Expression<Func<TSource, TModel>> queryExpression)
+            where TModel : class
         {
             var builder = new QueryModelBuilder<TSource, TModel>(sourceSelector);
             builder.Map(queryExpression);
@@ -88,9 +96,18 @@ namespace Lucile.Linq
                 }
             }
 
-            IQueryable baseQuery = CreateBaseQuery(source, sortedDependencies);
-
             var param = Expression.Parameter(this.SourceType);
+            IQueryable baseQuery = CreateBaseQuery(source, sortedDependencies);
+            var filter = new FilterItemGroup(config.FilterItems);
+            var body = filter.GetExpression(param);
+            if (body != null)
+            {
+                var whereLambdaExpression = Expression.Lambda(body, param);
+                var whereExpression = Expression.Call(_queryableWhereMethod.MakeGenericMethod(param.Type), baseQuery.Expression, whereLambdaExpression);
+
+                baseQuery = baseQuery.Provider.CreateQuery(whereExpression);
+            }
+
             var members = propsToQuery.ToDictionary(p => (MemberInfo)p.PropertyInfo, p => p.MappedExpression.Body.Replace(p.MappedExpression.Parameters.First(), param));
 
             foreach (var item in PropertyConfigurations.Where(p => !members.ContainsKey(p.PropertyInfo)))
@@ -99,9 +116,7 @@ namespace Lucile.Linq
             }
 
             var getInitExpression = GetInitExpression(ResultType, members);
-
             var selectExpresssion = Expression.Lambda(getInitExpression, param);
-
             var queryExpression = Expression.Call(
                                         _queryableSelectMethod.MakeGenericMethod(SourceType, ResultType),
                                         baseQuery.Expression,
@@ -181,7 +196,7 @@ namespace Lucile.Linq
                 baseExpression = Expression.Call(
                         _queryableSelectManyMethod.MakeGenericMethod(joinPairType, entityType, SourceType),
                         baseExpression,
-                        Expression.Lambda(Expression.Property(param1, "Children"), param1),
+                        Expression.Lambda(Expression.Call(_enumerableDefaultIfEmpty.MakeGenericMethod(entityType), Expression.Property(param1, "Children")), param1),
                         Expression.Lambda(GetInitExpression(SourceType, memberInits), param1, param2));
             }
 

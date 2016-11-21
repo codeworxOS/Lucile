@@ -29,7 +29,9 @@
     "System.Linq.Queryable": "4.0.1",
     "System.Reflection": "4.1.0",
     "System.Reflection.TypeExtensions": "4.1.0",
-    "System.Runtime.Serialization.Primitives": "4.1.1"
+    "System.Runtime.Serialization.Primitives": "4.1.1",
+    "System.Threading.Timer": "4.0.1",
+    "System.Threading.Tasks.Parallel": "4.0.1"
   },
 
   "frameworks": {

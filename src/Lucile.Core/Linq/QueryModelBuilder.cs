@@ -4,12 +4,13 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
-using Lucile.Data.Metadata;
+using Lucile.Data.Metadata.Builder;
 using Lucile.Linq.Configuration;
 
 namespace Lucile.Linq
 {
     public class QueryModelBuilder<TSource, TResult>
+        where TResult : class
     {
         private readonly ConcurrentDictionary<PropertyInfo, PropertyConfigurationBuilder> _propertyBuilders;
         private readonly ConcurrentDictionary<string, SourceEntityConfigurationBuilder> _sourceBuilders;
@@ -138,13 +139,8 @@ namespace Lucile.Linq
 
         public QueryModel<TSource, TResult> ToModel()
         {
-            var resultType = typeof(TResult);
-
-            var entity = new EntityMetadata()
-            {
-                ClrType = resultType,
-                Name = resultType.Name
-            };
+            var entityModelBuilder = new MetadataModelBuilder();
+            var entityBuilder = entityModelBuilder.Entity<TResult>();
 
             var propConfigs = new List<PropertyConfiguration>();
 
@@ -160,11 +156,21 @@ namespace Lucile.Linq
 
             foreach (var item in _propertyBuilders)
             {
-                var prop = ScalarProperty.Create(entity, item.Value.PropertyInfo);
-                prop.IsPrimaryKey = item.Value.IsPrimaryKey;
+                entityBuilder.Property(item.Value.PropertyName);
+                if (item.Value.IsPrimaryKey)
+                {
+                    entityBuilder.PrimaryKey.Add(item.Value.PropertyName);
+                }
 
                 // TODO: Merge Metadata from mapped Properties
-                entity.Properties.Add(prop);
+            }
+
+            var model = entityModelBuilder.ToModel();
+            var entity = model.GetEntityMetadata<TResult>();
+
+            foreach (var item in _propertyBuilders)
+            {
+                var prop = entity[item.Value.PropertyName];
                 var config = new PropertyConfiguration(prop, item.Value.Label, item.Value.CanAggregate, item.Value.CanFilter, item.Value.CanSort, item.Value.CustomFilterExpression, item.Value.MappedExpression, !IsSingleSourceQuery);
                 propConfigs.Add(config);
             }

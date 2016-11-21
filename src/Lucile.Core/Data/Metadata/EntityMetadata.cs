@@ -1,111 +1,97 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Collections.ObjectModel;
+using System.Collections.Immutable;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
-using System.Runtime.Serialization;
-using Lucile.Reflection;
+using Lucile.Data.Metadata.Builder;
 
 namespace Lucile.Data.Metadata
 {
-    [DataContract(IsReference = true)]
-    [ProtoBuf.ProtoContract(AsReferenceDefault = true)]
     public class EntityMetadata : MetadataElement
     {
-        private EntityMetadata _baseEntity;
-        private Func<object, bool> _checkTypeDelegate;
-        private List<EntityMetadata> _childEntities;
-        private Type _clrType = null;
-        private string _clrTypeName = null;
-        private Func<object, object, bool> _keyEqualsDelegate;
-        private ReadOnlyCollection<EntityMetadata> _readOnlyChild;
+        private readonly Func<object, bool> _checkTypeDelegate;
+        private readonly Func<object, object, bool> _keyEqualsDelegate;
 
-        public EntityMetadata()
+        internal EntityMetadata(ModelCreationScope scope, EntityMetadataBuilder builder)
+            : base(builder.Name)
         {
-            this.Properties = new List<PropertyMetadata>();
+            scope.AddEntity(builder.TypeInfo.ClrType, this);
+            this.ClrType = builder.TypeInfo.ClrType;
+
+            var propertyListBuilder = ImmutableList.CreateBuilder<ScalarProperty>();
+            var navigationListBuilder = ImmutableList.CreateBuilder<NavigationPropertyMetadata>();
+
+            if (builder.BaseEntity != null)
+            {
+                BaseEntity = scope.GetEntity(builder.BaseEntity.TypeInfo.ClrType);
+                foreach (var prop in BaseEntity.Properties)
+                {
+                    propertyListBuilder.Add(prop);
+                }
+
+                foreach (var prop in BaseEntity.Navigations)
+                {
+                    navigationListBuilder.Add(prop);
+                }
+            }
+
+            var properties = builder.Properties.OrderBy(p => builder.PrimaryKey.Contains(p.Name) ? builder.PrimaryKey.IndexOf(p.Name) : builder.PrimaryKey.Count).ToList();
+
+            foreach (var item in properties)
+            {
+                propertyListBuilder.Add(item.ToProperty(this, builder.PrimaryKey.Contains(item.Name)));
+            }
+
+            Properties = propertyListBuilder.ToImmutable();
+
+            foreach (var item in builder.Navigations)
+            {
+                navigationListBuilder.Add(item.ToNavigation(scope, this));
+            }
+
+            Navigations = navigationListBuilder.ToImmutable();
+
+            this._checkTypeDelegate = GetCheckTypeDelegate(ClrType);
+            var primaryKeys = this.Properties.Where(p => p.IsPrimaryKey);
+            if (primaryKeys.Any())
+            {
+                PrimaryKeyType = primaryKeys.First().PropertyType;
+                this._keyEqualsDelegate = GetKeyEqualsDelegate(ClrType, primaryKeys);
+            }
         }
 
-        [DataMember(Order = 2)]
         public EntityMetadata BaseEntity
         {
-            get
-            {
-                return _baseEntity;
-            }
-
-            set
-            {
-                if (_baseEntity != null && _baseEntity.ChildEntities.Contains(this))
-                {
-                    _baseEntity._childEntities.Remove(this);
-                }
-
-                if (value != null && !value.ChildEntities.Contains(this))
-                {
-                    value._childEntities.Add(this);
-                }
-
-                _baseEntity = value;
-            }
+            get;
         }
 
-        [IgnoreDataMember]
-        public IEnumerable<EntityMetadata> ChildEntities
+        public ImmutableList<EntityMetadata> ChildEntities
         {
-            get
-            {
-                if (_childEntities == null)
-                {
-                    _childEntities = new List<EntityMetadata>();
-                    _readOnlyChild = new ReadOnlyCollection<EntityMetadata>(this._childEntities);
-                }
-
-                return _readOnlyChild;
-            }
+            get;
         }
 
-        [IgnoreDataMember]
         public Type ClrType
         {
-            get
-            {
-                if (_clrType == null)
-                {
-                    _clrType = TypeResolver.GetType(this.ClrTypeName);
-                }
-
-                return _clrType;
-            }
-
-            set
-            {
-                this.ClrTypeName = value != null ? value.AssemblyQualifiedName : null;
-                _clrType = value;
-            }
+            get;
         }
 
-        [DataMember(Order = 1)]
-        public string ClrTypeName
+        public ImmutableList<NavigationPropertyMetadata> Navigations { get; }
+
+        public Type PrimaryKeyType
+        {
+            get;
+        }
+
+        public ImmutableList<ScalarProperty> Properties { get; }
+
+        public PropertyMetadata this[string propertyName]
         {
             get
             {
-                return _clrTypeName;
-            }
-
-            set
-            {
-                this._clrTypeName = value;
-                this._clrType = null;
+                return (PropertyMetadata)Properties.FirstOrDefault(p => p.Name == propertyName) ?? Navigations.FirstOrDefault(p => p.Name == propertyName);
             }
         }
-
-        /// <summary>
-        /// Liefert eine Liste der Properties
-        /// </summary>
-        [DataMember(Order = 3)]
-        [ProtoBuf.ProtoMember(3, AsReference = true)]
-        public ICollection<PropertyMetadata> Properties { get; private set; }
 
         public static Expression GetPropertyCompareExpression(MemberExpression propLeft, MemberExpression propRight)
         {
@@ -137,80 +123,39 @@ namespace Lucile.Data.Metadata
             return children;
         }
 
-        public EntityKey GetEntityKey(object entity)
+        public object GetPrimaryKeyObject(object entity)
         {
-            if (!this.IsOfType(entity))
+            if (PrimaryKeyType == null)
             {
-                throw new ArgumentException(string.Format("The given entity is not of type {0}", this.ClrType), "entity");
+                throw new NotImplementedException("Currently only single Primary Key Objects are supported.");
             }
 
-            var pks = this.Properties.OfType<ScalarProperty>().Where(p => p.IsPrimaryKey).ToList();
-
-            var key = new EntityKey() { EntityType = this.ClrType };
-
-            if (pks.Count == 1)
-            {
-                key.Key = pks.First().GetValue(entity);
-            }
-            else
-            {
-                var multiValueKey = new MultiValueKey();
-                foreach (var item in pks)
-                {
-                    var value = item.GetValue(entity);
-                    multiValueKey.Values.Add(item.Name, value);
-                }
-
-                key.Key = multiValueKey;
-            }
-
-            return key;
+            return this.Properties.First(p => p.IsPrimaryKey).GetValue(entity);
         }
 
         public bool IsOfType(object parameter)
         {
-            if (_checkTypeDelegate == null)
+            return _checkTypeDelegate(parameter);
+        }
+
+        public bool IsPrimaryKeySet(object source)
+        {
+            foreach (var item in Properties.Where(p => p.IsPrimaryKey))
             {
-                var parameterExpresssion = Expression.Parameter(typeof(object));
-
-                var isExpression = Expression.TypeIs(parameterExpresssion, this.ClrType);
-                var lambda = Expression.Lambda<Func<object, bool>>(isExpression, parameterExpresssion);
-
-                this._checkTypeDelegate = lambda.Compile();
+                if (!object.Equals(item.GetValue(source), item.DefaultValue))
+                {
+                    return true;
+                }
             }
 
-            return _checkTypeDelegate(parameter);
+            return false;
         }
 
         public bool KeyEquals(object left, object right)
         {
-            if (this._keyEqualsDelegate == null)
+            if (_keyEqualsDelegate == null)
             {
-                Expression compareExpression = null;
-                ParameterExpression paramLeft = Expression.Parameter(typeof(object));
-                ParameterExpression paramRight = Expression.Parameter(typeof(object));
-
-                foreach (var item in this.Properties.OfType<ScalarProperty>().Where(p => p.IsPrimaryKey))
-                {
-                    var propLeft = Expression.Property(Expression.Convert(paramLeft, this.ClrType), item.Name);
-                    var propRight = Expression.Property(Expression.Convert(paramRight, this.ClrType), item.Name);
-
-                    Expression expression = null;
-
-                    expression = GetPropertyCompareExpression(propLeft, propRight);
-
-                    if (compareExpression == null)
-                    {
-                        compareExpression = expression;
-                    }
-                    else
-                    {
-                        compareExpression = Expression.And(compareExpression, expression);
-                    }
-                }
-
-                var lambda = Expression.Lambda<Func<object, object, bool>>(compareExpression, paramLeft, paramRight);
-                this._keyEqualsDelegate = lambda.Compile();
+                throw new NotSupportedException($"No Primary Key definde for Entity {Name}!");
             }
 
             return this._keyEqualsDelegate(left, right);
@@ -254,6 +199,44 @@ namespace Lucile.Data.Metadata
                     }
                 }
             }
+        }
+
+        private static Func<object, bool> GetCheckTypeDelegate(Type clrType)
+        {
+            var parameterExpresssion = Expression.Parameter(typeof(object));
+
+            var isExpression = Expression.TypeIs(parameterExpresssion, clrType);
+            var lambda = Expression.Lambda<Func<object, bool>>(isExpression, parameterExpresssion);
+            return lambda.Compile();
+        }
+
+        private static Func<object, object, bool> GetKeyEqualsDelegate(Type clrType, IEnumerable<ScalarProperty> keyProperties)
+        {
+            Expression compareExpression = null;
+            ParameterExpression paramLeft = Expression.Parameter(typeof(object));
+            ParameterExpression paramRight = Expression.Parameter(typeof(object));
+
+            foreach (var item in keyProperties)
+            {
+                var propLeft = Expression.Property(Expression.Convert(paramLeft, clrType), item.Name);
+                var propRight = Expression.Property(Expression.Convert(paramRight, clrType), item.Name);
+
+                Expression expression = null;
+
+                expression = GetPropertyCompareExpression(propLeft, propRight);
+
+                if (compareExpression == null)
+                {
+                    compareExpression = expression;
+                }
+                else
+                {
+                    compareExpression = Expression.And(compareExpression, expression);
+                }
+            }
+
+            var lambda = Expression.Lambda<Func<object, object, bool>>(compareExpression, paramLeft, paramRight);
+            return lambda.Compile();
         }
 
         private IEnumerable<EntityMetadata> FlattenEntities()
