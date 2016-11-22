@@ -24,16 +24,17 @@ namespace Lucile.Data.Metadata
             this.TargetEntity = scope.GetEntity(builder.Target.ClrType);
             if (builder.TargetProperty != null)
             {
-                this.TargetNavigationProperty = scope.NavigationProperties[this.TargetEntity][builder.TargetProperty];
+                this.TargetNavigationPropertyName = builder.TargetProperty;
+                ////this.TargetNavigationProperty = scope.NavigationProperties[this.TargetEntity][builder.TargetProperty];
             }
 
             var foreignKeyBuilder = ImmutableList.CreateBuilder<ForeignKey>();
 
-            var principalKeys = this.TargetEntity.Properties.Where(p => p.IsPrimaryKey).ToList();
+            var principalKeys = this.TargetEntity.GetProperties().Where(p => p.IsPrimaryKey).ToList();
             for (int i = 0; i < builder.ForeignKey.Count; i++)
             {
                 var fk = builder.ForeignKey[i];
-                foreignKeyBuilder.Add(new ForeignKey(principalKeys[i], entity.Properties.First(p => p.Name == fk)));
+                foreignKeyBuilder.Add(new ForeignKey(principalKeys[i], entity.GetProperties().First(p => p.Name == fk)));
             }
 
             ForeignKeyProperties = foreignKeyBuilder.ToImmutable();
@@ -47,7 +48,20 @@ namespace Lucile.Data.Metadata
 
         public NavigationPropertyMultiplicity TargetMultiplicity { get; }
 
-        public NavigationPropertyMetadata TargetNavigationProperty { get; }
+        public NavigationPropertyMetadata TargetNavigationProperty
+        {
+            get
+            {
+                if (TargetNavigationPropertyName != null)
+                {
+                    return (NavigationPropertyMetadata)TargetEntity[TargetNavigationPropertyName];
+                }
+
+                return null;
+            }
+        }
+
+        public string TargetNavigationPropertyName { get; }
 
         public void AddItem(object parameter, object value)
         {
@@ -109,12 +123,12 @@ namespace Lucile.Data.Metadata
                 {
                     if (this.TargetNavigationProperty != null && (TargetNavigationProperty.Multiplicity == NavigationPropertyMultiplicity.One || TargetNavigationProperty.Multiplicity == NavigationPropertyMultiplicity.ZeroOrOne))
                     {
-                        keyProperties = this.Entity.Properties.OfType<ScalarProperty>()
+                        keyProperties = this.Entity.GetProperties()
                                             .Where(p => p.IsPrimaryKey)
                                             .Select((p, i) => new { Prop = p, Index = i })
                                             .ToDictionary(
                                                 p => p.Prop,
-                                                p => this.TargetEntity.Properties.OfType<ScalarProperty>().Where(x => x.IsPrimaryKey).ElementAt(p.Index));
+                                                p => this.TargetEntity.GetProperties().Where(x => x.IsPrimaryKey).ElementAt(p.Index));
                     }
                 }
 

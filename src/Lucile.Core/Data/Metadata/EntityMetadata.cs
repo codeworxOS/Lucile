@@ -25,15 +25,15 @@ namespace Lucile.Data.Metadata
             if (builder.BaseEntity != null)
             {
                 BaseEntity = scope.GetEntity(builder.BaseEntity.TypeInfo.ClrType);
-                foreach (var prop in BaseEntity.Properties)
-                {
-                    propertyListBuilder.Add(prop);
-                }
+                ////foreach (var prop in BaseEntity.Properties)
+                ////{
+                ////    propertyListBuilder.Add(prop);
+                ////}
 
-                foreach (var prop in BaseEntity.Navigations)
-                {
-                    navigationListBuilder.Add(prop);
-                }
+                ////foreach (var prop in BaseEntity.Navigations)
+                ////{
+                ////    navigationListBuilder.Add(prop);
+                ////}
             }
 
             var properties = builder.Properties.OrderBy(p => builder.PrimaryKey.Contains(p.Name) ? builder.PrimaryKey.IndexOf(p.Name) : builder.PrimaryKey.Count).ToList();
@@ -53,7 +53,7 @@ namespace Lucile.Data.Metadata
             Navigations = navigationListBuilder.ToImmutable();
 
             this._checkTypeDelegate = GetCheckTypeDelegate(ClrType);
-            var primaryKeys = this.Properties.Where(p => p.IsPrimaryKey);
+            var primaryKeys = this.GetProperties().Where(p => p.IsPrimaryKey);
             if (primaryKeys.Any())
             {
                 PrimaryKeyType = primaryKeys.First().PropertyType;
@@ -76,20 +76,20 @@ namespace Lucile.Data.Metadata
             get;
         }
 
-        public ImmutableList<NavigationPropertyMetadata> Navigations { get; }
-
         public Type PrimaryKeyType
         {
             get;
         }
 
-        public ImmutableList<ScalarProperty> Properties { get; }
+        protected ImmutableList<NavigationPropertyMetadata> Navigations { get; }
+
+        protected ImmutableList<ScalarProperty> Properties { get; }
 
         public PropertyMetadata this[string propertyName]
         {
             get
             {
-                return (PropertyMetadata)Properties.FirstOrDefault(p => p.Name == propertyName) ?? Navigations.FirstOrDefault(p => p.Name == propertyName);
+                return (PropertyMetadata)GetProperties().FirstOrDefault(p => p.Name == propertyName) ?? GetNavigations().FirstOrDefault(p => p.Name == propertyName);
             }
         }
 
@@ -123,6 +123,22 @@ namespace Lucile.Data.Metadata
             return children;
         }
 
+        public IEnumerable<NavigationPropertyMetadata> GetNavigations()
+        {
+            if (BaseEntity != null)
+            {
+                foreach (var item in BaseEntity.GetNavigations())
+                {
+                    yield return item;
+                }
+            }
+
+            foreach (var item in Navigations)
+            {
+                yield return item;
+            }
+        }
+
         public object GetPrimaryKeyObject(object entity)
         {
             if (PrimaryKeyType == null)
@@ -130,7 +146,23 @@ namespace Lucile.Data.Metadata
                 throw new NotImplementedException("Currently only single Primary Key Objects are supported.");
             }
 
-            return this.Properties.First(p => p.IsPrimaryKey).GetValue(entity);
+            return this.GetProperties().First(p => p.IsPrimaryKey).GetValue(entity);
+        }
+
+        public IEnumerable<ScalarProperty> GetProperties()
+        {
+            if (BaseEntity != null)
+            {
+                foreach (var item in BaseEntity.GetProperties())
+                {
+                    yield return item;
+                }
+            }
+
+            foreach (var item in Properties)
+            {
+                yield return item;
+            }
         }
 
         public bool IsOfType(object parameter)
@@ -140,7 +172,7 @@ namespace Lucile.Data.Metadata
 
         public bool IsPrimaryKeySet(object source)
         {
-            foreach (var item in Properties.Where(p => p.IsPrimaryKey))
+            foreach (var item in GetProperties().Where(p => p.IsPrimaryKey))
             {
                 if (!object.Equals(item.GetValue(source), item.DefaultValue))
                 {
@@ -165,7 +197,7 @@ namespace Lucile.Data.Metadata
         {
             var concreteEntity = entity.FlattenEntities().First(p => p.IsOfType(parent));
 
-            foreach (var item in concreteEntity.Properties.OfType<NavigationPropertyMetadata>())
+            foreach (var item in concreteEntity.GetNavigations())
             {
                 var value = item.GetValue(parent);
                 if (value != null)

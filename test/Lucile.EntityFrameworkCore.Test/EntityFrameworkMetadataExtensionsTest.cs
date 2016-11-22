@@ -1,4 +1,5 @@
-﻿using Lucile.Data.Metadata;
+﻿using System.Linq;
+using Lucile.Data.Metadata;
 using Lucile.Data.Metadata.Builder;
 using Lucile.EntityFrameworkCore;
 using Lucile.EntityFrameworkCore.Test;
@@ -22,19 +23,27 @@ namespace Tests
 
             var country = model.GetEntityMetadata<Country>();
             var countryIdProp = (ScalarProperty)country["Id"];
+            Assert.Equal(1, country.GetProperties().Count(p => p.IsPrimaryKey));
             Assert.True(countryIdProp.IsIdentity);
             Assert.True(countryIdProp.IsPrimaryKey);
 
             var contact = model.GetEntityMetadata<Contact>();
             var contactIdProp = (ScalarProperty)contact["Id"];
+            Assert.Equal(1, contact.GetProperties().Count(p => p.IsPrimaryKey));
             Assert.False(contactIdProp.IsIdentity);
             Assert.True(contactIdProp.IsPrimaryKey);
 
             var contactSettings = model.GetEntityMetadata<ContactSettings>();
             var contactSettingsIdProperty = (ScalarProperty)contactSettings["Id"];
-
+            Assert.Equal(1, contactSettings.GetProperties().Count(p => p.IsPrimaryKey));
             Assert.False(contactSettingsIdProperty.IsIdentity);
             Assert.True(contactSettingsIdProperty.IsPrimaryKey);
+
+            var invoice = model.GetEntityMetadata<Invoice>();
+            var invoiceIdProperty = (ScalarProperty)invoice["Id"];
+            Assert.Equal(1, invoice.GetProperties().Count(p => p.IsPrimaryKey));
+            Assert.False(invoiceIdProperty.IsIdentity);
+            Assert.True(invoiceIdProperty.IsPrimaryKey);
         }
 
         [Fact]

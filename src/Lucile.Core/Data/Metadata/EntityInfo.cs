@@ -103,13 +103,13 @@ namespace Lucile.Data.Metadata
              ImmutableDictionary<ScalarProperty, NavigationPropertyMetadata>.Builder foreignKeys)
         {
             // Skalar Properties
-            foreach (var prop in entity.Properties)
+            foreach (var prop in entity.GetProperties())
             {
                 scalarProperties.Add(prop);
             }
 
             // Navigation Properties
-            foreach (var prop in entity.Navigations)
+            foreach (var prop in entity.GetNavigations())
             {
                 navigationProperties.Add(prop);
             }
@@ -119,7 +119,7 @@ namespace Lucile.Data.Metadata
             while (parent != null)
             {
                 foreach (var prop in model.Entities
-                    .SelectMany(p => p.Navigations)
+                    .SelectMany(p => p.GetNavigations())
                     .Where(p => p.TargetEntity == parent)
                     .Distinct())
                 {
@@ -149,7 +149,7 @@ namespace Lucile.Data.Metadata
 
             Expression keyBody = null;
             var keyParam = Expression.Parameter(entityType);
-            var pks = rootEntity.Properties.OfType<ScalarProperty>().Where(p => p.IsPrimaryKey).ToList();
+            var pks = rootEntity.GetProperties().Where(p => p.IsPrimaryKey).ToList();
             if (pks.Count > 1)
             {
                 keyBody = Expression.MemberInit(
