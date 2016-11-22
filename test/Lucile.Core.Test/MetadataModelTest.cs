@@ -291,6 +291,24 @@ namespace Tests
         }
 
         [Fact]
+        public void GetEntityInheritenceTest()
+        {
+            var builder = new MetadataModelBuilder();
+            var receipt = builder.Entity<Receipt>();
+            var invoice = builder.Entity<Invoice>();
+            var order = builder.Entity<Order>();
+
+            var model = builder.ToModel();
+
+            var invoiceInstance = new Invoice();
+            var entity = model.GetEntityMetadata(invoiceInstance);
+            Assert.Equal("Invoice", entity.Name);
+            entity = model.GetEntityMetadata<Order>();
+
+            Assert.Equal("Order", entity.Name);
+        }
+
+        [Fact]
         public void MetadataModelBuilderEntityTest()
         {
             var builder = new MetadataModelBuilder();

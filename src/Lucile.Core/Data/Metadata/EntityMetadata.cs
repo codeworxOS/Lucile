@@ -36,7 +36,7 @@ namespace Lucile.Data.Metadata
                 ////}
             }
 
-            var properties = builder.Properties.OrderBy(p => builder.PrimaryKey.Contains(p.Name) ? builder.PrimaryKey.IndexOf(p.Name) : builder.PrimaryKey.Count).ToList();
+            var properties = builder.Properties.OrderBy(p => builder.PrimaryKey.Contains(p.Name) ? builder.PrimaryKey.IndexOf(p.Name) : builder.PrimaryKey.Count).ThenBy(p => p.Name).ToList();
 
             foreach (var item in properties)
             {

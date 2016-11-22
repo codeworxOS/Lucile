@@ -12,8 +12,21 @@ namespace Lucile.Data.Metadata
         {
             var scope = new ModelCreationScope(modelBuilder);
             var unorderd = modelBuilder.Entities.Select(p => scope.GetEntity(p.TypeInfo.ClrType)).ToList();
+            var targetList = unorderd.Where(p => p.BaseEntity == null).OrderBy(p => p.Name).ToList();
 
-            Entities = ImmutableList.CreateRange(unorderd);
+            targetList.ForEach(p => unorderd.Remove(p));
+
+            while (unorderd.Any())
+            {
+                var nextLayer = unorderd.Where(p => targetList.Contains(p.BaseEntity)).ToList();
+                foreach (var item in nextLayer.OrderByDescending(p => p.Name))
+                {
+                    unorderd.Remove(item);
+                    targetList.Insert(0, item);
+                }
+            }
+
+            Entities = ImmutableList.CreateRange(targetList);
         }
 
         public ImmutableList<EntityMetadata> Entities { get; }
