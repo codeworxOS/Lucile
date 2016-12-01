@@ -31,7 +31,9 @@
     "System.Reflection.TypeExtensions": "4.1.0",
     "System.Runtime.Serialization.Primitives": "4.1.1",
     "System.Threading.Timer": "4.0.1",
-    "System.Threading.Tasks.Parallel": "4.0.1"
+    "System.Threading.Tasks.Parallel": "4.0.1",
+    "System.Threading.Thread": "4.0.0",
+    "System.ObjectModel": "4.0.10"
   },
 
   "frameworks": {

@@ -1,11 +1,11 @@
 ﻿using System.Collections.Generic;
 
-namespace Codeworx.Data.Tracking
+namespace Lucile.Data.Tracking
 {
     public interface ITrackable
     {
-        TrackingState? State { get; set; }
-
         IEnumerable<string> ModifiedProperties { get; }
+
+        TrackingState? State { get; set; }
     }
 }

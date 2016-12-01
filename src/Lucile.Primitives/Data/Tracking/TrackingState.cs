@@ -1,5 +1,4 @@
-﻿
-namespace Codeworx.Data.Tracking
+﻿namespace Lucile.Data.Tracking
 {
     public enum TrackingState
     {

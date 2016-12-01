@@ -1,24 +1,20 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.ComponentModel;
+﻿using System.ComponentModel;
 
-namespace Codeworx.Core
+namespace Lucile
 {
     public class PropertyValueChangingEventArgs : PropertyChangingEventArgs
     {
-        public object OldValue { get; private set; }
-
-        public object NewValue { get; private set; }
-
-        public bool Handled { get; set; }
-
         public PropertyValueChangingEventArgs(string propertyName, object oldValue, object newValue)
             : base(propertyName)
         {
             this.OldValue = oldValue;
             this.NewValue = newValue;
         }
+
+        public bool Handled { get; set; }
+
+        public object NewValue { get; }
+
+        public object OldValue { get; }
     }
 }

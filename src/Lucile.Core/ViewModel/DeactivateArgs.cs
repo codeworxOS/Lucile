@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-
-namespace Codeworx.ViewModel
+﻿namespace Lucile.ViewModel
 {
     public class DeactivateArgs
     {
@@ -12,8 +7,8 @@ namespace Codeworx.ViewModel
             NewContent = newContent;
         }
 
-        public object NewContent { get; private set; }
-
         public bool Cancel { get; set; }
+
+        public object NewContent { get; private set; }
     }
 }
