@@ -154,8 +154,8 @@ namespace Lucile.Data.Metadata
             {
                 keyBody = Expression.MemberInit(
                     Expression.New(keyType),
-                        pks.Select(p =>
-                            Expression.Bind(keyType.GetProperty(p.Name), Expression.Property(keyParam, p.Name))));
+                        pks.Select((p, i) =>
+                            Expression.Bind(keyType.GetProperty($"Value{i}"), Expression.Property(keyParam, p.Name))));
             }
             else if (pks.Count == 1)
             {

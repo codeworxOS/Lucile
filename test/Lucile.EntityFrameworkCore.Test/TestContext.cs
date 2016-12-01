@@ -40,6 +40,8 @@ namespace Lucile.EntityFrameworkCore.Test
 
             modelBuilder.Entity<Article>().HasOne(p => p.ArticleSettings).WithOne().HasPrincipalKey<Article>(p => p.Id);
 
+            modelBuilder.Entity<ArticleName>().HasKey(p => new { p.ArticleId, p.LanguageId });
+
             modelBuilder.Model.GetEntityTypes()
                 .SelectMany(p => p.GetProperties())
                 .Where(p => p.ClrType == typeof(Guid))

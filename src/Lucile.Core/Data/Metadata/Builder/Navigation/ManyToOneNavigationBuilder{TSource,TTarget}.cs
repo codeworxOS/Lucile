@@ -14,9 +14,9 @@
             return (ManyToOneNavigationBuilder<TSource, TTarget>)base.HasForeignKey(properties);
         }
 
-        public new ManyToOneNavigationBuilder<TSource, TTarget> Optional(bool value = true)
+        public new ManyToOneNavigationBuilder<TSource, TTarget> Required(bool value = true)
         {
-            return (ManyToOneNavigationBuilder<TSource, TTarget>)base.Optional(value);
+            return (ManyToOneNavigationBuilder<TSource, TTarget>)base.Required(value);
         }
     }
 }

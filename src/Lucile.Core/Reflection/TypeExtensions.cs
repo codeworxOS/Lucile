@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Linq;
 using System.Reflection;
 
 namespace System
@@ -11,6 +12,26 @@ namespace System
             GetBaseClassStructure(type, dict);
             GetBaseInterfaceStructure(type, dict, dict.Keys.Count);
             return dict;
+        }
+
+        public static bool IsCollectionType(this Type type)
+        {
+            Type elementType;
+            return IsCollectionType(type, out elementType);
+        }
+
+        public static bool IsCollectionType(this Type type, out Type itemType)
+        {
+            var enumerable = type.GetTypeInfo().ImplementedInterfaces.FirstOrDefault(p => p.GetTypeInfo().IsGenericType && p.GetGenericTypeDefinition() == typeof(IEnumerable<>));
+
+            if (enumerable != null)
+            {
+                itemType = enumerable.GetGenericArguments().First();
+                return true;
+            }
+
+            itemType = type;
+            return false;
         }
 
         private static void GetBaseClassStructure(Type type, Dictionary<int, Type> dict, int priority = 0)

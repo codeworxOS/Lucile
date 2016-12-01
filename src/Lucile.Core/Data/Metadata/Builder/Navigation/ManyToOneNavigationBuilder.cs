@@ -10,10 +10,6 @@ namespace Lucile.Data.Metadata.Builder.Navigation
             : base(manyNavigationBuilder, propertyName)
         {
             _manyNavigationBuilder = manyNavigationBuilder;
-            if (!manyNavigationBuilder.NavigationPropertyBuilder.TargetMultiplicity.HasValue)
-            {
-                manyNavigationBuilder.NavigationPropertyBuilder.TargetMultiplicity = NavigationPropertyMultiplicity.One;
-            }
         }
 
         public ManyToOneNavigationBuilder HasForeignKey(params string[] propertyNames)
@@ -22,9 +18,9 @@ namespace Lucile.Data.Metadata.Builder.Navigation
             return this;
         }
 
-        public ManyToOneNavigationBuilder Optional(bool value = true)
+        public ManyToOneNavigationBuilder Required(bool value = true)
         {
-            _manyNavigationBuilder.NavigationPropertyBuilder.TargetMultiplicity = value ? NavigationPropertyMultiplicity.ZeroOrOne : NavigationPropertyMultiplicity.One;
+            _manyNavigationBuilder.NavigationPropertyBuilder.TargetMultiplicity = value ? NavigationPropertyMultiplicity.One : NavigationPropertyMultiplicity.ZeroOrOne;
             return this;
         }
     }

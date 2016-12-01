@@ -16,6 +16,32 @@ namespace Lucile.Data.Metadata.Builder
             _innerBuilder = innerBuilder;
         }
 
+        public override EntityMetadataBuilder BaseEntity
+        {
+            get
+            {
+                return _innerBuilder.BaseEntity;
+            }
+
+            set
+            {
+                _innerBuilder.BaseEntity = value;
+            }
+        }
+
+        public override MetadataModelBuilder ModelBuilder
+        {
+            get
+            {
+                return _innerBuilder.ModelBuilder;
+            }
+
+            set
+            {
+                _innerBuilder.ModelBuilder = value;
+            }
+        }
+
         public override string Name
         {
             get
@@ -24,11 +50,37 @@ namespace Lucile.Data.Metadata.Builder
             }
         }
 
+        public override IEnumerable<NavigationPropertyBuilder> Navigations
+        {
+            get
+            {
+                return _innerBuilder.Navigations;
+            }
+
+            set
+            {
+                _innerBuilder.Navigations = value;
+            }
+        }
+
         public override List<string> PrimaryKey
         {
             get
             {
                 return _innerBuilder.PrimaryKey;
+            }
+        }
+
+        public override IEnumerable<ScalarPropertyBuilder> Properties
+        {
+            get
+            {
+                return _innerBuilder.Properties;
+            }
+
+            set
+            {
+                _innerBuilder.Properties = value;
             }
         }
 
@@ -83,6 +135,18 @@ namespace Lucile.Data.Metadata.Builder
         {
             var propertyName = propertySelector.GetPropertyName();
             return (TextPropertyBuilder)_innerBuilder.Property(propertyName);
+        }
+
+        public GuidPropertyBuilder Property(Expression<Func<TEntity, Guid>> propertySelector)
+        {
+            var propertyName = propertySelector.GetPropertyName();
+            return (GuidPropertyBuilder)_innerBuilder.Property(propertyName);
+        }
+
+        public GuidPropertyBuilder Property(Expression<Func<TEntity, Guid?>> propertySelector)
+        {
+            var propertyName = propertySelector.GetPropertyName();
+            return (GuidPropertyBuilder)_innerBuilder.Property(propertyName);
         }
 
         public NumericPropertyBuilder Property(Expression<Func<TEntity, byte>> propertySelector)

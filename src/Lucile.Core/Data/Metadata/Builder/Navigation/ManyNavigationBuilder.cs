@@ -7,7 +7,6 @@ namespace Lucile.Data.Metadata.Builder.Navigation
         public ManyNavigationBuilder(EntityMetadataBuilder entityBuilder, Type targetType, string propertyName)
             : base(entityBuilder, targetType, propertyName)
         {
-            NavigationPropertyBuilder.Multiplicity = NavigationPropertyMultiplicity.Many;
             NavigationPropertyBuilder.Nullable = false;
         }
 
@@ -16,7 +15,7 @@ namespace Lucile.Data.Metadata.Builder.Navigation
             return new ManyToManyNavigationBuilder(this, propertyName);
         }
 
-        public ManyToOneNavigationBuilder WithOne(string propertyName)
+        public ManyToOneNavigationBuilder WithOne(string propertyName = null)
         {
             return new ManyToOneNavigationBuilder(this, propertyName);
         }

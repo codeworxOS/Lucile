@@ -15,13 +15,13 @@ namespace Lucile.Data.Metadata.Builder
         public List<string> ForeignKey { get; set; }
 
         [DataMember(Order = 2)]
-        public NavigationPropertyMultiplicity? Multiplicity { get; set; }
+        public NavigationPropertyMultiplicity Multiplicity { get; set; }
 
         [DataMember(Order = 1)]
         public ClrTypeInfo Target { get; set; }
 
         [DataMember(Order = 3)]
-        public NavigationPropertyMultiplicity? TargetMultiplicity { get; set; }
+        public NavigationPropertyMultiplicity TargetMultiplicity { get; set; }
 
         [DataMember(Order = 4)]
         public string TargetProperty { get; set; }

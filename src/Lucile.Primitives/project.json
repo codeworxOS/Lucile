@@ -1,5 +1,5 @@
 {
-  "version": "1.0.1-*",
+  "version": "1.0.0-*",
   "title": "Lucile Framework Primitives Library",
   "copyright": "copyright © codeworx gmbh 2016",
   "description": "Core primitives for the Lucile Framework. For detailed Documentation visit http://www.github.com/codeworxOS/Lucile",
@@ -14,7 +14,7 @@
       "type": "build"
     },
     "Lucile.Shared": {
-      "version": "1.0.1-*",
+      "version": "1.0.0-*",
       "type": "build"
     },
     "Microsoft.NETCore.Platforms": "1.0.1",

@@ -13,9 +13,9 @@ namespace Lucile.Data.Metadata.Builder.Navigation
         {
         }
 
-        public new OneNavigationBuilder<TSource, TTarget> Optional(bool value = true)
+        public new OneNavigationBuilder<TSource, TTarget> Required(bool value = true)
         {
-            base.Optional(value);
+            base.Required(value);
             return this;
         }
 

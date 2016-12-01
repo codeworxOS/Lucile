@@ -576,21 +576,56 @@ namespace Lucile.Data
 
             Expression joinPrimary;
             Expression joinForeign;
-            if (prop.ForeignKeyProperties.Count == 1)
+            if (prop.Multiplicity != NavigationPropertyMultiplicity.Many && prop.TargetMultiplicity != NavigationPropertyMultiplicity.Many)
             {
-                joinPrimary = Expression.Property(param2, prop.ForeignKeyProperties.First().Principal.Name);
-                joinForeign = Expression.Property(param, prop.ForeignKeyProperties.First().Dependant.Name);
+                if (prop.Entity.PrimaryKeyCount == 1)
+                {
+                    joinPrimary = Expression.Property(param2, prop.TargetEntity.GetProperties().First(p => p.IsPrimaryKey).Name);
+                    joinForeign = Expression.Property(param, prop.Entity.GetProperties().First(p => p.IsPrimaryKey).Name);
+                }
+                else
+                {
+                    throw new NotImplementedException();
+                }
             }
             else
             {
-                // Dieser Fall existiert momentan im Datenmodel noch nicht. Betrifft zusammengesetzte ForeignKeys.
-                throw new NotImplementedException();
+                if (prop.ForeignKeyProperties.Count == 1)
+                {
+                    joinPrimary = Expression.Property(param2, prop.ForeignKeyProperties.First().Principal.Name);
+                    joinForeign = Expression.Property(param, prop.ForeignKeyProperties.First().Dependant.Name);
+                }
+                else
+                {
+                    // Dieser Fall existiert momentan im Datenmodel noch nicht. Betrifft zusammengesetzte ForeignKeys.
+                    throw new NotImplementedException();
+                }
             }
 
             if (joinPrimary.Type != joinForeign.Type)
             {
                 joinPrimary = Expression.Convert(joinPrimary, joinForeign.Type);
             }
+
+            var block = new List<Expression>
+            {
+                Expression.Assign(Expression.Property(param, prop.Name), param2)
+            };
+
+            if (prop.TargetNavigationProperty != null)
+            {
+                if (prop.TargetMultiplicity == NavigationPropertyMultiplicity.Many)
+                {
+                    var collectionType = typeof(ICollection<>).MakeGenericType(prop.Entity.ClrType);
+                    block.Add(Expression.Call(Expression.Property(param2, prop.TargetNavigationProperty.Name), collectionType.GetMethod("Add"), param));
+                }
+                else
+                {
+                    block.Add(Expression.Assign(Expression.Property(param2, prop.TargetNavigationProperty.Name), param));
+                }
+            }
+
+            block.Add(param);
 
             baseQuery = Expression.Call(
                 typeof(Enumerable).GetMethods().First(p => p.Name == "Join").MakeGenericMethod(param.Type, param2.Type, joinForeign.Type, param.Type),
@@ -600,8 +635,7 @@ namespace Lucile.Data
                 Expression.Lambda(joinPrimary, param2),
                 Expression.Lambda(
                     Expression.Block(
-                        Expression.Assign(Expression.Property(param, prop.Name), param2),
-                        param),
+                        block),
                     param,
                     param2));
 

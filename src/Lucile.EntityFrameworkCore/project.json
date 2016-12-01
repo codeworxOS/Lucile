@@ -1,5 +1,5 @@
 ﻿{
-  "version": "1.0.1-*",
+  "version": "1.0.0-*",
   "title": "Lucile Framework Entity Framework Core Library",
   "copyright": "copyright © codeworx gmbh 2016",
   "description": "Entity Framework Core components for the Lucile Framework. For detailed Documentation visit http://www.github.com/codeworxOS/Lucile",
@@ -14,13 +14,13 @@
       "type": "build"
     },
     "Lucile.Shared": {
-      "version": "1.0.1-*",
+      "version": "1.0.0-*",
       "type": "build"
     },
     "Microsoft.NETCore.Platforms": "1.0.1",
     "Microsoft.Win32.Primitives": "4.0.1",
     "System.Runtime": "4.1.0",
-    "Lucile.Core": "1.0.1-*",
+    "Lucile.Core": "1.0.0-*",
     "Microsoft.EntityFrameworkCore": "1.0.1"
   },
 

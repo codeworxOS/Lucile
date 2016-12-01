@@ -5,12 +5,14 @@ using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
 using Lucile.Data.Metadata.Builder;
+using Lucile.Entity.Metadata;
 
 namespace Lucile.Data.Metadata
 {
     public class EntityMetadata : MetadataElement
     {
         private readonly Func<object, bool> _checkTypeDelegate;
+        private readonly Func<EntityMetadata, EntityKey> _createEntityKeyDelegate;
         private readonly Func<object, object, bool> _keyEqualsDelegate;
 
         internal EntityMetadata(ModelCreationScope scope, EntityMetadataBuilder builder)
@@ -25,15 +27,6 @@ namespace Lucile.Data.Metadata
             if (builder.BaseEntity != null)
             {
                 BaseEntity = scope.GetEntity(builder.BaseEntity.TypeInfo.ClrType);
-                ////foreach (var prop in BaseEntity.Properties)
-                ////{
-                ////    propertyListBuilder.Add(prop);
-                ////}
-
-                ////foreach (var prop in BaseEntity.Navigations)
-                ////{
-                ////    navigationListBuilder.Add(prop);
-                ////}
             }
 
             var properties = builder.Properties.OrderBy(p => builder.PrimaryKey.Contains(p.Name) ? builder.PrimaryKey.IndexOf(p.Name) : builder.PrimaryKey.Count).ThenBy(p => p.Name).ToList();
@@ -54,9 +47,20 @@ namespace Lucile.Data.Metadata
 
             this._checkTypeDelegate = GetCheckTypeDelegate(ClrType);
             var primaryKeys = this.GetProperties().Where(p => p.IsPrimaryKey);
-            if (primaryKeys.Any())
+            PrimaryKeyCount = primaryKeys.Count();
+            if (PrimaryKeyCount == 1)
             {
                 PrimaryKeyType = primaryKeys.First().PropertyType;
+            }
+            else if (PrimaryKeyCount > 1)
+            {
+                var keyTypes = primaryKeys.Select(p => p.PropertyType).ToArray();
+                PrimaryKeyType = EntityKey.Get(keyTypes);
+                this._createEntityKeyDelegate = GetCreateEntityKeyDelegate(PrimaryKeyType);
+            }
+
+            if (PrimaryKeyCount > 0)
+            {
                 this._keyEqualsDelegate = GetKeyEqualsDelegate(ClrType, primaryKeys);
             }
         }
@@ -72,6 +76,11 @@ namespace Lucile.Data.Metadata
         }
 
         public Type ClrType
+        {
+            get;
+        }
+
+        public int PrimaryKeyCount
         {
             get;
         }
@@ -141,12 +150,29 @@ namespace Lucile.Data.Metadata
 
         public object GetPrimaryKeyObject(object entity)
         {
-            if (PrimaryKeyType == null)
+            if (PrimaryKeyCount == 1)
             {
-                throw new NotImplementedException("Currently only single Primary Key Objects are supported.");
+                return this.GetProperties().First(p => p.IsPrimaryKey).GetValue(entity);
+            }
+            else if (PrimaryKeyCount > 1)
+            {
+                var key = _createEntityKeyDelegate(this);
+                int i = 0;
+                foreach (var item in GetProperties())
+                {
+                    if (!item.IsPrimaryKey)
+                    {
+                        break;
+                    }
+
+                    key.SetValue(i, item.GetValue(entity));
+                    i++;
+                }
+
+                return key;
             }
 
-            return this.GetProperties().First(p => p.IsPrimaryKey).GetValue(entity);
+            return null;
         }
 
         public IEnumerable<ScalarProperty> GetProperties()
@@ -240,6 +266,12 @@ namespace Lucile.Data.Metadata
             var isExpression = Expression.TypeIs(parameterExpresssion, clrType);
             var lambda = Expression.Lambda<Func<object, bool>>(isExpression, parameterExpresssion);
             return lambda.Compile();
+        }
+
+        private static Func<EntityMetadata, EntityKey> GetCreateEntityKeyDelegate(Type primaryKeyType)
+        {
+            var param = Expression.Parameter(typeof(EntityMetadata));
+            return Expression.Lambda<Func<EntityMetadata, EntityKey>>(Expression.New(primaryKeyType.GetConstructor(new[] { typeof(EntityMetadata) }), param), param).Compile();
         }
 
         private static Func<object, object, bool> GetKeyEqualsDelegate(Type clrType, IEnumerable<ScalarProperty> keyProperties)

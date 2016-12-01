@@ -8,10 +8,6 @@ namespace Lucile.Data.Metadata.Builder.Navigation
         public OneNavigationBuilder(EntityMetadataBuilder entityBuilder, Type targetType, string propertyName)
             : base(entityBuilder, targetType, propertyName)
         {
-            if (!NavigationPropertyBuilder.Multiplicity.HasValue)
-            {
-                NavigationPropertyBuilder.Multiplicity = NavigationPropertyMultiplicity.One;
-            }
         }
 
         public void HasForeignKey(string[] propertyNames)
@@ -19,29 +15,24 @@ namespace Lucile.Data.Metadata.Builder.Navigation
             NavigationPropertyBuilder.ForeignKey = new List<string>(propertyNames);
         }
 
-        public OneNavigationBuilder Optional(bool value = true)
+        public OneNavigationBuilder Required(bool value = true)
         {
-            NavigationPropertyBuilder.Multiplicity = value ? NavigationPropertyMultiplicity.ZeroOrOne : NavigationPropertyMultiplicity.One;
+            NavigationPropertyBuilder.Multiplicity = value ? NavigationPropertyMultiplicity.One : NavigationPropertyMultiplicity.ZeroOrOne;
             NavigationPropertyBuilder.Nullable = value;
             return this;
         }
 
-        public OneToOneNavigationBuilder WithDependant(string propertyName)
+        public OneToOneNavigationBuilder WithDependant(string propertyName = null)
         {
-            if (NavigationPropertyBuilder.Multiplicity == NavigationPropertyMultiplicity.ZeroOrOne)
-            {
-                throw new NotSupportedException("A principal end of a OneToOne relationship must not be optional.");
-            }
-
             return new OneToOneNavigationBuilder(this, false, propertyName);
         }
 
-        public OneToManyNavigationBuilder WithMany(string propertyName)
+        public OneToManyNavigationBuilder WithMany(string propertyName = null)
         {
             return new OneToManyNavigationBuilder(this, propertyName);
         }
 
-        public OneToOneNavigationBuilder WithPrincipal(string propertyName)
+        public OneToOneNavigationBuilder WithPrincipal(string propertyName = null)
         {
             return new OneToOneNavigationBuilder(this, true, propertyName);
         }

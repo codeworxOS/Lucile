@@ -11,6 +11,7 @@ namespace Lucile.Data.Metadata.Builder
     [DataContract(IsReference = true)]
     public class EntityMetadataBuilder
     {
+        private MetadataModelBuilder _modelBuilder;
         private ConcurrentDictionary<string, NavigationPropertyBuilder> _navigations;
 
         private List<string> _primaryKeys;
@@ -22,16 +23,20 @@ namespace Lucile.Data.Metadata.Builder
 
         public EntityMetadataBuilder(MetadataModelBuilder modelBuilder)
         {
-            ModelBuilder = modelBuilder;
+            _modelBuilder = modelBuilder;
             _properties = new ConcurrentDictionary<string, ScalarPropertyBuilder>();
             _navigations = new ConcurrentDictionary<string, NavigationPropertyBuilder>();
         }
 
         [DataMember(Order = 2)]
-        public EntityMetadataBuilder BaseEntity { get; set; }
+        public virtual EntityMetadataBuilder BaseEntity { get; set; }
 
         [DataMember(Order = 3)]
-        public MetadataModelBuilder ModelBuilder { get; set; }
+        public virtual MetadataModelBuilder ModelBuilder
+        {
+            get { return _modelBuilder; }
+            set { _modelBuilder = value; }
+        }
 
         public virtual string Name
         {
@@ -42,7 +47,7 @@ namespace Lucile.Data.Metadata.Builder
         }
 
         [DataMember(Order = 5)]
-        public IEnumerable<NavigationPropertyBuilder> Navigations
+        public virtual IEnumerable<NavigationPropertyBuilder> Navigations
         {
             get
             {
@@ -74,7 +79,7 @@ namespace Lucile.Data.Metadata.Builder
         }
 
         [DataMember(Order = 6)]
-        public IEnumerable<ScalarPropertyBuilder> Properties
+        public virtual IEnumerable<ScalarPropertyBuilder> Properties
         {
             get
             {
@@ -116,7 +121,12 @@ namespace Lucile.Data.Metadata.Builder
 
         public virtual NavigationPropertyBuilder Navigation(string propertyName)
         {
-            return _navigations.GetOrAdd(propertyName, p => new NavigationPropertyBuilder { Name = propertyName });
+            if (TypeInfo?.ClrType == null)
+            {
+                throw new InvalidOperationException($"The {nameof(TypeInfo)} property is not set.");
+            }
+
+            return _navigations.GetOrAdd(propertyName, CreatNavigationBuilder);
         }
 
         public virtual ScalarPropertyBuilder Property(string name)
@@ -129,16 +139,46 @@ namespace Lucile.Data.Metadata.Builder
             return _properties.GetOrAdd(name, CreatPropertyMetadata);
         }
 
-        private ScalarPropertyBuilder CreatPropertyMetadata(string name)
+        private NavigationPropertyBuilder CreatNavigationBuilder(string propertyName)
         {
-            var type = TypeInfo?.ClrType;
+            var type = TypeInfo.ClrType;
 
-            if (type == null)
+            var propertyInfo = type.GetProperty(propertyName);
+
+            if (propertyInfo != null && propertyInfo.DeclaringType != this.TypeInfo.ClrType)
             {
-                throw new InvalidOperationException($"The {nameof(TypeInfo)} property is not set.");
+                var entity = this.ModelBuilder.Entity(propertyInfo.DeclaringType);
+                return entity.Navigation(propertyName);
             }
 
+            if (propertyInfo == null)
+            {
+                throw new ArgumentException($"Propertys {propertyName} does not exist on Type {type}.", nameof(propertyName));
+            }
+
+            Type elementType;
+            var isCollectionType = propertyInfo.PropertyType.IsCollectionType(out elementType);
+
+            return new NavigationPropertyBuilder
+            {
+                Name = propertyName,
+                Multiplicity = isCollectionType ? NavigationPropertyMultiplicity.Many : NavigationPropertyMultiplicity.ZeroOrOne,
+                TargetMultiplicity = isCollectionType ? NavigationPropertyMultiplicity.ZeroOrOne : NavigationPropertyMultiplicity.Many,
+                Target = new ClrTypeInfo(elementType)
+            };
+        }
+
+        private ScalarPropertyBuilder CreatPropertyMetadata(string name)
+        {
+            var type = TypeInfo.ClrType;
+
             var propertyInfo = type.GetProperty(name);
+
+            if (propertyInfo != null && propertyInfo.DeclaringType != this.TypeInfo.ClrType)
+            {
+                var entity = this.ModelBuilder.Entity(propertyInfo.DeclaringType);
+                return entity.Property(name);
+            }
 
             if (propertyInfo == null)
             {

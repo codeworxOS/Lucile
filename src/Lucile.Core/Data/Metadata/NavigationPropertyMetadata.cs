@@ -19,8 +19,8 @@ namespace Lucile.Data.Metadata
         {
             scope.AddNavigationProperty(entity, builder.Name, this);
 
-            this.Multiplicity = builder.Multiplicity.Value;
-            this.TargetMultiplicity = builder.TargetMultiplicity.Value;
+            this.Multiplicity = builder.Multiplicity;
+            this.TargetMultiplicity = builder.TargetMultiplicity;
             this.TargetEntity = scope.GetEntity(builder.Target.ClrType);
             if (builder.TargetProperty != null)
             {
@@ -81,6 +81,11 @@ namespace Lucile.Data.Metadata
 
         public object GetForeignKeyObject(object result)
         {
+            if (Multiplicity != NavigationPropertyMultiplicity.Many && TargetMultiplicity != NavigationPropertyMultiplicity.Many)
+            {
+                return Entity.GetPrimaryKeyObject(result);
+            }
+
             if (!ForeignKeyProperties.Any() || ForeignKeyProperties.Count > 1)
             {
                 throw new NotImplementedException("Currently only single Primary Key objects are supported!");

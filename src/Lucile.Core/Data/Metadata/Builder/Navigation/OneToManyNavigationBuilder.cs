@@ -18,9 +18,9 @@ namespace Lucile.Data.Metadata.Builder.Navigation
             _oneBuilder.NavigationPropertyBuilder.ForeignKey = new List<string>(propertyNames);
         }
 
-        public OneToManyNavigationBuilder Optional(bool value = true)
+        public OneToManyNavigationBuilder Required(bool value = true)
         {
-            _oneBuilder.Optional(value);
+            _oneBuilder.Required(value);
             return this;
         }
     }
