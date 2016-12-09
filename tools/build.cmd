@@ -15,7 +15,6 @@ dotnet pack ../src/Lucile.Primitives -c Release -o .\nuget\ --version-suffix %%~
 dotnet pack ../src/Lucile.Core -c Release -o .\nuget\ --version-suffix %%~nf
 dotnet pack ../src/Lucile.EntityFrameworkCore -c Release -o .\nuget\ --version-suffix %%~nf
 
-del .\nuget\*.symbols.nupkg
 )
 
 PAUSE

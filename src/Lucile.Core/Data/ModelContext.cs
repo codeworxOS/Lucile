@@ -13,6 +13,8 @@ namespace Lucile.Data
 {
     public class ModelContext : IDisposable
     {
+        private static readonly MethodInfo _enumerableJoinMethod;
+
         private static readonly object EntityInfoLocker = new object();
 
         private static readonly Dictionary<EntityMetadata, EntityInfo> EntityInfos = new Dictionary<EntityMetadata, EntityInfo>();
@@ -34,6 +36,7 @@ namespace Lucile.Data
         private readonly ManualResetEvent _entityTransactionsSignal;
 
         private readonly MetadataModel _model;
+
         private readonly Dictionary<EntityMetadata, Dictionary<object, System.WeakReference<object>>> _trackedObjects = new Dictionary<EntityMetadata, Dictionary<object, System.WeakReference<object>>>();
 
         private readonly object _updateLocker = new object();
@@ -42,6 +45,9 @@ namespace Lucile.Data
 
         static ModelContext()
         {
+            Expression<Func<IEnumerable<object>, IEnumerable<object>, Func<object, object>, Func<object, object>, Func<object, object, object>, IEnumerable<object>>> enumerableJoinExpression = (a, b, c, d, e) => a.Join(b, c, d, e);
+            _enumerableJoinMethod = ((MethodCallExpression)enumerableJoinExpression.Body).Method.GetGenericMethodDefinition();
+
             ReverseFixupCache = new ConcurrentDictionary<NavigationPropertyMetadata, Func<IEnumerable<object>, IEnumerable<object>, IEnumerable<object>>>();
         }
 
@@ -628,7 +634,7 @@ namespace Lucile.Data
             block.Add(param);
 
             baseQuery = Expression.Call(
-                typeof(Enumerable).GetMethods().First(p => p.Name == "Join").MakeGenericMethod(param.Type, param2.Type, joinForeign.Type, param.Type),
+                _enumerableJoinMethod.MakeGenericMethod(param.Type, param2.Type, joinForeign.Type, param.Type),
                 baseQuery,
                 Expression.Call(typeof(Enumerable).GetMethod("Cast").MakeGenericMethod(param2.Type), entitiesParameter),
                 Expression.Lambda(joinForeign, param),

@@ -8,6 +8,7 @@ namespace Tests
 {
     public class MetadataModelTest
     {
+
         [Fact]
         public void EntityMetadataBuilderBlobProperty()
         {
