@@ -3,7 +3,7 @@ using System.Collections.Generic;
 
 namespace Lucile.Test.Model
 {
-    public abstract class Receipt
+    public abstract class Receipt : EntityBase
     {
         public Receipt()
         {

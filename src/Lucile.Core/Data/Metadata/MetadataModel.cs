@@ -12,7 +12,7 @@ namespace Lucile.Data.Metadata
         internal MetadataModel(MetadataModelBuilder modelBuilder)
         {
             var scope = new ModelCreationScope(modelBuilder);
-            var unordered = GetSorted(modelBuilder.Entities).Select(p => scope.GetEntity(p.TypeInfo.ClrType)).ToList();
+            var unordered = GetSorted(modelBuilder.Entities).Where(p => !p.IsExcluded).Select(p => scope.GetEntity(p.TypeInfo.ClrType)).ToList();
             var targetList = unordered.Where(p => p.BaseEntity == null).OrderBy(p => p.Name).ToList();
 
             targetList.ForEach(p => unordered.Remove(p));
@@ -47,6 +47,39 @@ namespace Lucile.Data.Metadata
             return this.Entities.FirstOrDefault(p => p.ClrType.IsAssignableFrom(entityType));
         }
 
+        public IEnumerable<EntityMetadata> SortedByDependency()
+        {
+            List<EntityMetadata> ordered = new List<EntityMetadata>();
+            List<EntityMetadata> unordered = Entities.ToList();
+
+            int previousCount = 0;
+
+            while (previousCount != unordered.Count && unordered.Any())
+            {
+                previousCount = unordered.Count;
+
+                var loose = unordered.Where(p => !(unordered.Except(new[] { p })
+                                                    .SelectMany(x => x.GetNavigations())
+                                                    .Any(x => x.TargetEntity == p && IsPrincipalEnd(x))
+                                                  ||
+                                                    p.GetNavigations().Any(x => unordered.Except(new[] { p }).Contains(x.TargetEntity) && !IsPrincipalEnd(x))))
+                                                    .ToList();
+
+                foreach (var item in loose)
+                {
+                    ordered.Add(item);
+                    unordered.Remove(item);
+                }
+            }
+
+            if (unordered.Any())
+            {
+                throw new NotSupportedException("Circular references detected.");
+            }
+
+            return ordered;
+        }
+
         private IEnumerable<EntityMetadataBuilder> GetSorted(IEnumerable<EntityMetadataBuilder> baseItems)
         {
             var baseList = baseItems.ToList();
@@ -61,6 +94,23 @@ namespace Lucile.Data.Metadata
                     yield return item;
                 }
             }
+        }
+
+        private bool IsPrincipalEnd(NavigationPropertyMetadata prop)
+        {
+            switch (prop.Multiplicity)
+            {
+                case NavigationPropertyMultiplicity.Many:
+                    return prop.TargetMultiplicity != NavigationPropertyMultiplicity.Many;
+
+                case NavigationPropertyMultiplicity.One:
+                    return false;
+
+                case NavigationPropertyMultiplicity.ZeroOrOne:
+                    return prop.TargetMultiplicity == NavigationPropertyMultiplicity.One;
+            }
+
+            return false;
         }
     }
 }

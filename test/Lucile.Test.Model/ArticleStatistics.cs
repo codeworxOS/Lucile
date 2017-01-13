@@ -1,8 +1,9 @@
 ﻿using System;
+using Lucile.Test.Model;
 
 namespace Tests
 {
-    public class ArticleStatistics
+    public class ArticleStatistics : EntityBase
     {
         public Guid ArticleId { get; set; }
 

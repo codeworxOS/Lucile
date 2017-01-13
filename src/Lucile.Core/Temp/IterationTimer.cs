@@ -1,257 +1,249 @@
-﻿namespace Codeworx.Core
+﻿namespace Lucile
 {
-	using System;
-	using System.Linq;
-	using System.Reactive.Linq;
-	using System.Collections.Generic;
-	using System.Reactive.Subjects;
-	using System.Reactive.Disposables;
-	using System.Threading;
-	using System.Threading.Tasks;
+    using System;
+    using System.Collections.Generic;
+    using System.Linq;
+    using System.Reactive.Disposables;
+    using System.Reactive.Linq;
+    using System.Reactive.Subjects;
+    using System.Threading;
+    using System.Threading.Tasks;
 
-	/// <summary>
-	/// Timer To Iterate over a list of <see cref="IIterationItem"/>s
-	/// </summary>
-	/// <typeparam name="T"></typeparam>
-	public class IterationTimer<T> : IConnectableObservable<T> where T : IIterationItem
-	{
-		private int currentPosition;
+    /// <summary>
+    /// Timer To Iterate over a list of <see cref="IIterationItem"/>s
+    /// </summary>
+    /// <typeparam name="T"></typeparam>
+    public class IterationTimer<T> : IConnectableObservable<T> where T : IIterationItem
+    {
+        private CancellationTokenSource cancellationTokenSource;
+        private int currentPosition;
 
-		private DateTime startDate;
+        private T[] items;
+        private int iterations;
+        private DateTime iterationStartDate;
+        private DateTime lastPauseTime;
+        private ManualResetEvent pauseSignal;
+        private ManualResetEvent signal;
+        private DateTime startDate;
 
-		private TimeSpan totalDuration;
+        private ManualResetEvent stopSignal;
+        private TimeSpan totalDuration;
+        private Subject<T> underlying = new Subject<T>();
 
-		private T[] items;
+        /// <summary>
+        /// Initializes a new instance of the <see cref="IterationTimer&lt;T&gt;"/> class.
+        /// </summary>
+        /// <param name="items">The items to iterate over.</param>
+        public IterationTimer(IEnumerable<T> items)
+        {
+            currentPosition = -1;
+            stopSignal = new ManualResetEvent(false);
+            pauseSignal = new ManualResetEvent(true);
 
-		private CancellationTokenSource cancellationTokenSource;
+            if (items == null)
+                throw new ArgumentNullException("items");
 
-		private ManualResetEvent signal;
+            if (items == null)
+                throw new ArgumentException("Sequence contains no items", "items");
 
-		private ManualResetEvent stopSignal;
+            this.items = items.OrderBy(p => p.Offset).ToArray();
 
-		private ManualResetEvent pauseSignal;
+            this.totalDuration = this.items.Select(p => p.Offset + p.Duration).Max();
+        }
 
-		private DateTime iterationStartDate;
+        public T CurrentItem
+        {
+            get
+            {
+                if (currentPosition == -1)
+                    return default(T);
 
-		private DateTime lastPauseTime;
+                return items[currentPosition];
+            }
+        }
 
-		private int iterations;
+        public bool IsPaused { get; private set; }
 
-		private Subject<T> underlying = new Subject<T>();
+        /// <summary>
+        /// Gets the total duration of one iteration.
+        /// </summary>
+        public TimeSpan IterationDuration
+        {
+            get
+            {
+                return totalDuration;
+            }
+        }
 
-		/// <summary>
-		/// Initializes a new instance of the <see cref="IterationTimer&lt;T&gt;"/> class.
-		/// </summary>
-		/// <param name="items">The items to iterate over.</param>
-		public IterationTimer(IEnumerable<T> items)
-		{
-			currentPosition = -1;
-			stopSignal = new ManualResetEvent(false);
-			pauseSignal = new ManualResetEvent(true);
+        /// <summary>
+        /// Connects this instance.
+        /// </summary>
+        /// <returns><see cref="Disposable.Empty"/></returns>
+        public IDisposable Connect()
+        {
+            return Connect(TimeSpan.Zero);
+        }
 
-			if (items == null)
-				throw new ArgumentNullException("items");
+        /// <summary>
+        /// Connects this instance.
+        /// </summary>
+        /// <param name="offset">The offset.</param>
+        /// <returns>
+        ///   <see cref="Disposable.Empty"/>
+        /// </returns>
+        public IDisposable Connect(TimeSpan offset)
+        {
+            if (signal != null)
+            {
+                throw new InvalidOperationException("IterationTimer is already running");
+            }
 
-			if (items == null)
-				throw new ArgumentException("Sequence contains no items", "items");
+            currentPosition = -1;
+            startDate = DateTime.Now - offset;
+            signal = new ManualResetEvent(false);
 
-			this.items = items.OrderBy(p => p.Offset).ToArray();
+            cancellationTokenSource = new CancellationTokenSource();
 
-			this.totalDuration = this.items.Select(p => p.Offset + p.Duration).Max();
-		}
+            Task.Factory.StartNew(Process, offset != TimeSpan.Zero, cancellationTokenSource.Token)
+                .ContinueWith(p =>
+                {
+                    this.currentPosition = -1;
+                    this.signal = null;
+                    this.stopSignal.Set();
+                });
 
-		public T CurrentItem
-		{
-			get
-			{
-				if (currentPosition == -1)
-					return default(T);
+            return Disposable.Empty;
+        }
 
-				return items[currentPosition];
-			}
-		}
+        /// <summary>
+        /// Pauses this iteration.
+        /// </summary>
+        public void Pause()
+        {
+            this.IsPaused = true;
+            this.lastPauseTime = DateTime.Now;
+            this.pauseSignal.Reset();
+        }
 
-		/// <summary>
-		/// Gets the total duration of one iteration.
-		/// </summary>
-		public TimeSpan IterationDuration
-		{
-			get
-			{
-				return totalDuration;
-			}
-		}
+        /// <summary>
+        /// Pauses this iteration.
+        /// </summary>
+        public void Resume()
+        {
+            var pauseOffset = DateTime.Now - lastPauseTime;
+            this.startDate = this.startDate + pauseOffset;
+            this.iterationStartDate = this.iterationStartDate + pauseOffset;
+            this.IsPaused = false;
+            this.pauseSignal.Set();
+        }
 
-		public bool IsPaused { get; private set; }
+        /// <summary>
+        /// Stops this iteration.
+        /// </summary>
+        public void Stop()
+        {
+            if (this.signal == null)
+                throw new InvalidOperationException("No Iteration is started");
 
-		/// <summary>
-		/// Processes this iteration.
-		/// </summary>
-		/// <param name="calculateOffset">Indicates weather the timer was started with a given offset or not. Value must be of type bool.</param>
-		private void Process(object calculateOffset)
-		{
-			if (!(calculateOffset is bool))
-				throw new ArgumentOutOfRangeException("calculateOffset", "Value must be of type Boolean.");
+            this.cancellationTokenSource.Cancel();
+            this.pauseSignal.Set();
+            this.signal.Set();
+            this.stopSignal.WaitOne(TimeSpan.FromMinutes(1));
+            this.stopSignal.Reset();
+            if (this.signal != null)
+                throw new TimeoutException("IterationTimer Stop operation took too long.");
+        }
 
-			this.iterations = 0;
-			this.iterationStartDate = startDate;
+        /// <summary>
+        /// Subscribes the specified observer.
+        /// </summary>
+        /// <param name="observer">The observer.</param>
+        /// <returns></returns>
+        public IDisposable Subscribe(IObserver<T> observer)
+        {
+            return underlying.Subscribe(observer);
+        }
 
-			if ((bool)calculateOffset)
-			{
-				var now = DateTime.Now;
-				iterations = Convert.ToInt32(Math.Floor((double)((now - startDate).Ticks / this.IterationDuration.Ticks)));
-				iterationStartDate = startDate + TimeSpan.FromTicks(iterations * this.IterationDuration.Ticks);
-				this.currentPosition = this.items.Select((p, i) => new { Item = p, Index = i })
-											.Where(p => p.Item.Offset <= now - iterationStartDate)
-											.OrderByDescending(p => p.Index)
-											.Select(p => p.Index)
-											.First() - 1;
-			}
+        /// <summary>
+        /// Processes this iteration.
+        /// </summary>
+        /// <param name="calculateOffset">Indicates weather the timer was started with a given offset or not. Value must be of type bool.</param>
+        private void Process(object calculateOffset)
+        {
+            if (!(calculateOffset is bool))
+                throw new ArgumentOutOfRangeException("calculateOffset", "Value must be of type Boolean.");
 
-			while (true)
-			{
-				if (cancellationTokenSource.Token.IsCancellationRequested)
-				{
-					var oldunderlying = this.underlying;
-					this.underlying = new Subject<T>();
-					oldunderlying.OnCompleted();
-					return;
-				}
+            this.iterations = 0;
+            this.iterationStartDate = startDate;
 
-				pauseSignal.WaitOne(TimeSpan.FromMinutes(1));
+            if ((bool)calculateOffset)
+            {
+                var now = DateTime.Now;
+                iterations = Convert.ToInt32(Math.Floor((double)((now - startDate).Ticks / this.IterationDuration.Ticks)));
+                iterationStartDate = startDate + TimeSpan.FromTicks(iterations * this.IterationDuration.Ticks);
+                this.currentPosition = this.items.Select((p, i) => new { Item = p, Index = i })
+                                            .Where(p => p.Item.Offset <= now - iterationStartDate)
+                                            .OrderByDescending(p => p.Index)
+                                            .Select(p => p.Index)
+                                            .First() - 1;
+            }
 
-				if (!IsPaused)
-				{
-					int nextPosition = this.currentPosition < this.items.Length - 1 ? this.currentPosition + 1 : 0;
-					T nextItem = this.items[nextPosition];
-					DateTime nextStart = iterationStartDate + nextItem.Offset;
+            while (true)
+            {
+                if (cancellationTokenSource.Token.IsCancellationRequested)
+                {
+                    var oldunderlying = this.underlying;
+                    this.underlying = new Subject<T>();
+                    oldunderlying.OnCompleted();
+                    return;
+                }
 
-					if (nextStart <= DateTime.Now)
-					{
-						var result = this.items.Select((p, i) => new { Item = p, Index = i })
-							.Where(p => p.Index >= nextPosition && iterationStartDate + p.Item.Offset <= DateTime.Now)
-							.Select(p => p.Index)
-							.ToArray();
+                pauseSignal.WaitOne(TimeSpan.FromMinutes(1));
 
-						foreach (var item in result)
-						{
-							try
-							{
-								underlying.OnNext(this.items[item]);
-							}
-							catch (Exception ex)
-							{
-								var oldunderlying = underlying;
-								underlying = new Subject<T>();
-								oldunderlying.OnError(ex);
-								oldunderlying.Dispose();
-							}
-						}
-						this.currentPosition = result.Max();
+                if (!IsPaused)
+                {
+                    int nextPosition = this.currentPosition < this.items.Length - 1 ? this.currentPosition + 1 : 0;
+                    T nextItem = this.items[nextPosition];
+                    DateTime nextStart = iterationStartDate + nextItem.Offset;
 
-						nextPosition = this.currentPosition < this.items.Length - 1 ? this.currentPosition + 1 : 0;
-						nextItem = this.items[nextPosition];
-						if (nextPosition == 0)
-						{
-							iterations++;
-							iterationStartDate = this.startDate + TimeSpan.FromTicks(this.totalDuration.Ticks * iterations);
-						}
-						nextStart = iterationStartDate + nextItem.Offset;
-					}
+                    if (nextStart <= DateTime.Now)
+                    {
+                        var result = this.items.Select((p, i) => new { Item = p, Index = i })
+                            .Where(p => p.Index >= nextPosition && iterationStartDate + p.Item.Offset <= DateTime.Now)
+                            .Select(p => p.Index)
+                            .ToArray();
 
-					int waitTime = Math.Max(Convert.ToInt32(((nextStart) - DateTime.Now).TotalMilliseconds), 0);
-					if (!cancellationTokenSource.Token.IsCancellationRequested)
-						signal.WaitOne(waitTime);
-				}
-			}
-		}
+                        foreach (var item in result)
+                        {
+                            try
+                            {
+                                underlying.OnNext(this.items[item]);
+                            }
+                            catch (Exception ex)
+                            {
+                                var oldunderlying = underlying;
+                                underlying = new Subject<T>();
+                                oldunderlying.OnError(ex);
+                                oldunderlying.Dispose();
+                            }
+                        }
+                        this.currentPosition = result.Max();
 
-		/// <summary>
-		/// Connects this instance.
-		/// </summary>
-		/// <returns><see cref="Disposable.Empty"/></returns>
-		public IDisposable Connect()
-		{
-			return Connect(TimeSpan.Zero);
-		}
+                        nextPosition = this.currentPosition < this.items.Length - 1 ? this.currentPosition + 1 : 0;
+                        nextItem = this.items[nextPosition];
+                        if (nextPosition == 0)
+                        {
+                            iterations++;
+                            iterationStartDate = this.startDate + TimeSpan.FromTicks(this.totalDuration.Ticks * iterations);
+                        }
+                        nextStart = iterationStartDate + nextItem.Offset;
+                    }
 
-		/// <summary>
-		/// Connects this instance.
-		/// </summary>
-		/// <param name="offset">The offset.</param>
-		/// <returns>
-		///   <see cref="Disposable.Empty"/>
-		/// </returns>
-		public IDisposable Connect(TimeSpan offset)
-		{
-			if (signal != null)
-			{
-				throw new InvalidOperationException("IterationTimer is already running");
-			}
-
-			currentPosition = -1;
-			startDate = DateTime.Now - offset;
-			signal = new ManualResetEvent(false);
-
-			cancellationTokenSource = new CancellationTokenSource();
-
-			Task.Factory.StartNew(Process, offset != TimeSpan.Zero, cancellationTokenSource.Token)
-				.ContinueWith(p =>
-				{
-					this.currentPosition = -1;
-					this.signal = null;
-					this.stopSignal.Set();
-				});
-
-			return Disposable.Empty;
-		}
-
-		/// <summary>
-		/// Stops this iteration.
-		/// </summary>
-		public void Stop()
-		{
-			if (this.signal == null)
-				throw new InvalidOperationException("No Iteration is started");
-
-			this.cancellationTokenSource.Cancel();
-			this.pauseSignal.Set();
-			this.signal.Set();
-			this.stopSignal.WaitOne(TimeSpan.FromMinutes(1));
-			this.stopSignal.Reset();
-			if (this.signal != null)
-				throw new TimeoutException("IterationTimer Stop operation took too long.");
-		}
-
-		/// <summary>
-		/// Pauses this iteration.
-		/// </summary>
-		public void Pause() {
-			this.IsPaused = true;
-			this.lastPauseTime = DateTime.Now;
-			this.pauseSignal.Reset();
-		}
-
-		/// <summary>
-		/// Pauses this iteration.
-		/// </summary>
-		public void Resume()
-		{
-			var pauseOffset = DateTime.Now - lastPauseTime;
-			this.startDate = this.startDate + pauseOffset;
-			this.iterationStartDate = this.iterationStartDate + pauseOffset;
-			this.IsPaused = false;
-			this.pauseSignal.Set();
-		}
-
-		/// <summary>
-		/// Subscribes the specified observer.
-		/// </summary>
-		/// <param name="observer">The observer.</param>
-		/// <returns></returns>
-		public IDisposable Subscribe(IObserver<T> observer)
-		{
-			return underlying.Subscribe(observer);
-		}
-	}
+                    int waitTime = Math.Max(Convert.ToInt32(((nextStart) - DateTime.Now).TotalMilliseconds), 0);
+                    if (!cancellationTokenSource.Token.IsCancellationRequested)
+                        signal.WaitOne(waitTime);
+                }
+            }
+        }
+    }
 }

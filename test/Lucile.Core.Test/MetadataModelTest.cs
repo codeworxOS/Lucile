@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Linq;
 using Lucile.Data.Metadata;
 using Lucile.Data.Metadata.Builder;
 using Lucile.Test.Model;
@@ -8,7 +9,6 @@ namespace Tests
 {
     public class MetadataModelTest
     {
-
         [Fact]
         public void EntityMetadataBuilderBlobProperty()
         {
@@ -327,6 +327,46 @@ namespace Tests
 
             Assert.Equal("Receipt", entityBuilder.Name);
             Assert.Equal(typeof(Receipt), entityBuilder.TypeInfo.ClrType);
+        }
+
+        [Fact]
+        public void MetadataModelSortByDependencyTest()
+        {
+            var metadataModelBuilder = new MetadataModelBuilder();
+            var articleEntity = metadataModelBuilder.Entity<Article>();
+            var receiptEntity = metadataModelBuilder.Entity<Receipt>();
+            var receiptDetailEntity = metadataModelBuilder.Entity<ReceiptDetail>();
+            var articleSettingsEntity = metadataModelBuilder.Entity<ArticleSettings>();
+
+            articleSettingsEntity.Property(p => p.Id);
+            articleSettingsEntity.Property(p => p.Whatever);
+            articleSettingsEntity.PrimaryKey.Add("Id");
+
+            articleEntity.Property(p => p.Id);
+            articleEntity.Property(p => p.Price);
+            articleEntity.PrimaryKey.Add("Id");
+
+            receiptEntity.Property(p => p.Id);
+            receiptEntity.Property(p => p.ReceiptNumber);
+            receiptEntity.PrimaryKey.Add("Id");
+
+            receiptDetailEntity.Property(p => p.Id);
+            receiptDetailEntity.Property(p => p.ReceiptId);
+            receiptDetailEntity.Property(p => p.ArticleId);
+            receiptDetailEntity.PrimaryKey.Add("Id");
+
+            articleEntity.HasOne(p => p.ArticleSettings).WithPrincipal();
+            receiptDetailEntity.HasOne(p => p.Receipt).WithMany(p => p.Details).HasForeignKey("ReceiptId");
+            receiptDetailEntity.HasOne(p => p.Article).WithMany().HasForeignKey("ArticleId");
+
+            var model = metadataModelBuilder.ToModel();
+
+            var sorted = model.SortedByDependency();
+
+            Assert.Contains(sorted.Take(2), p => p.Name == "Article");
+            Assert.Contains(sorted.Take(2), p => p.Name == "Receipt");
+            Assert.Contains(sorted.Skip(2), p => p.Name == "ArticleSettings");
+            Assert.Contains(sorted.Skip(2), p => p.Name == "ReceiptDetail");
         }
     }
 }

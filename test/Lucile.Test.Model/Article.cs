@@ -5,7 +5,7 @@ using System.Linq;
 
 namespace Lucile.Test.Model
 {
-    public class Article
+    public class Article : EntityBase
     {
         public Article()
         {

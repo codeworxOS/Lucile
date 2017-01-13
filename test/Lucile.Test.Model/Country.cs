@@ -1,9 +1,9 @@
 ﻿namespace Lucile.Test.Model
 {
-    public class Country
+    public class Country : EntityBase
     {
-        public int Id { get; set; }
-
         public string CountryName { get; set; }
+
+        public int Id { get; set; }
     }
 }

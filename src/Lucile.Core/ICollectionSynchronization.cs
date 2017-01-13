@@ -1,11 +1,11 @@
 ﻿using System.Collections;
 
-namespace Codeworx
+namespace Lucile
 {
     public interface ICollectionSynchronization
     {
-        void EnableCollectionSynchronization(IEnumerable collection, object lockObject);
-
         void DisableCollectionSynchronization(IEnumerable collection);
+
+        void EnableCollectionSynchronization(IEnumerable collection, object lockObject);
     }
 }

@@ -29,6 +29,19 @@ namespace Lucile.Data.Metadata.Builder
             }
         }
 
+        public override bool IsExcluded
+        {
+            get
+            {
+                return _innerBuilder.IsExcluded;
+            }
+
+            set
+            {
+                _innerBuilder.IsExcluded = value;
+            }
+        }
+
         public override MetadataModelBuilder ModelBuilder
         {
             get

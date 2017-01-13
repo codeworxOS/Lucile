@@ -1,0 +1,127 @@
+﻿using System;
+using System.Collections.ObjectModel;
+using System.Threading;
+using System.Threading.Tasks;
+
+namespace Codeworx.Threading
+{
+    public class CancellationManager
+    {
+        private readonly object _childrenLocker = new object();
+
+        private readonly object _sourceLocker = new object();
+        private CancellationTokenSource _source;
+
+        public CancellationManager()
+        {
+            this.Children = new Collection<CancellationManager>();
+        }
+
+        protected CancellationManager(CancellationManager parent)
+            : this()
+        {
+            this.Parent = parent;
+        }
+
+        public CancellationManager Parent { get; }
+
+        public CancellationManager Root
+        {
+            get
+            {
+                CancellationManager parent = this;
+                while (parent.Parent != null)
+                {
+                    parent = parent.Parent;
+                }
+
+                return parent;
+            }
+        }
+
+        protected Collection<CancellationManager> Children { get; }
+
+        public void Cancel()
+        {
+            lock (_sourceLocker)
+            {
+                DoCancel();
+
+                _source = null;
+            }
+        }
+
+        public CancellationManager CreateChildManager()
+        {
+            var manager = new CancellationManager(this);
+            lock (_sourceLocker)
+            {
+                this.Children.Add(manager);
+            }
+
+            return manager;
+        }
+
+        public async Task Execute(Func<CancellationToken, Task> creator)
+        {
+            var token = GetToken();
+
+            try
+            {
+                await creator(token);
+            }
+            catch (OperationCanceledException)
+            {
+                // shit happens!!!
+            }
+        }
+
+        public async Task<TData> Execute<TData>(Func<CancellationToken, Task<TData>> creator)
+        {
+            var token = GetToken();
+            var result = default(TData);
+
+            try
+            {
+                result = await creator(token);
+            }
+            catch (OperationCanceledException)
+            {
+                // shit happens!!!
+            }
+
+            return result;
+        }
+
+        protected internal CancellationToken GetToken()
+        {
+            CancellationToken token = CancellationToken.None;
+
+            lock (_sourceLocker)
+            {
+                DoCancel();
+
+                _source = new CancellationTokenSource();
+                token = _source.Token;
+            }
+
+            return token;
+        }
+
+        private void DoCancel()
+        {
+            if (_source != null && !_source.IsCancellationRequested)
+            {
+                _source.Cancel();
+            }
+
+            lock (_childrenLocker)
+            {
+                foreach (var item in Children)
+                {
+                    item.Cancel();
+                }
+            }
+        }
+    }
+}

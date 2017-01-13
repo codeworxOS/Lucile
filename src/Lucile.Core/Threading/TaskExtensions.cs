@@ -1,10 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Runtime.ExceptionServices;
-using System.Text;
+﻿using System.Runtime.ExceptionServices;
 using System.Threading.Tasks;
-using Codeworx.Core.ViewModel;
+using Lucile.ViewModel;
 
 namespace System
 {
@@ -14,26 +10,30 @@ namespace System
         {
             Exception exception = null;
 
-            try {
+            try
+            {
                 await task.ConfigureAwait(false);
-            } catch (Exception ex) {
+            }
+            catch (Exception ex)
+            {
                 exception = ex;
             }
 
-            if (exception != null) {
+            if (exception != null)
+            {
                 var context = ViewModelOperations.DefaultSynchronizationContext;
-                Action<object> action = p => {
+                Action<object> action = p =>
+                {
                     var ex = (Exception)p;
-#if(NET4 || SILVERLIGHT)
-                    throw ex;
-#else
                     ExceptionDispatchInfo.Capture(ex).Throw();
-#endif
                 };
 
-                if (context != null) {
+                if (context != null)
+                {
                     context.Post(new Threading.SendOrPostCallback(action), exception);
-                } else {
+                }
+                else
+                {
                     action(exception);
                 }
             }

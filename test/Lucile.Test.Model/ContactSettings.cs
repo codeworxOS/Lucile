@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace Lucile.Test.Model
 {
-    public class ContactSettings
+    public class ContactSettings : EntityBase
     {
         public Contact Contact { get; set; }
 

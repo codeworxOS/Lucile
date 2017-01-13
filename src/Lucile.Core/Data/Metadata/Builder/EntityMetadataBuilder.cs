@@ -31,6 +31,9 @@ namespace Lucile.Data.Metadata.Builder
         [DataMember(Order = 2)]
         public virtual EntityMetadataBuilder BaseEntity { get; set; }
 
+        [DataMember(Order = 7)]
+        public virtual bool IsExcluded { get; set; }
+
         [DataMember(Order = 3)]
         public virtual MetadataModelBuilder ModelBuilder
         {
@@ -177,7 +180,9 @@ namespace Lucile.Data.Metadata.Builder
             if (propertyInfo != null && propertyInfo.DeclaringType != this.TypeInfo.ClrType)
             {
                 var entity = this.ModelBuilder.Entity(propertyInfo.DeclaringType);
-                return entity.Property(name);
+                var prop = entity.Property(name);
+                prop.IsExcluded = entity.IsExcluded;
+                return prop;
             }
 
             if (propertyInfo == null)

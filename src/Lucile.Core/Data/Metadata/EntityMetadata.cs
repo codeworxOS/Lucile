@@ -31,14 +31,14 @@ namespace Lucile.Data.Metadata
 
             var properties = builder.Properties.OrderBy(p => builder.PrimaryKey.Contains(p.Name) ? builder.PrimaryKey.IndexOf(p.Name) : builder.PrimaryKey.Count).ThenBy(p => p.Name).ToList();
 
-            foreach (var item in properties)
+            foreach (var item in properties.Where(p => !p.IsExcluded))
             {
                 propertyListBuilder.Add(item.ToProperty(this, builder.PrimaryKey.Contains(item.Name)));
             }
 
             Properties = propertyListBuilder.ToImmutable();
 
-            foreach (var item in builder.Navigations)
+            foreach (var item in builder.Navigations.Where(p => !p.IsExcluded))
             {
                 navigationListBuilder.Add(item.ToNavigation(scope, this));
             }

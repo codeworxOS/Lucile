@@ -3,7 +3,7 @@ using System.Collections.Generic;
 
 namespace Lucile.Test.Model
 {
-    public class Contact
+    public class Contact : EntityBase
     {
         public ICollection<Article> Articles { get; set; }
 

@@ -5,7 +5,7 @@ using System.Threading.Tasks;
 
 namespace Lucile.Test.Model
 {
-    public class ReceiptDetail
+    public class ReceiptDetail : EntityBase
     {
         public decimal Amount { get; set; }
 

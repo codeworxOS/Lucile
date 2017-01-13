@@ -12,6 +12,9 @@ namespace Lucile.Data.Metadata.Builder
     [ProtoInclude(102, typeof(NavigationPropertyBuilder))]
     public abstract class PropertyMetadataBuilder
     {
+        [DataMember(Order = 3)]
+        public bool IsExcluded { get; set; }
+
         [DataMember(Order = 1)]
         public string Name { get; set; }
 

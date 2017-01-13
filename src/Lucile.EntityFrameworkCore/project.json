@@ -17,9 +17,8 @@
       "version": "1.0.0-*",
       "type": "build"
     },
-    "Microsoft.NETCore.Platforms": "1.0.1",
-    "Microsoft.Win32.Primitives": "4.0.1",
-    "System.Runtime": "4.1.0",
+    "Microsoft.NETCore.Platforms": "1.1.0",
+    "System.Runtime": "4.3.0",
     "Lucile.Core": "1.0.0-*",
     "Microsoft.EntityFrameworkCore": "1.0.1"
   },

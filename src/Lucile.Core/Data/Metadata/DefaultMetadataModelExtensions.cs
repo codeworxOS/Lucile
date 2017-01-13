@@ -19,7 +19,7 @@ namespace Lucile.Data.Metadata
 
             ResolveNavigations(builder, structureConventions, builder.Entities.Select(p => p.TypeInfo.ClrType).ToList());
 
-            foreach (var entity in builder.Entities)
+            foreach (var entity in builder.Entities.Where(p => !p.IsExcluded))
             {
                 foreach (var item in structureConventions.SelectMany(p => p.GetScalarProperties(entity.TypeInfo.ClrType)).Distinct())
                 {
@@ -27,11 +27,12 @@ namespace Lucile.Data.Metadata
                 }
             }
 
-            foreach (var entity in builder.Entities)
+            foreach (var entity in builder.Entities.Where(p => !p.IsExcluded))
             {
                 foreach (var item in structureConventions.SelectMany(p => p.GetNavigations(entity.TypeInfo.ClrType)).Distinct())
                 {
                     var nav = entity.Navigation(item.Key);
+
                     if (!oldNavigationProperties.Contains(nav))
                     {
                         if (!added.ContainsKey(entity.TypeInfo.ClrType))

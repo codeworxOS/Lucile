@@ -44,6 +44,19 @@ namespace Lucile.Data.Metadata.Builder
             return Entity(EntityKey.Get(clrType));
         }
 
+        public MetadataModelBuilder Exclude<TEntity>()
+            where TEntity : class
+        {
+            Entity<TEntity>().IsExcluded = true;
+            return this;
+        }
+
+        public MetadataModelBuilder Exclude(Type entityType)
+        {
+            Entity(entityType).IsExcluded = true;
+            return this;
+        }
+
         public MetadataModel ToModel()
         {
             return new MetadataModel(this);

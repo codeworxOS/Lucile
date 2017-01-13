@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace Lucile.Test.Model
 {
-    public class ArticleName
+    public class ArticleName : EntityBase
     {
         public Article Article { get; set; }
 

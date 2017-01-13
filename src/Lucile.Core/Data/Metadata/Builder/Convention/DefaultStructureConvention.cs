@@ -11,7 +11,7 @@ namespace Lucile.Data.Metadata.Builder.Convention
         {
             var result = new Dictionary<string, Type>();
 
-            foreach (var prop in entity.GetProperties())
+            foreach (var prop in entity.GetProperties().Where(p => p.DeclaringType == entity))
             {
                 var info = prop.PropertyType.GetTypeInfo();
                 if (!info.IsValueType && prop.PropertyType != typeof(string))
@@ -32,7 +32,7 @@ namespace Lucile.Data.Metadata.Builder.Convention
 
         public IEnumerable<string> GetScalarProperties(Type entity)
         {
-            return from p in entity.GetProperties()
+            return from p in entity.GetProperties().Where(p => p.DeclaringType == entity)
                    let ti = p.PropertyType.GetTypeInfo()
                    where p.CanRead && p.CanWrite && (ti.IsValueType || p.PropertyType == typeof(string))
                    select p.Name;

@@ -17,23 +17,21 @@
       "version": "1.0.0-*",
       "type": "build"
     },
-    "Microsoft.NETCore.Platforms": "1.0.1",
-    "Microsoft.Win32.Primitives": "4.0.1",
-    "System.Runtime": "4.1.0",
-    "System.Runtime.InteropServices": "4.1.0",
+    "Microsoft.NETCore.Platforms": "1.1.0",
+    "System.Runtime": "4.3.0",
     "System.Reflection.Emit": "4.0.0",
     "System.Reflection.Emit.ILGeneration": "4.0.0",
     "System.Dynamic.Runtime": "4.0.0",
     "Lucile.Primitives": "1.0.0-*",
-    "System.Collections.Concurrent": "4.0.12",
+    "System.Collections.Concurrent": "4.3.0",
     "System.Linq.Queryable": "4.0.1",
-    "System.Reflection": "4.1.0",
-    "System.Reflection.TypeExtensions": "4.1.0",
+    "System.Reflection": "4.3.0",
     "System.Runtime.Serialization.Primitives": "4.1.1",
-    "System.Threading.Timer": "4.0.1",
+    "System.Threading.Timer": "4.3.0",
     "System.Threading.Tasks.Parallel": "4.0.1",
     "System.Threading.Thread": "4.0.0",
-    "System.ObjectModel": "4.0.10"
+    "Microsoft.Extensions.DependencyInjection.Abstractions": "1.1.0",
+    "System.Reflection.TypeExtensions": "4.3.0"
   },
 
   "frameworks": {

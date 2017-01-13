@@ -5,7 +5,7 @@ using System.Threading.Tasks;
 
 namespace Lucile.Test.Model
 {
-    public class AllTypesEntity
+    public class AllTypesEntity : EntityBase
     {
         public byte[] BlobProperty { get; set; }
 

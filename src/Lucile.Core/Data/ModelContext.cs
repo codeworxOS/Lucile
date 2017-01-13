@@ -8,6 +8,7 @@ using System.Threading;
 using System.Threading.Tasks;
 
 using Lucile.Data.Metadata;
+using Lucile.Data.Tracking;
 
 namespace Lucile.Data
 {
@@ -39,6 +40,8 @@ namespace Lucile.Data
 
         private readonly Dictionary<EntityMetadata, Dictionary<object, System.WeakReference<object>>> _trackedObjects = new Dictionary<EntityMetadata, Dictionary<object, System.WeakReference<object>>>();
 
+        private readonly ITrackingInfoProvider _trackingInfoProvider;
+
         private readonly object _updateLocker = new object();
 
         private bool _disposedValue = false;
@@ -52,8 +55,14 @@ namespace Lucile.Data
         }
 
         public ModelContext(MetadataModel model)
+            : this(model, new TrackingInfoProvider())
+        {
+        }
+
+        public ModelContext(MetadataModel model, ITrackingInfoProvider trackingInfoProvider)
         {
             _model = model;
+            _trackingInfoProvider = trackingInfoProvider;
             _cleanupTimer = new Timer(WeakReferenceCleanupTimer, null, TimeSpan.FromSeconds(60), TimeSpan.FromSeconds(60));
             _attachTransactions = new Dictionary<AttachTransaction, DateTime>();
             _entityTransactions = new Dictionary<EntityTransaction, DateTime>();
@@ -182,6 +191,40 @@ namespace Lucile.Data
                 {
                     this._entityTransactionsSignal.Set();
                 }
+            }
+        }
+
+        public IEnumerable<object> GetChanges()
+        {
+            IEnumerable<object> result;
+            lock (_updateLocker)
+            {
+                result = (from tracked in _trackedObjects
+                          from keys in tracked.Value
+                          let item = keys.Value.TargetOrDefault()
+                          let state = _trackingInfoProvider.GetState(item)
+                          where item != null && state.HasValue && state.Value != Tracking.TrackingState.Unchanged
+                          select item).ToList();
+            }
+
+            var changes = result.GroupBy(p => _model.GetEntityMetadata(p))
+                                .ToDictionary(p => p.Key, p => p.Select(x => x).ToList());
+
+            var sorted = _model.SortedByDependency();
+
+            foreach (var item in GetChangesByState(sorted, changes, TrackingState.Added))
+            {
+                yield return item;
+            }
+
+            foreach (var item in GetChangesByState(sorted, changes, TrackingState.Modified))
+            {
+                yield return item;
+            }
+
+            foreach (var item in GetChangesByState(sorted.Reverse(), changes, TrackingState.Deleted))
+            {
+                yield return item;
             }
         }
 
@@ -680,6 +723,21 @@ namespace Lucile.Data
                 if (target != null) ////&& target.ChangeTracker.State != ObjectState.Deleted)
                 {
                     FillNavigationPropertyAndPrincipal(navProp, result, target);
+                }
+            }
+        }
+
+        private IEnumerable<object> GetChangesByState(IEnumerable<EntityMetadata> entities, Dictionary<EntityMetadata, List<object>> changes, TrackingState state)
+        {
+            foreach (var item in entities)
+            {
+                List<object> values;
+                if (changes.TryGetValue(item, out values))
+                {
+                    foreach (var row in values.Where(p => _trackingInfoProvider.GetState(p) == state))
+                    {
+                        yield return row;
+                    }
                 }
             }
         }
