@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations.Schema;
 using System.Linq;
 using Lucile.Data.Tracking;
 
@@ -15,6 +16,7 @@ namespace Lucile.Test.Model
             }
         }
 
+        [NotMapped]
         public TrackingState? State
         {
             get; set;

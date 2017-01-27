@@ -20,7 +20,7 @@ namespace Tests
             metadataModelBuilder.Entity<ArticleName>().PrimaryKey.AddRange(new[] { "ArticleId", "LanguageId" });
             var articleEntity = metadataModelBuilder.Entity<Article>();
             metadataModelBuilder.Entity<ReceiptDetail>();
-            metadataModelBuilder.Entity<Invoice>();
+            metadataModelBuilder.Entity<Invoice>().BaseEntity = metadataModelBuilder.Entity(typeof(Receipt));
             var contactSettings = metadataModelBuilder.Entity<ContactSettings>();
 
             articleEntity.HasOne(p => p.ArticleSettings).WithPrincipal();
