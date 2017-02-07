@@ -1,16 +1,22 @@
 ﻿using System;
 using System.Runtime.Serialization;
+using Lucile.Json;
 
 namespace Lucile.Linq.Configuration.Builder
 {
     [DataContract(IsReference = true)]
     [KnownType(typeof(FilterItemGroupBuilder))]
     [KnownType(typeof(BooleanFilterItemBuilder))]
-    [KnownType(typeof(BinaryFilterItemBuilder))]
+    [KnownType(typeof(StringFilterItemBuilder))]
+    [KnownType(typeof(DateTimeFilterItemBuilder))]
+    [KnownType(typeof(NumericFilterItemBuilder))]
     [ProtoBuf.ProtoInclude(101, typeof(FilterItemGroupBuilder))]
     [ProtoBuf.ProtoInclude(102, typeof(BooleanFilterItemBuilder))]
-    [ProtoBuf.ProtoInclude(103, typeof(BinaryFilterItemBuilder))]
+    [ProtoBuf.ProtoInclude(104, typeof(StringFilterItemBuilder))]
+    [ProtoBuf.ProtoInclude(105, typeof(DateTimeFilterItemBuilder))]
+    [ProtoBuf.ProtoInclude(106, typeof(NumericFilterItemBuilder))]
     [ProtoBuf.ProtoContract(AsReferenceDefault = true)]
+    [JsonConverter(typeof(JsonInheritanceConverter), "type")]
     public abstract class FilterItemBuilder : BaseBuilder<FilterItem>
     {
         public static FilterItemBuilder GetBuilder(FilterItem item)
@@ -26,15 +32,15 @@ namespace Lucile.Linq.Configuration.Builder
             }
             else if (item is StringBinaryFilterItem)
             {
-                result = new StringBinaryFilterItemBuilder();
+                result = new StringFilterItemBuilder();
             }
             else if (item is DateTimeBinaryFilterItem)
             {
-                result = new DateTimeBinaryFilterItemBuilder();
+                result = new DateTimeFilterItemBuilder();
             }
             else if (item is NumericBinaryFilterItem)
             {
-                result = new NumericBinaryFilterItemBuilder();
+                result = new NumericFilterItemBuilder();
             }
 
             if (result == null)

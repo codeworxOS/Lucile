@@ -6,32 +6,12 @@ using System.Linq.Expressions;
 using System.Reflection;
 using Lucile.Data.Metadata;
 using Lucile.Linq.Configuration;
+using Lucile.Reflection;
 
 namespace Lucile.Linq
 {
     public abstract class QueryModel : IQueryModel
     {
-        private static readonly MethodInfo _enumerableDefaultIfEmpty;
-        private static readonly MethodInfo _queryableGroupJoinMethod;
-        private static readonly MethodInfo _queryableSelectManyMethod;
-        private static readonly MethodInfo _queryableSelectMethod;
-        private static readonly MethodInfo _queryableWhereMethod;
-
-        static QueryModel()
-        {
-            Expression<Func<IQueryable<object>, IQueryable<object>>> querySelect = p => p.Select(x => x);
-            _queryableSelectMethod = ((MethodCallExpression)querySelect.Body).Method.GetGenericMethodDefinition();
-            Expression<Func<IQueryable<object>, IQueryable<object>>> querySelectMany = p => p.SelectMany(x => new[] { x }, (parent, child) => child);
-            _queryableSelectManyMethod = ((MethodCallExpression)querySelectMany.Body).Method.GetGenericMethodDefinition();
-            Expression<Func<IQueryable<object>, IQueryable<object>>> queryGroupJoin = p => p.GroupJoin(Enumerable.Empty<object>(), x => x, x => x, (parent, child) => parent);
-            _queryableGroupJoinMethod = ((MethodCallExpression)queryGroupJoin.Body).Method.GetGenericMethodDefinition();
-            Expression<Func<IQueryable<object>, IQueryable<object>>> queryWhere = p => p.Where(x => true);
-            _queryableWhereMethod = ((MethodCallExpression)queryWhere.Body).Method.GetGenericMethodDefinition();
-
-            Expression<Func<IEnumerable<object>, IEnumerable<object>>> enumDefaultIfEmptyJoin = p => p.DefaultIfEmpty();
-            _enumerableDefaultIfEmpty = ((MethodCallExpression)enumDefaultIfEmptyJoin.Body).Method.GetGenericMethodDefinition();
-        }
-
         public QueryModel(EntityMetadata entity, IEnumerable<SourceEntityConfiguration> sourceEntityConfigs, IEnumerable<PropertyConfiguration> propConfigs)
         {
             Entity = entity;
@@ -99,14 +79,7 @@ namespace Lucile.Linq
             var param = Expression.Parameter(this.SourceType);
             IQueryable baseQuery = CreateBaseQuery(source, sortedDependencies);
             var filter = new FilterItemGroup(config.FilterItems);
-            var body = filter.GetExpression(param);
-            if (body != null)
-            {
-                var whereLambdaExpression = Expression.Lambda(body, param);
-                var whereExpression = Expression.Call(_queryableWhereMethod.MakeGenericMethod(param.Type), baseQuery.Expression, whereLambdaExpression);
-
-                baseQuery = baseQuery.Provider.CreateQuery(whereExpression);
-            }
+            baseQuery = baseQuery.ApplyFilterItem(filter);
 
             var members = propsToQuery.ToDictionary(p => (MemberInfo)p.PropertyInfo, p => p.MappedExpression.Body.Replace(p.MappedExpression.Parameters.First(), param));
 
@@ -118,7 +91,7 @@ namespace Lucile.Linq
             var getInitExpression = GetInitExpression(ResultType, members);
             var selectExpresssion = Expression.Lambda(getInitExpression, param);
             var queryExpression = Expression.Call(
-                                        _queryableSelectMethod.MakeGenericMethod(SourceType, ResultType),
+                                        QueryableInfo.Select.MakeGenericMethod(SourceType, ResultType),
                                         baseQuery.Expression,
                                         Expression.Quote(selectExpresssion));
 
@@ -157,7 +130,7 @@ namespace Lucile.Linq
             var body = GetInitExpression(SourceType, memberInits);
 
             baseExpression = Expression.Call(
-                _queryableSelectMethod.MakeGenericMethod(baseEntity.Key.EntityType, SourceType),
+                QueryableInfo.Select.MakeGenericMethod(baseEntity.Key.EntityType, SourceType),
                 baseExpression,
                 Expression.Quote(Expression.Lambda(body, param)));
 
@@ -175,7 +148,7 @@ namespace Lucile.Linq
                                             Expression.Bind(joinPairType.GetProperty("Children"), param2));
 
                 baseExpression = Expression.Call(
-                    _queryableGroupJoinMethod.MakeGenericMethod(SourceType, entityType, joined[i].Key.JoinKeyType, joinPairType),
+                    QueryableInfo.GroupJoin.MakeGenericMethod(SourceType, entityType, joined[i].Key.JoinKeyType, joinPairType),
                     baseExpression,
                     Expression.Constant(joined[i].Key.QueryFactory(source)),
                     remoteJoin,
@@ -194,9 +167,9 @@ namespace Lucile.Linq
                 memberInits[joined[i].Member] = param2;
 
                 baseExpression = Expression.Call(
-                        _queryableSelectManyMethod.MakeGenericMethod(joinPairType, entityType, SourceType),
+                        QueryableInfo.SelectMany.MakeGenericMethod(joinPairType, entityType, SourceType),
                         baseExpression,
-                        Expression.Lambda(Expression.Call(_enumerableDefaultIfEmpty.MakeGenericMethod(entityType), Expression.Property(param1, "Children")), param1),
+                        Expression.Lambda(Expression.Call(EnumerableInfo.DefaultIfEmpty.MakeGenericMethod(entityType), Expression.Property(param1, "Children")), param1),
                         Expression.Lambda(GetInitExpression(SourceType, memberInits), param1, param2));
             }
 
