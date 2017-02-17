@@ -24,11 +24,6 @@ namespace Lucile.Data.Metadata
             var propertyListBuilder = ImmutableList.CreateBuilder<ScalarProperty>();
             var navigationListBuilder = ImmutableList.CreateBuilder<NavigationPropertyMetadata>();
 
-            if (builder.BaseEntity != null)
-            {
-                BaseEntity = scope.GetEntity(builder.BaseEntity.TypeInfo.ClrType);
-            }
-
             var properties = builder.Properties.OrderBy(p => builder.PrimaryKey.Contains(p.Name) ? builder.PrimaryKey.IndexOf(p.Name) : builder.PrimaryKey.Count).ThenBy(p => p.Name).ToList();
 
             foreach (var item in properties.Where(p => !p.IsExcluded))
@@ -37,6 +32,11 @@ namespace Lucile.Data.Metadata
             }
 
             Properties = propertyListBuilder.ToImmutable();
+
+            if (builder.BaseEntity != null)
+            {
+                BaseEntity = scope.GetEntity(builder.BaseEntity.TypeInfo.ClrType);
+            }
 
             foreach (var item in builder.Navigations.Where(p => !p.IsExcluded))
             {
