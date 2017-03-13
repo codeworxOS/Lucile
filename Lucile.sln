@@ -34,6 +34,8 @@ Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Lucile.Test.Model", "test\L
 EndProject
 Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Lucile.EntityFramework", "src\Lucile.EntityFramework\Lucile.EntityFramework.xproj", "{34EFF42E-DD3E-45D3-8C07-C60FFD0FE0C5}"
 EndProject
+Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Lucile.Core.Test.Module1", "test\Lucile.Core.Test.Module1\Lucile.Core.Test.Module1.xproj", "{5B90541B-C6B6-4DC2-91AA-F6F4378A375B}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -72,6 +74,10 @@ Global
 		{34EFF42E-DD3E-45D3-8C07-C60FFD0FE0C5}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{34EFF42E-DD3E-45D3-8C07-C60FFD0FE0C5}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{34EFF42E-DD3E-45D3-8C07-C60FFD0FE0C5}.Release|Any CPU.Build.0 = Release|Any CPU
+		{5B90541B-C6B6-4DC2-91AA-F6F4378A375B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{5B90541B-C6B6-4DC2-91AA-F6F4378A375B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{5B90541B-C6B6-4DC2-91AA-F6F4378A375B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{5B90541B-C6B6-4DC2-91AA-F6F4378A375B}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -86,5 +92,6 @@ Global
 		{79EC5934-91E5-48AB-B8B7-A43C8E5F7F08} = {FB263B3F-F589-4277-8C98-C3C3E0E65D5F}
 		{7ADE3FF4-FAA8-4128-AB6F-2BCD9F593955} = {FB263B3F-F589-4277-8C98-C3C3E0E65D5F}
 		{34EFF42E-DD3E-45D3-8C07-C60FFD0FE0C5} = {67FDFE16-B5A1-481C-8375-87EE40610DC2}
+		{5B90541B-C6B6-4DC2-91AA-F6F4378A375B} = {FB263B3F-F589-4277-8C98-C3C3E0E65D5F}
 	EndGlobalSection
 EndGlobal

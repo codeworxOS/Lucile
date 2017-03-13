@@ -41,7 +41,8 @@ namespace Lucile.Json
 
             public override IEnumerable<string> GetDynamicMemberNames()
             {
-                return base.GetDynamicMemberNames();
+                yield return "ConverterType";
+                yield return "ConverterParameters";
             }
 
             public override bool TryGetMember(GetMemberBinder binder, out object result)

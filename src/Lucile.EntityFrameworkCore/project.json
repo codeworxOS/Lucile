@@ -9,6 +9,7 @@
     "summary": "Entity Framework Core components for the Lucile Framework. For detailed Documentation visit http://www.github.com/codeworxOS/Lucile"
   },
   "dependencies": {
+    "NETStandard.Library": "1.6.1",
     "StyleCop.Analyzers": {
       "version": "1.0.0",
       "type": "build"
@@ -17,8 +18,6 @@
       "version": "1.0.0-*",
       "type": "build"
     },
-    "Microsoft.NETCore.Platforms": "1.1.0",
-    "System.Runtime": "4.3.0",
     "Lucile.Core": "1.0.0-*",
     "Microsoft.EntityFrameworkCore": "1.0.1"
   },

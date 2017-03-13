@@ -1,8 +1,8 @@
 ﻿using System;
 using System.Reflection;
-using Microsoft.Extensions.DependencyInjection;
+using Lucile.Extensions.DependencyInjection;
 
-namespace Lucile.Extensions.DependencyInjection
+namespace Microsoft.Extensions.DependencyInjection
 {
     public static class LucileServiceCollectionExtensions
     {
