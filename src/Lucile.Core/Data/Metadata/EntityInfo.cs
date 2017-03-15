@@ -98,9 +98,9 @@ namespace Lucile.Data.Metadata
             MetadataModel model,
             EntityMetadata entity,
             ImmutableList<ScalarProperty>.Builder scalarProperties,
-             ImmutableList<NavigationPropertyMetadata>.Builder navigationProperties,
-             ImmutableList<NavigationPropertyMetadata>.Builder reverseNavigationProperties,
-             ImmutableDictionary<ScalarProperty, NavigationPropertyMetadata>.Builder foreignKeys)
+            ImmutableList<NavigationPropertyMetadata>.Builder navigationProperties,
+            ImmutableList<NavigationPropertyMetadata>.Builder reverseNavigationProperties,
+            ImmutableDictionary<ScalarProperty, NavigationPropertyMetadata>.Builder foreignKeys)
         {
             // Skalar Properties
             foreach (var prop in entity.GetProperties())
@@ -154,8 +154,8 @@ namespace Lucile.Data.Metadata
             {
                 keyBody = Expression.MemberInit(
                     Expression.New(keyType),
-                        pks.Select((p, i) =>
-                            Expression.Bind(keyType.GetProperty($"Value{i}"), Expression.Property(keyParam, p.Name))));
+                    pks.Select((p, i) =>
+                        Expression.Bind(keyType.GetProperty($"Value{i}"), Expression.Property(keyParam, p.Name))));
             }
             else if (pks.Count == 1)
             {

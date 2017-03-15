@@ -92,8 +92,8 @@ namespace Lucile.Data.Metadata
                 propType = System.Nullable.GetUnderlyingType(propType) ?? propType;
                 valuecastExpression = Expression.Condition(
                     Expression.Equal(valueParameterExpression, Expression.Default(typeof(object))),
-                        Expression.Default(propertyExpression.Type),
-                        Expression.Convert(Expression.Convert(valueParameterExpression, propType), propertyExpression.Type));
+                    Expression.Default(propertyExpression.Type),
+                    Expression.Convert(Expression.Convert(valueParameterExpression, propType), propertyExpression.Type));
             }
 
             var body = Expression.Assign(propertyExpression, valuecastExpression);

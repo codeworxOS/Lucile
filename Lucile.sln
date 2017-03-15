@@ -1,40 +1,38 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 14
-VisualStudioVersion = 14.0.25420.1
+# Visual Studio 15
+VisualStudioVersion = 15.0.26228.4
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{67FDFE16-B5A1-481C-8375-87EE40610DC2}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{47A7F327-46A5-4A4D-B340-D6F1F795E09C}"
-	ProjectSection(SolutionItems) = preProject
-		global.json = global.json
-	EndProjectSection
-EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Lucile.Core", "src\Lucile.Core\Lucile.Core.xproj", "{8A8ECC86-0041-4B9E-AC58-3430786A24B6}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "global", "global", "{88DC6596-58CA-45A6-B5D3-59B9039B2E83}"
 	ProjectSection(SolutionItems) = preProject
+		global\GlobalAssemblyInfo.cs = global\GlobalAssemblyInfo.cs
 		global\stylecop.json = global\stylecop.json
 		global\Stylecop.ruleset = global\Stylecop.ruleset
 	EndProjectSection
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Lucile.Shared", "src\Lucile.Shared\Lucile.Shared.xproj", "{00F85ED3-7C1E-4E98-AB3F-F9E0CE5B60C2}"
-EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Lucile.Primitives", "src\Lucile.Primitives\Lucile.Primitives.xproj", "{CA770A5C-A95F-4FBF-B3B3-9DCCF7877871}"
-EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Lucile.Core.Test", "test\Lucile.Core.Test\Lucile.Core.Test.xproj", "{4D8239D7-191E-44AF-A031-97C344361B44}"
-EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "test", "test", "{FB263B3F-F589-4277-8C98-C3C3E0E65D5F}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Lucile.EntityFrameworkCore", "src\Lucile.EntityFrameworkCore\Lucile.EntityFrameworkCore.xproj", "{86738210-6B1D-475A-88A1-BB08B286F3A3}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Lucile.Core", "src\Lucile.Core\Lucile.Core.csproj", "{8A8ECC86-0041-4B9E-AC58-3430786A24B6}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Lucile.EntityFrameworkCore.Test", "test\Lucile.entityFrameworkCore.Test\Lucile.EntityFrameworkCore.Test.xproj", "{79EC5934-91E5-48AB-B8B7-A43C8E5F7F08}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Lucile.Primitives", "src\Lucile.Primitives\Lucile.Primitives.csproj", "{CA770A5C-A95F-4FBF-B3B3-9DCCF7877871}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Lucile.Test.Model", "test\Lucile.Test.Model\Lucile.Test.Model.xproj", "{7ADE3FF4-FAA8-4128-AB6F-2BCD9F593955}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Lucile.Core.Test", "test\Lucile.Core.Test\Lucile.Core.Test.csproj", "{4D8239D7-191E-44AF-A031-97C344361B44}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Lucile.EntityFramework", "src\Lucile.EntityFramework\Lucile.EntityFramework.xproj", "{34EFF42E-DD3E-45D3-8C07-C60FFD0FE0C5}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Lucile.EntityFrameworkCore", "src\Lucile.EntityFrameworkCore\Lucile.EntityFrameworkCore.csproj", "{86738210-6B1D-475A-88A1-BB08B286F3A3}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Lucile.Core.Test.Module1", "test\Lucile.Core.Test.Module1\Lucile.Core.Test.Module1.xproj", "{5B90541B-C6B6-4DC2-91AA-F6F4378A375B}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Lucile.EntityFrameworkCore.Test", "test\Lucile.entityFrameworkCore.Test\Lucile.EntityFrameworkCore.Test.csproj", "{79EC5934-91E5-48AB-B8B7-A43C8E5F7F08}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Lucile.Test.Model", "test\Lucile.Test.Model\Lucile.Test.Model.csproj", "{7ADE3FF4-FAA8-4128-AB6F-2BCD9F593955}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Lucile.EntityFramework", "src\Lucile.EntityFramework\Lucile.EntityFramework.csproj", "{34EFF42E-DD3E-45D3-8C07-C60FFD0FE0C5}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Lucile.Core.Test.Module1", "test\Lucile.Core.Test.Module1\Lucile.Core.Test.Module1.csproj", "{5B90541B-C6B6-4DC2-91AA-F6F4378A375B}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Lucile.ServiceModel", "src\Lucile.ServiceModel\Lucile.ServiceModel.csproj", "{42E10DF2-CC69-4CC8-870F-F2DB6F80DB41}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -46,10 +44,6 @@ Global
 		{8A8ECC86-0041-4B9E-AC58-3430786A24B6}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{8A8ECC86-0041-4B9E-AC58-3430786A24B6}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{8A8ECC86-0041-4B9E-AC58-3430786A24B6}.Release|Any CPU.Build.0 = Release|Any CPU
-		{00F85ED3-7C1E-4E98-AB3F-F9E0CE5B60C2}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{00F85ED3-7C1E-4E98-AB3F-F9E0CE5B60C2}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{00F85ED3-7C1E-4E98-AB3F-F9E0CE5B60C2}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{00F85ED3-7C1E-4E98-AB3F-F9E0CE5B60C2}.Release|Any CPU.Build.0 = Release|Any CPU
 		{CA770A5C-A95F-4FBF-B3B3-9DCCF7877871}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{CA770A5C-A95F-4FBF-B3B3-9DCCF7877871}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{CA770A5C-A95F-4FBF-B3B3-9DCCF7877871}.Release|Any CPU.ActiveCfg = Release|Any CPU
@@ -78,14 +72,17 @@ Global
 		{5B90541B-C6B6-4DC2-91AA-F6F4378A375B}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{5B90541B-C6B6-4DC2-91AA-F6F4378A375B}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{5B90541B-C6B6-4DC2-91AA-F6F4378A375B}.Release|Any CPU.Build.0 = Release|Any CPU
+		{42E10DF2-CC69-4CC8-870F-F2DB6F80DB41}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{42E10DF2-CC69-4CC8-870F-F2DB6F80DB41}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{42E10DF2-CC69-4CC8-870F-F2DB6F80DB41}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{42E10DF2-CC69-4CC8-870F-F2DB6F80DB41}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
-		{8A8ECC86-0041-4B9E-AC58-3430786A24B6} = {67FDFE16-B5A1-481C-8375-87EE40610DC2}
 		{88DC6596-58CA-45A6-B5D3-59B9039B2E83} = {47A7F327-46A5-4A4D-B340-D6F1F795E09C}
-		{00F85ED3-7C1E-4E98-AB3F-F9E0CE5B60C2} = {67FDFE16-B5A1-481C-8375-87EE40610DC2}
+		{8A8ECC86-0041-4B9E-AC58-3430786A24B6} = {67FDFE16-B5A1-481C-8375-87EE40610DC2}
 		{CA770A5C-A95F-4FBF-B3B3-9DCCF7877871} = {67FDFE16-B5A1-481C-8375-87EE40610DC2}
 		{4D8239D7-191E-44AF-A031-97C344361B44} = {FB263B3F-F589-4277-8C98-C3C3E0E65D5F}
 		{86738210-6B1D-475A-88A1-BB08B286F3A3} = {67FDFE16-B5A1-481C-8375-87EE40610DC2}
@@ -93,5 +90,6 @@ Global
 		{7ADE3FF4-FAA8-4128-AB6F-2BCD9F593955} = {FB263B3F-F589-4277-8C98-C3C3E0E65D5F}
 		{34EFF42E-DD3E-45D3-8C07-C60FFD0FE0C5} = {67FDFE16-B5A1-481C-8375-87EE40610DC2}
 		{5B90541B-C6B6-4DC2-91AA-F6F4378A375B} = {FB263B3F-F589-4277-8C98-C3C3E0E65D5F}
+		{42E10DF2-CC69-4CC8-870F-F2DB6F80DB41} = {67FDFE16-B5A1-481C-8375-87EE40610DC2}
 	EndGlobalSection
 EndGlobal

@@ -167,7 +167,7 @@ namespace Lucile.Data.Metadata.Builder
                 Name = propertyName,
                 Multiplicity = isCollectionType ? NavigationPropertyMultiplicity.Many : NavigationPropertyMultiplicity.ZeroOrOne,
                 TargetMultiplicity = isCollectionType ? NavigationPropertyMultiplicity.ZeroOrOne : NavigationPropertyMultiplicity.Many,
-                Target = new ClrTypeInfo(elementType)
+                Target = new ClrTypeInfo(elementType),
             };
         }
 

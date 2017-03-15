@@ -241,12 +241,6 @@ namespace Lucile.Data
             }
         }
 
-        /// <summary>
-        /// Navigation Property belegen und Back-Referenz befüllen (Collection oder einzelnes Navigation Property)
-        /// </summary>
-        /// <param name="navProp"></param>
-        /// <param name="source"></param>
-        /// <param name="target"></param>
         private static void FillNavigationPropertyAndPrincipal(NavigationPropertyMetadata navProp, object source, object target)
         {
             ////using (new ChangeTrackingScope(ChangeTracking.Disable, source, target))
@@ -272,27 +266,12 @@ namespace Lucile.Data
             }
         }
 
-        /// <summary>
-        /// Objekt in TrackedObjects einfügen
-        /// </summary>
-        /// <param name="entityInfo"></param>
-        /// <param name="key"></param>
-        /// <param name="data"></param>
-        /// <returns></returns>
         private object AddTrackedObject(EntityInfo entityInfo, object key, object data)
         {
             bool added;
             return AddTrackedObject(entityInfo, key, data, out added);
         }
 
-        /// <summary>
-        /// Objekt in TrackedObjects einfügen
-        /// </summary>
-        /// <param name="entityInfo"></param>
-        /// <param name="key"></param>
-        /// <param name="data"></param>
-        /// <param name="added"></param>
-        /// <returns></returns>
         private object AddTrackedObject(EntityInfo entityInfo, object key, object data, out bool added)
         {
             object test;
@@ -360,11 +339,11 @@ namespace Lucile.Data
 
         private object Clean(
             object source,
-                Dictionary<object, bool> cleaned,
-                Dictionary<object, object> cleanedTuples,
-                List<Tuple<object, NavigationPropertyMetadata>> fixups,
-                Dictionary<EntityInfo, HashSet<object>> reverseFixups,
-                MergeStrategy mergeStrategy)
+            Dictionary<object, bool> cleaned,
+            Dictionary<object, object> cleanedTuples,
+            List<Tuple<object, NavigationPropertyMetadata>> fixups,
+            Dictionary<EntityInfo, HashSet<object>> reverseFixups,
+            MergeStrategy mergeStrategy)
         {
             // Wurde dieses Objekt bereits gecleaned und in die TrackedObjects eingefügt
             if (cleaned.ContainsKey(source))
@@ -592,11 +571,6 @@ namespace Lucile.Data
             return result;
         }
 
-        /// <summary>
-        /// Delegate für das ReverseFixup erzeugen
-        /// </summary>
-        /// <param name="prop"></param>
-        /// <returns></returns>
         private Func<IEnumerable<object>, IEnumerable<object>, IEnumerable<object>> CreateReverseFixupDelegate(NavigationPropertyMetadata prop)
         {
             var reverseEntityInfo = GetEntityInfo(prop.Entity);
@@ -620,8 +594,8 @@ namespace Lucile.Data
 
             baseQuery = Expression.Call(
                 typeof(Enumerable).GetMethods().First(p => p.Name == "Where").MakeGenericMethod(reverseEntityInfo.EntityMetadata.ClrType),
-                    baseQuery,
-                    Expression.Lambda(filterCondition, param));
+                baseQuery,
+                Expression.Lambda(filterCondition, param));
 
             Expression joinPrimary;
             Expression joinForeign;
@@ -708,11 +682,6 @@ namespace Lucile.Data
             }
         }
 
-        /// <summary>
-        /// Navigation Properties über ForeignKey befüllen
-        /// </summary>
-        /// <param name="result"></param>
-        /// <param name="navProp"></param>
         private void FixupNavigationProperty(object result, NavigationPropertyMetadata navProp)
         {
             var targetEntityInfo = GetEntityInfo(navProp.TargetEntity);
@@ -742,11 +711,6 @@ namespace Lucile.Data
             }
         }
 
-        /// <summary>
-        /// EntityInfo zu EntityMetadata ermitteln
-        /// </summary>
-        /// <param name="entity"></param>
-        /// <returns></returns>
         private EntityInfo GetEntityInfo(EntityMetadata entity)
         {
             EntityInfo data;
@@ -762,12 +726,6 @@ namespace Lucile.Data
             return data;
         }
 
-        /// <summary>
-        /// Objekt über Primärschlüssel in TrackedObjects suchen
-        /// </summary>
-        /// <param name="entityInfo"></param>
-        /// <param name="key"></param>
-        /// <returns></returns>
         private object GetTrackedObjectOrDefault(EntityInfo entityInfo, object key)
         {
             lock (_updateLocker)
@@ -789,11 +747,6 @@ namespace Lucile.Data
             return null;
         }
 
-        /// <summary>
-        /// Alle Objekte aus TrackedObjects für EntityInfo
-        /// </summary>
-        /// <param name="entityInfo"></param>
-        /// <returns></returns>
         private IEnumerable<object> GetTrackedObjectsForEntity(EntityInfo entityInfo)
         {
             lock (_updateLocker)
@@ -809,14 +762,6 @@ namespace Lucile.Data
             }
         }
 
-        /// <summary>
-        /// Skalarproperties kopieren
-        /// </summary>
-        /// <param name="source"></param>
-        /// <param name="target"></param>
-        /// <param name="fixups"></param>
-        /// <param name="mergeStrategy"></param>
-        /// <param name="forceFixup">Fixup wird erzwungen, wenn true.</param>
         private void MergeScalarProperties(
             object source,
             object target,
@@ -880,12 +825,6 @@ namespace Lucile.Data
             }
         }
 
-        /// <summary>
-        /// In allen TrackedObjects source durch target ersetzen
-        /// </summary>
-        /// <param name="entityInfo"></param>
-        /// <param name="source"></param>
-        /// <param name="target"></param>
         private void ReplaceItem(EntityInfo entityInfo, object source, object target)
         {
             foreach (var navProp in entityInfo.ReverseNavigationProperties)
@@ -904,11 +843,6 @@ namespace Lucile.Data
             }
         }
 
-        /// <summary>
-        /// Reverse-Fixup der Navigation-Properties
-        /// </summary>
-        /// <param name="entityInfo"></param>
-        /// <param name="entities"></param>
         private void ReverseNavigationPropertyFixup(EntityInfo entityInfo, HashSet<object> entities)
         {
             ////using (var scope = new ChangeTrackingScope(ChangeTracking.Disable, entities.ToArray()))
@@ -931,12 +865,6 @@ namespace Lucile.Data
             ////}
         }
 
-        /// <summary>
-        /// Objekt aus TrackedObjects entfernen
-        /// </summary>
-        /// <param name="entityInfo"></param>
-        /// <param name="key"></param>
-        /// <returns></returns>
         private bool TryRemoveTrackedObject(EntityInfo entityInfo, object key)
         {
             lock (_updateLocker)
@@ -967,10 +895,6 @@ namespace Lucile.Data
             }
         }
 
-        /// <summary>
-        /// Timer um nicht mehr benötigte Objekte aus der Collection zu entfernen
-        /// </summary>
-        /// <param name="state"></param>
         private void WeakReferenceCleanupTimer(object state)
         {
             int oldCount;
@@ -1002,9 +926,6 @@ namespace Lucile.Data
                 this.Context = context;
             }
 
-            /// <summary>
-            /// Finalizer
-            /// </summary>
             ~AttachTransaction()
             {
                 Dispose(false);

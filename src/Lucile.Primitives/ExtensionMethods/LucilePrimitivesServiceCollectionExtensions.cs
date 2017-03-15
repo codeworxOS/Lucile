@@ -37,6 +37,20 @@ namespace Microsoft.Extensions.DependencyInjection
             return serviceCollection.AddScoped<TService>(GetServiceImplementation<TService>);
         }
 
+        public static IServiceCollection AddLocalService<TService, TImplementation>(this IServiceCollection serviceCollection)
+            where TService : class
+            where TImplementation : class, TService
+        {
+            return serviceCollection
+                .AddScoped<TImplementation>()
+                .AddScoped<ILocal<TService>, LocalServiceImplementation<TService, TImplementation>>();
+        }
+
+        public static IServiceCollection UseLocalServices(this IServiceCollection serviceCollection)
+        {
+            return serviceCollection.AddSingleton<IConnectionFactory, LocalConnectionFactory>();
+        }
+
         private static TService GetServiceImplementation<TService>(IServiceProvider serviceProvider)
             where TService : class
         {

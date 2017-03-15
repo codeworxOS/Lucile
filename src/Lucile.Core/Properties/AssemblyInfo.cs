@@ -1,10 +1,5 @@
 ﻿using System;
-using System.Reflection;
 using System.Runtime.InteropServices;
-
-[assembly: AssemblyConfiguration("")]
-[assembly: AssemblyProduct("Lucile.Core")]
-[assembly: AssemblyTrademark("")]
 
 [assembly: ComVisible(false)]
 
