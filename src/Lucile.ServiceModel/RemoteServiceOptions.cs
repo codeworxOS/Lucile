@@ -39,7 +39,7 @@ namespace Lucile.ServiceModel
 
         internal EndpointAddress GetEndpointAddress<T>()
         {
-            return new EndpointAddress($"{BaseAddress}/{typeof(T).Name.Substring(1)}.srv");
+            return new EndpointAddress($"{BaseAddress}/{typeof(T).Name.Substring(1)}.svc");
         }
     }
 }

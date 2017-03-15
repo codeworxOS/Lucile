@@ -8,7 +8,7 @@ echo "creating version %%~nf"
 
 dotnet clean ../Lucile.sln
 
-dotnet restore ../Lucile.sln
+dotnet restore ../Lucile.sln /p:VersionSuffix=%%~nf
 
 dotnet msbuild ../Lucile.sln /p:Configuration=Release;SignAssembly=true;AssemblyOriginatorKeyFile=..\..\private\signkey.snk;VersionSuffix=%%~nf
 
