@@ -1,2 +1,2 @@
-nuget.exe push .\nuget\*.symbols.nupkg 123 -Source http://clpatkbtfs1.calpana.local:82/nuget
+nuget.exe push .\nuget\*.symbols.nupkg fa29550c-a4b2-47a0-aa38-23408376046a -Source https://www.myget.org/F/codeworx/symbols/api/v2/package 
 PAUSE
