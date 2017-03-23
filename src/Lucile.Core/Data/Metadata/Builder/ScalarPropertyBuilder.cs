@@ -12,6 +12,7 @@ namespace Lucile.Data.Metadata.Builder
     [KnownType(typeof(GuidPropertyBuilder))]
     [KnownType(typeof(GeometryPropertyBuilder))]
     [KnownType(typeof(GeographyPropertyBuilder))]
+    [KnownType(typeof(EnumPropertyBuilder))]
     [ProtoInclude(101, typeof(TextPropertyBuilder))]
     [ProtoInclude(102, typeof(NumericPropertyBuilder))]
     [ProtoInclude(103, typeof(BooleanPropertyBuilder))]
