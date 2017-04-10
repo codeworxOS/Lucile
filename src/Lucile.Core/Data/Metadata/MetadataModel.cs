@@ -80,20 +80,9 @@ namespace Lucile.Data.Metadata
             return ordered;
         }
 
-        private IEnumerable<EntityMetadataBuilder> GetSorted(IEnumerable<EntityMetadataBuilder> baseItems)
+        private IEnumerable<EntityMetadataBuilder> GetSorted(IEnumerable<EntityMetadataBuilder> entities)
         {
-            var baseList = baseItems.ToList();
-            List<EntityMetadataBuilder> parents = null;
-
-            while (baseList.Any())
-            {
-                parents = baseList.Where(p => parents == null ? p.BaseEntity == null : parents.Contains(p.BaseEntity)).ToList();
-                foreach (var item in parents)
-                {
-                    baseList.Remove(item);
-                    yield return item;
-                }
-            }
+            return entities.OrderBy(p => p.BaseEntity == null && entities.Any(x => x.BaseEntity == p) ? 0 : 1).ThenBy(p => p.Name);
         }
 
         private bool IsPrincipalEnd(NavigationPropertyMetadata prop)

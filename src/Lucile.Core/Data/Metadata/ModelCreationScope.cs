@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Linq;
 using Lucile.Data.Metadata.Builder;
 
 namespace Lucile.Data.Metadata
@@ -35,6 +36,23 @@ namespace Lucile.Data.Metadata
             _navigationProperties[entityType].Add(propertyName, navMetadata);
         }
 
+        public IEnumerable<EntityMetadata> GetChildEntities(Type type)
+        {
+            var items = this._modelBuilder.Entities.Where(p => !p.IsExcluded && p.BaseEntity?.TypeInfo.ClrType == type);
+            foreach (var item in items)
+            {
+                EntityMetadata result;
+                if (Entities.TryGetValue(item.TypeInfo.ClrType, out result))
+                {
+                    yield return result;
+                }
+                else
+                {
+                    yield return new EntityMetadata(this, _modelBuilder.Entity(item.TypeInfo.ClrType));
+                }
+            }
+        }
+
         public EntityMetadata GetEntity(Type type)
         {
             EntityMetadata result;
@@ -43,7 +61,24 @@ namespace Lucile.Data.Metadata
                 return result;
             }
 
-            return new EntityMetadata(this, _modelBuilder.Entity(type));
+            var entityBuilder = _modelBuilder.Entity(type);
+
+            var rootEntity = entityBuilder.BaseEntity;
+            while (rootEntity?.BaseEntity != null)
+            {
+                rootEntity = rootEntity?.BaseEntity;
+            }
+
+            if (rootEntity != null)
+            {
+                var root = GetEntity(rootEntity.TypeInfo.ClrType);
+                if (Entities.TryGetValue(type, out result))
+                {
+                    return result;
+                }
+            }
+
+            return new EntityMetadata(this, entityBuilder);
         }
     }
 }

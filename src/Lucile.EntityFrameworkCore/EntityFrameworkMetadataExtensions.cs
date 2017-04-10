@@ -12,7 +12,12 @@ namespace Lucile.EntityFrameworkCore
     {
         public static void UseDbContext(this MetadataModelBuilder builder, DbContext context)
         {
-            foreach (var entity in context.Model.GetEntityTypes())
+            UseDbModel(builder, context.Model);
+        }
+
+        public static void UseDbModel(this MetadataModelBuilder builder, IModel model)
+        {
+            foreach (var entity in model.GetEntityTypes())
             {
                 var entityBuilder = builder.FromEntityType(entity);
             }

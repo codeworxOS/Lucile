@@ -21,6 +21,7 @@ namespace Lucile.Data.Metadata
             scope.AddEntity(builder.TypeInfo.ClrType, this);
             this.ClrType = builder.TypeInfo.ClrType;
 
+            var childListBuilder = ImmutableList.CreateBuilder<EntityMetadata>();
             var propertyListBuilder = ImmutableList.CreateBuilder<ScalarProperty>();
             var navigationListBuilder = ImmutableList.CreateBuilder<NavigationPropertyMetadata>();
 
@@ -37,6 +38,9 @@ namespace Lucile.Data.Metadata
             {
                 BaseEntity = scope.GetEntity(builder.BaseEntity.TypeInfo.ClrType);
             }
+
+            childListBuilder.AddRange(scope.GetChildEntities(builder.TypeInfo.ClrType));
+            ChildEntities = childListBuilder.ToImmutable();
 
             foreach (var item in builder.Navigations.Where(p => !p.IsExcluded))
             {
@@ -130,6 +134,19 @@ namespace Lucile.Data.Metadata
             var children = new Dictionary<object, NavigationPropertyMetadata>();
             FlattenChildren(entity, children, this, 0, maxLevel);
             return children;
+        }
+
+        public IEnumerable<EntityMetadata> FlattenEntities()
+        {
+            foreach (var item in ChildEntities)
+            {
+                foreach (var child in item.FlattenEntities())
+                {
+                    yield return child;
+                }
+            }
+
+            yield return this;
         }
 
         public IEnumerable<NavigationPropertyMetadata> GetNavigations()
@@ -301,21 +318,6 @@ namespace Lucile.Data.Metadata
 
             var lambda = Expression.Lambda<Func<object, object, bool>>(compareExpression, paramLeft, paramRight);
             return lambda.Compile();
-        }
-
-        private IEnumerable<EntityMetadata> FlattenEntities()
-        {
-            foreach (var item in ChildEntities)
-            {
-                foreach (var child in item.FlattenEntities())
-                {
-                    yield return child;
-                }
-
-                yield return item;
-            }
-
-            yield return this;
         }
     }
 }
