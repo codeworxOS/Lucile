@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Linq.Expressions;
@@ -6,6 +7,7 @@ using System.Reflection;
 using System.Threading.Tasks;
 using Lucile.Linq;
 using Lucile.Linq.Configuration;
+using Lucile.Linq.Configuration.Builder;
 using Lucile.Test.Model;
 using Xunit;
 
@@ -13,6 +15,95 @@ namespace Tests
 {
     public class QueryModelTest
     {
+        [Fact]
+        public void AnyFilterItemTest()
+        {
+            var id1 = Guid.NewGuid();
+            var id2 = Guid.NewGuid();
+
+            var receipt1 = new Invoice
+            {
+                Id = id1,
+                Details = {
+                    new ReceiptDetail { Price = 101 }
+                }
+            };
+
+            var receipt2 = new Invoice
+            {
+                Id = id2,
+                Details = {
+                    new ReceiptDetail { Price = 100 }
+                }
+            };
+
+            var receipts = new List<Receipt>() {
+                receipt1,
+                receipt2
+            };
+
+            var filterItem = new AnyFilterItemBuilder()
+            {
+                Path = "Details",
+                Filter = new NumericFilterItemBuilder
+                {
+                    Left = new PathValueExpressionBuilder { Path = "Price" },
+                    Operator = RelationalCompareOperator.GreaterThen,
+                    Right = new NumericConstantValueBuilder { Value = 100 }
+                }
+            };
+
+            var query = receipts.AsQueryable().ApplyFilterItem(filterItem.ToTarget());
+            Assert.Equal(1, query.Count());
+
+            Assert.Equal(id1, query.First().Id);
+
+            ((NumericFilterItemBuilder)filterItem.Filter).Operator = RelationalCompareOperator.LessThenOrEqual;
+
+            query = receipts.AsQueryable().ApplyFilterItem(filterItem.ToTarget());
+            Assert.Equal(1, query.Count());
+
+            Assert.Equal(id2, query.First().Id);
+        }
+
+        [Fact]
+        public void NullFilterItemTest()
+        {
+            var builder = new DateTimeFilterItemBuilder
+            {
+                Left = new PathValueExpressionBuilder { Path = "ExpectedDeliveryDate" },
+                Operator = RelationalCompareOperator.IsNull
+            };
+
+            Guid id1 = Guid.NewGuid();
+            Guid id2 = Guid.NewGuid();
+            Guid id3 = Guid.NewGuid();
+
+            var receipts = new[] {
+                 new Invoice{ Id = id1, ExpectedDeliveryDate = DateTime.Today },
+                 new Invoice{ Id = id2, ExpectedDeliveryDate = DateTime.Today.AddDays(1) },
+                 new Invoice{ Id = id3 }
+            };
+
+            var query = receipts.AsQueryable().ApplyFilterItem(builder.ToTarget());
+
+            Assert.Equal(1, query.Count());
+            Assert.Equal(id3, query.First().Id);
+
+            builder.Operator = RelationalCompareOperator.IsNotNull;
+            query = receipts.AsQueryable().ApplyFilterItem(builder.ToTarget());
+
+            Assert.Equal(2, query.Count());
+            Assert.All(query, p => Assert.NotEqual(id3, p.Id));
+
+            builder.Operator = RelationalCompareOperator.GreaterThen;
+            builder.Right = new DateTimeConstantValueBuilder { Value = DateTime.Today };
+            query = receipts.AsQueryable().ApplyFilterItem(builder.ToTarget());
+
+            Assert.Equal(1, query.Count());
+            Assert.Equal(id2, query.First().Id);
+        }
+
         [Fact]
         public void PropertyConfigurationBuilderConstructorTest()
         {

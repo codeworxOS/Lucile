@@ -10,11 +10,13 @@ namespace Lucile.Linq.Configuration.Builder
     [KnownType(typeof(StringFilterItemBuilder))]
     [KnownType(typeof(DateTimeFilterItemBuilder))]
     [KnownType(typeof(NumericFilterItemBuilder))]
+    [KnownType(typeof(AnyFilterItemBuilder))]
     [ProtoBuf.ProtoInclude(101, typeof(FilterItemGroupBuilder))]
     [ProtoBuf.ProtoInclude(102, typeof(BooleanFilterItemBuilder))]
     [ProtoBuf.ProtoInclude(104, typeof(StringFilterItemBuilder))]
     [ProtoBuf.ProtoInclude(105, typeof(DateTimeFilterItemBuilder))]
     [ProtoBuf.ProtoInclude(106, typeof(NumericFilterItemBuilder))]
+    [ProtoBuf.ProtoInclude(107, typeof(AnyFilterItemBuilder))]
     [ProtoBuf.ProtoContract(AsReferenceDefault = true)]
     [JsonConverter(typeof(JsonInheritanceConverter), "type")]
     public abstract class FilterItemBuilder : BaseBuilder<FilterItem>

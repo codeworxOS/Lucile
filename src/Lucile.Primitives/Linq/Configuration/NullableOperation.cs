@@ -1,9 +1,8 @@
 ﻿namespace Lucile.Linq.Configuration
 {
-    public enum BooleanOperator
+    public enum NullableOperation
     {
-        IsTrue = 0x00,
-        IsFalse = 0x01,
+        None = 0x00,
         IsNull = 0x20,
         IsNotNull = 0x40
     }

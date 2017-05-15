@@ -15,28 +15,70 @@ namespace Lucile.Linq.Configuration
 
         protected override Expression BuildBinaryExpression(Expression leftExpression, Expression rightExpression)
         {
+            var nullable = Nullable.GetUnderlyingType(leftExpression.Type);
+            Expression nullExpression = null;
+            if (nullable != null)
+            {
+                nullExpression = Expression.Property(leftExpression, "HasValue");
+                leftExpression = Expression.Property(leftExpression, "Value");
+            }
+
+            Expression condition = null;
+
             switch (Operator)
             {
                 case RelationalCompareOperator.Equal:
-                    return Expression.Equal(leftExpression, rightExpression);
+                    condition = Expression.Equal(leftExpression, rightExpression);
+                    break;
 
                 case RelationalCompareOperator.NotEqual:
-                    return Expression.NotEqual(leftExpression, rightExpression);
+                    condition = Expression.NotEqual(leftExpression, rightExpression);
+                    break;
 
                 case RelationalCompareOperator.GreaterThen:
-                    return Expression.GreaterThan(leftExpression, rightExpression);
+                    condition = Expression.GreaterThan(leftExpression, rightExpression);
+                    break;
 
                 case RelationalCompareOperator.GreaterThenOrEqual:
-                    return Expression.GreaterThanOrEqual(leftExpression, rightExpression);
+                    condition = Expression.GreaterThanOrEqual(leftExpression, rightExpression);
+                    break;
 
                 case RelationalCompareOperator.LessThen:
-                    return Expression.LessThan(leftExpression, rightExpression);
+                    condition = Expression.LessThan(leftExpression, rightExpression);
+                    break;
 
                 case RelationalCompareOperator.LessThenOrEqual:
-                    return Expression.LessThanOrEqual(leftExpression, rightExpression);
+                    condition = Expression.LessThanOrEqual(leftExpression, rightExpression);
+                    break;
+            }
+
+            if (condition != null)
+            {
+                if (nullExpression == null)
+                {
+                    return condition;
+                }
+                else
+                {
+                    return Expression.AndAlso(nullExpression, condition);
+                }
             }
 
             throw new NotSupportedException();
+        }
+
+        protected override NullableOperation GetNullableOperation()
+        {
+            if (this.Operator == RelationalCompareOperator.IsNull)
+            {
+                return NullableOperation.IsNull;
+            }
+            else if (this.Operator == RelationalCompareOperator.IsNotNull)
+            {
+                return NullableOperation.IsNotNull;
+            }
+
+            return NullableOperation.None;
         }
     }
 }

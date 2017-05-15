@@ -12,10 +12,10 @@ dotnet restore ../Lucile.sln /p:VersionSuffix=%%~nf
 
 dotnet msbuild ../Lucile.sln /p:Configuration=Release;SignAssembly=true;AssemblyOriginatorKeyFile=..\..\private\signkey.snk;VersionSuffix=%%~nf
 
-dotnet pack ../src/Lucile.Primitives --no-build -c Release -o ..\..\tools\nuget\ --include-source --version-suffix %%~nf
-dotnet pack ../src/Lucile.Core --no-build -c Release -o ..\..\tools\nuget\ --include-source --version-suffix %%~nf
-dotnet pack ../src/Lucile.EntityFrameworkCore --no-build -c Release -o ..\..\tools\nuget\ --include-source --version-suffix %%~nf
-dotnet pack ../src/Lucile.ServiceModel --no-build -c Release -o ..\..\tools\nuget\ --include-source --version-suffix %%~nf
+dotnet pack ../src/Lucile.Primitives/Lucile.Primitives.csproj --no-build -c Release -o ..\..\tools\nuget\ --include-symbols --include-source --version-suffix %%~nf
+dotnet pack ../src/Lucile.Core/Lucile.Core.csproj --no-build -c Release -o ..\..\tools\nuget\ --include-symbols --include-source --version-suffix %%~nf
+dotnet pack ../src/Lucile.EntityFrameworkCore/Lucile.EntityFrameworkCore.csproj --no-build -c Release -o ..\..\tools\nuget\ --include-symbols --include-source --version-suffix %%~nf
+dotnet pack ../src/Lucile.ServiceModel/Lucile.ServiceModel.csproj --no-build -c Release -o ..\..\tools\nuget\ --include-symbols --include-source --version-suffix %%~nf
 
 )
 

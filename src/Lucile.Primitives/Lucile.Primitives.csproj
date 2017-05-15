@@ -40,4 +40,8 @@
 		<PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="1.1.0" />
 	</ItemGroup>
 
+	<ItemGroup>
+	  <Folder Include="Configuration\Linq\" />
+	</ItemGroup>
+
 </Project>

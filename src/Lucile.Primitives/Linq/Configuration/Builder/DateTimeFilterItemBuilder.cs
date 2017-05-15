@@ -26,7 +26,7 @@ namespace Lucile.Linq.Configuration.Builder
 
         public override FilterItem ToTarget()
         {
-            return new DateTimeBinaryFilterItem(Left.ToTarget(), Right.ToTarget(), Operator);
+            return new DateTimeBinaryFilterItem(Left.ToTarget(), Right?.ToTarget(), Operator);
         }
     }
 }

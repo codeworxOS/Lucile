@@ -26,6 +26,12 @@ namespace Lucile.Linq.Configuration
 
                 case BooleanOperator.IsFalse:
                     return Expression.Not(value);
+
+                case BooleanOperator.IsNull:
+                    return Expression.Equal(value, Expression.Constant(null, typeof(bool?)));
+
+                case BooleanOperator.IsNotNull:
+                    return Expression.NotEqual(value, Expression.Constant(null, typeof(bool?)));
             }
 
             throw new NotSupportedException();

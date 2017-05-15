@@ -52,5 +52,19 @@ namespace Lucile.Linq.Configuration
 
             throw new NotSupportedException();
         }
+
+        protected override NullableOperation GetNullableOperation()
+        {
+            if (this.Operator == StringOperator.IsNull)
+            {
+                return NullableOperation.IsNull;
+            }
+            else if (this.Operator == StringOperator.IsNotNull)
+            {
+                return NullableOperation.IsNotNull;
+            }
+
+            return NullableOperation.None;
+        }
     }
 }
