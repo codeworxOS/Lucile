@@ -67,6 +67,47 @@ namespace Tests
         }
 
         [Fact]
+        public void GuidFilterItemTest()
+        {
+            var id1 = Guid.NewGuid();
+            var id2 = Guid.NewGuid();
+
+            var receipt1 = new Invoice
+            {
+                Id = id1,
+            };
+
+            var receipt2 = new Invoice
+            {
+                Id = id2,
+            };
+
+            var receipts = new List<Receipt>() {
+                receipt1,
+                receipt2
+            };
+
+            var filterItem = new GuidFilterItemBuilder
+            {
+                Left = new PathValueExpressionBuilder { Path = "Id" },
+                Operator = RelationalCompareOperator.Equal,
+                Right = new GuidConstantValueBuilder { Value = id1 }
+            };
+
+            var query = receipts.AsQueryable().ApplyFilterItem(filterItem.ToTarget());
+            Assert.Equal(1, query.Count());
+
+            Assert.Equal(receipt1, query.First());
+
+            ((GuidConstantValueBuilder)filterItem.Right).Value = id2;
+
+            query = receipts.AsQueryable().ApplyFilterItem(filterItem.ToTarget());
+            Assert.Equal(1, query.Count());
+
+            Assert.Equal(receipt2, query.First());
+        }
+
+        [Fact]
         public void NullFilterItemTest()
         {
             var builder = new DateTimeFilterItemBuilder

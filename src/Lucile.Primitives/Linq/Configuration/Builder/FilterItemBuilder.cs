@@ -10,6 +10,7 @@ namespace Lucile.Linq.Configuration.Builder
     [KnownType(typeof(StringFilterItemBuilder))]
     [KnownType(typeof(DateTimeFilterItemBuilder))]
     [KnownType(typeof(NumericFilterItemBuilder))]
+    [KnownType(typeof(GuidFilterItemBuilder))]
     [KnownType(typeof(AnyFilterItemBuilder))]
     [ProtoBuf.ProtoInclude(101, typeof(FilterItemGroupBuilder))]
     [ProtoBuf.ProtoInclude(102, typeof(BooleanFilterItemBuilder))]
@@ -17,6 +18,7 @@ namespace Lucile.Linq.Configuration.Builder
     [ProtoBuf.ProtoInclude(105, typeof(DateTimeFilterItemBuilder))]
     [ProtoBuf.ProtoInclude(106, typeof(NumericFilterItemBuilder))]
     [ProtoBuf.ProtoInclude(107, typeof(AnyFilterItemBuilder))]
+    [ProtoBuf.ProtoInclude(108, typeof(GuidFilterItemBuilder))]
     [ProtoBuf.ProtoContract(AsReferenceDefault = true)]
     [JsonConverter(typeof(JsonInheritanceConverter), "type")]
     public abstract class FilterItemBuilder : BaseBuilder<FilterItem>
@@ -43,6 +45,14 @@ namespace Lucile.Linq.Configuration.Builder
             else if (item is NumericBinaryFilterItem)
             {
                 result = new NumericFilterItemBuilder();
+            }
+            else if (item is AnyFilterItem)
+            {
+                result = new AnyFilterItemBuilder();
+            }
+            else if (item is GuidBinaryFilterItem)
+            {
+                result = new GuidFilterItemBuilder();
             }
 
             if (result == null)

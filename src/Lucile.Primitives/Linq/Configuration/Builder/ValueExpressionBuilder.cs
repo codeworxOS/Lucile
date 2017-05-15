@@ -9,10 +9,12 @@ namespace Lucile.Linq.Configuration.Builder
     [KnownType(typeof(StringConstantValueBuilder))]
     [KnownType(typeof(NumericConstantValueBuilder))]
     [KnownType(typeof(DateTimeConstantValueBuilder))]
+    [KnownType(typeof(GuidConstantValueBuilder))]
     [ProtoBuf.ProtoInclude(101, typeof(PathValueExpressionBuilder))]
     [ProtoBuf.ProtoInclude(102, typeof(StringConstantValueBuilder))]
     [ProtoBuf.ProtoInclude(103, typeof(NumericConstantValueBuilder))]
     [ProtoBuf.ProtoInclude(104, typeof(DateTimeConstantValueBuilder))]
+    [ProtoBuf.ProtoInclude(105, typeof(GuidConstantValueBuilder))]
     [ProtoBuf.ProtoContract(AsReferenceDefault = true)]
     [JsonConverter(typeof(JsonInheritanceConverter), "type")]
     public abstract class ValueExpressionBuilder : BaseBuilder<ValueExpression>
@@ -35,6 +37,10 @@ namespace Lucile.Linq.Configuration.Builder
             else if (item is DateTimeConstantValue)
             {
                 result = new DateTimeConstantValueBuilder();
+            }
+            else if (item is GuidConstantValue)
+            {
+                result = new GuidConstantValueBuilder();
             }
 
             if (result == null)
