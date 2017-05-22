@@ -23,6 +23,21 @@ namespace Lucile.Linq.Configuration
                 leftExpression = Expression.Property(leftExpression, "Value");
             }
 
+            nullable = Nullable.GetUnderlyingType(rightExpression.Type);
+            if (nullable != null)
+            {
+                if (nullExpression != null)
+                {
+                    nullExpression = Expression.AndAlso(nullExpression, Expression.Property(rightExpression, "HasValue"));
+                }
+                else
+                {
+                    nullExpression = Expression.Property(rightExpression, "HasValue");
+                }
+
+                rightExpression = Expression.Property(rightExpression, "Value");
+            }
+
             Expression condition = null;
 
             switch (Operator)

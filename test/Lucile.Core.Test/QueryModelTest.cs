@@ -146,6 +146,55 @@ namespace Tests
         }
 
         [Fact]
+        public void NumericFilterItemWithEnumTest()
+        {
+            var id1 = Guid.NewGuid();
+            var id2 = Guid.NewGuid();
+            var id3 = Guid.NewGuid();
+            var id4 = Guid.NewGuid();
+
+            var receipt1 = new Invoice
+            {
+                Id = id1,
+                Customer = new Contact { Id = id2, ContactType = ContactType.Customer }
+            };
+
+            var receipt2 = new Invoice
+            {
+                Id = id3,
+                Customer = new Contact { Id = id4, ContactType = ContactType.Supplier }
+            };
+
+            var receipts = new[] {
+                receipt1,
+                receipt2
+            };
+
+            var filterItem = new NumericFilterItemBuilder
+            {
+                Left = new PathValueExpressionBuilder { Path = "Customer.ContactType" },
+                Operator = RelationalCompareOperator.Equal,
+                Right = new NumericConstantValueBuilder { Value = (int)ContactType.Customer }
+            };
+
+            var query = receipts.AsQueryable().ApplyFilterItem(filterItem.ToTarget());
+            Assert.Equal(1, query.Count());
+            Assert.Equal(receipt1, query.First());
+
+            filterItem = new NumericFilterItemBuilder
+            {
+                Right = new PathValueExpressionBuilder { Path = "Customer.ContactType" },
+                Operator = RelationalCompareOperator.Equal,
+                Left = new NumericConstantValueBuilder { Value = (int)ContactType.Supplier }
+            };
+
+            query = receipts.AsQueryable().ApplyFilterItem(filterItem.ToTarget());
+            Assert.Equal(1, query.Count());
+
+            Assert.Equal(receipt2, query.First());
+        }
+
+        [Fact]
         public void PropertyConfigurationBuilderConstructorTest()
         {
             var test = new ReceiptDetail();
