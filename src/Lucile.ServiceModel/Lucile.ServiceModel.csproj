@@ -6,7 +6,7 @@
 		<Copyright>copyright © codeworx gmbh 2017</Copyright>
 		<AssemblyTitle>Lucile Framework Service Model Library</AssemblyTitle>
 		<Authors>codeworx GmbH</Authors>
-		<TargetFramework>netstandard1.3</TargetFramework>
+		<TargetFrameworks>netstandard1.3;net45</TargetFrameworks>
 		<TreatWarningsAsErrors>true</TreatWarningsAsErrors>
 		<AssemblyName>Lucile.ServiceModel</AssemblyName>
 		<PackageId>Lucile.ServiceModel</PackageId>
@@ -20,7 +20,7 @@
 	</ItemGroup>
 
 	<ItemGroup>
-	  <AdditionalFiles Include="..\..\global\stylecop.json" Link="stylecop.json" />
+		<AdditionalFiles Include="..\..\global\stylecop.json" Link="stylecop.json" />
 	</ItemGroup>
 
 	<ItemGroup>
@@ -33,6 +33,6 @@
 	</ItemGroup>
 
 	<ItemGroup>
-	  <ProjectReference Include="..\Lucile.Primitives\Lucile.Primitives.csproj" />
+		<ProjectReference Include="..\Lucile.Primitives\Lucile.Primitives.csproj" />
 	</ItemGroup>
 </Project>
