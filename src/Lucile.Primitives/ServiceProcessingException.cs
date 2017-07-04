@@ -4,20 +4,21 @@ namespace Lucile
 {
     public class ServiceProcessingException : Exception
     {
-        public ServiceProcessingException()
-            : this("Error processing service request.")
+        public ServiceProcessingException(string tracingIdentifier)
+            : this(tracingIdentifier, "Error processing service request.")
         {
         }
 
-        public ServiceProcessingException(string exceptionType, string message, string info)
-            : this($"Service request threw exception {exceptionType} ({message}).")
+        public ServiceProcessingException(string tracingIdentifier, string exceptionType, string message, string info)
+            : this(tracingIdentifier, $"Service request threw exception {exceptionType} ({message}).")
         {
             RemoteExceptionInfo = info;
         }
 
-        public ServiceProcessingException(string message)
+        public ServiceProcessingException(string tracingIdentifier, string message)
             : base(message)
         {
+            this.TracingIdentifier = tracingIdentifier;
         }
 
         public ServiceProcessingException(string message, Exception innerException)
@@ -26,5 +27,7 @@ namespace Lucile
         }
 
         public string RemoteExceptionInfo { get; private set; }
+
+        public string TracingIdentifier { get; private set; }
     }
 }

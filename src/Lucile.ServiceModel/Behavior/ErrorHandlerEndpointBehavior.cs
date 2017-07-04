@@ -6,6 +6,22 @@ namespace Lucile.ServiceModel.Behavior
     [AttributeUsage(AttributeTargets.Class, AllowMultiple = false)]
     public class ErrorHandlerEndpointBehavior : Attribute, IEndpointBehavior
     {
+        public ErrorHandlerEndpointBehavior()
+        {
+        }
+
+#if NET45
+        public ErrorHandlerEndpointBehavior(Func<Exception, string> logDelegate, bool includeDetails = false)
+        {
+            LogDelegate = logDelegate;
+            IncludeDetails = false;
+        }
+#endif
+
+        public bool IncludeDetails { get; set; }
+
+        public Func<Exception, string> LogDelegate { get; set; }
+
         public void AddBindingParameters(ServiceEndpoint endpoint, System.ServiceModel.Channels.BindingParameterCollection bindingParameters)
         {
         }
@@ -17,6 +33,9 @@ namespace Lucile.ServiceModel.Behavior
 
         public void ApplyDispatchBehavior(ServiceEndpoint endpoint, System.ServiceModel.Dispatcher.EndpointDispatcher endpointDispatcher)
         {
+#if NET45
+            endpointDispatcher.ChannelDispatcher.ErrorHandlers.Add(new SerializeExceptionErrorHandler(this.LogDelegate, this.IncludeDetails));
+#endif
         }
 
         public void Validate(ServiceEndpoint endpoint)
@@ -26,5 +45,52 @@ namespace Lucile.ServiceModel.Behavior
                 endpoint.Contract.ContractBehaviors.Add(FaultContractBehavior.Instance);
             }
         }
+
+#if NET45
+        private class SerializeExceptionErrorHandler : System.ServiceModel.Dispatcher.IErrorHandler
+        {
+            private readonly Func<Exception, string> _logDelegate;
+            private readonly bool _includeDetails;
+
+            public SerializeExceptionErrorHandler(Func<Exception, string> logDelegate, bool includeDetails)
+            {
+                _logDelegate = logDelegate;
+                _includeDetails = includeDetails;
+            }
+
+            public bool HandleError(Exception error)
+            {
+                if (error is System.ServiceModel.FaultException)
+                {
+                    return false;
+                }
+                else
+                {
+                    if (error != null)
+                    {
+                        _logDelegate?.Invoke(error);
+                    }
+
+                    return true;
+                }
+            }
+
+            public void ProvideFault(Exception error, System.ServiceModel.Channels.MessageVersion version, ref System.ServiceModel.Channels.Message fault)
+            {
+                if (error is System.ServiceModel.FaultException)
+                {
+                    return;
+                }
+
+                var identifier = _logDelegate?.Invoke(error);
+
+                var detail = new ExceptionFault(identifier, error, _includeDetails);
+
+                var messageFault = System.ServiceModel.Channels.MessageFault.CreateFault(new System.ServiceModel.FaultCode("Sender"), new System.ServiceModel.FaultReason("UnhandledException"), detail);
+
+                fault = System.ServiceModel.Channels.Message.CreateMessage(version, messageFault, null);
+            }
+        }
+#endif
     }
 }

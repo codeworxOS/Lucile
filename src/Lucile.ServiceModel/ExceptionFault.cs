@@ -8,6 +8,18 @@ namespace Lucile.ServiceModel
     [DataContract]
     public class ExceptionFault
     {
+#if NET45
+        private static readonly Action<Exception> _captureDelegate = null;
+
+        static ExceptionFault()
+        {
+            var param = System.Linq.Expressions.Expression.Parameter(typeof(Exception));
+            var call = System.Linq.Expressions.Expression.Call(param, typeof(Exception).GetMethod("InternalPreserveStackTrace", System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic));
+
+            _captureDelegate = System.Linq.Expressions.Expression.Lambda<Action<Exception>>(call, param).Compile();
+        }
+#endif
+
         public ExceptionFault()
         {
         }
@@ -49,15 +61,12 @@ namespace Lucile.ServiceModel
 
         public void ReThrow()
         {
+            Exception ex = null;
             try
             {
                 if (ExceptionPayload != null)
                 {
-                    Exception ex = Deserialize(ExceptionPayload);
-                    if (ex != null)
-                    {
-                        ExceptionDispatchInfo.Capture(ex).Throw();
-                    }
+                    ex = Deserialize(ExceptionPayload);
                 }
             }
             catch
@@ -65,7 +74,12 @@ namespace Lucile.ServiceModel
                 // do nothing
             }
 
-            throw new ServiceProcessingException(this.ExceptionType, this.Message, this.ExceptionInfo);
+            if (ex != null)
+            {
+                throw ex;
+            }
+
+            throw new ServiceProcessingException(this.TracingIdentifier, this.ExceptionType, this.Message, this.ExceptionInfo);
         }
 
         private static Exception Deserialize(byte[] exceptionPayload)
@@ -91,6 +105,7 @@ namespace Lucile.ServiceModel
         private static byte[] Serialize(Exception exception)
         {
 #if NET45
+            _captureDelegate(exception);
             try
             {
                 var formatter = new System.Runtime.Serialization.Formatters.Binary.BinaryFormatter();
