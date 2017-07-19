@@ -14,6 +14,31 @@ namespace Tests
     public class ModelContextTest
     {
         [Fact]
+        public void AttachOperationsMergeTest()
+        {
+            MetadataModel model = GetModel();
+
+            var context = new ModelContext(model);
+
+            var customerOld = new Contact { State = TrackingState.Unchanged, Id = Guid.NewGuid(), FirstName = "First1", LastName = "Last1" };
+            var customerNew = new Contact { State = TrackingState.Unchanged, Id = customerOld.Id, FirstName = "First1", LastName = "Last2" };
+            var customerOther = new Contact { State = TrackingState.Unchanged, Id = Guid.NewGuid(), FirstName = "FirstOther", LastName = "LastOther" };
+
+            context.AttachSingle(customerOld);
+
+            var operations = context.Merge(new[] { customerNew, customerOther });
+
+            Assert.Equal(2, operations.Items.Count());
+            Assert.Equal(customerOld, operations.Items.First());
+            Assert.Equal(1, operations.Added.Count);
+            Assert.Equal(customerOther, operations.Added.First());
+            Assert.Equal(1, operations.Merged.Count);
+            Assert.Equal(customerOld, operations.Merged.First().Key);
+            Assert.Equal(1, operations.Merged.First().Value.Count());
+            Assert.Equal(nameof(Contact.LastName), operations.Merged.First().Value.First().Name);
+        }
+
+        [Fact]
         public void AutomaticFixupTest()
         {
             var metadataModelBuilder = new MetadataModelBuilder();

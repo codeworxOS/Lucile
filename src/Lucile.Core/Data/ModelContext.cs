@@ -99,7 +99,7 @@ namespace Lucile.Data
                 var cleaned = new Dictionary<object, bool>();
 
                 // Liste der Objekte, die ausgetauscht wurden
-                var cleanupTuples = new Dictionary<object, object>();
+                var cleanupTuples = new Dictionary<object, CleanupTuple>();
 
                 // Liste von Objekten mit Naviagtion-Property, für die ein Fixup gemacht werden muss
                 var fixups = new List<Tuple<object, NavigationPropertyMetadata>>();
@@ -241,6 +241,50 @@ namespace Lucile.Data
             }
         }
 
+        public AttachOperations<T> Merge<T>(IEnumerable<T> items, MergeStrategy mergeStrategy = MergeStrategy.UpdateIfUnchanged)
+                                                                    where T : class
+        {
+            var itemsList = items.Where(p => p != null).ToList();
+
+            using (BeginAttach<T>())
+            {
+                // Liste der bereinigten Objekte für Rekursionsvermeidung
+                var cleaned = new Dictionary<object, bool>();
+
+                // Liste der Objekte, die ausgetauscht wurden
+                var cleanupTuples = new Dictionary<object, CleanupTuple>();
+
+                // Liste von Objekten mit Naviagtion-Property, für die ein Fixup gemacht werden muss
+                var fixups = new List<Tuple<object, NavigationPropertyMetadata>>();
+
+                // Liste der Objekte, für die ein reverse Fixup gemacht werden muss
+                var reverseFixups = new Dictionary<EntityInfo, HashSet<object>>();
+
+                // Objekte aufräumen
+                var resultItems = new List<T>();
+                resultItems.AddRange(itemsList.Select(item => (T)Clean(item, cleaned, cleanupTuples, fixups, reverseFixups, mergeStrategy)));
+
+                // Fixups parallel ausführen
+                Parallel.ForEach(fixups, p => FixupNavigationProperty(p.Item1, p.Item2));
+
+                // Reverse-Fixup parallel ausführen
+                Parallel.ForEach(reverseFixups, p => ReverseNavigationPropertyFixup(p.Key, p.Value));
+
+                var result = new AttachOperations<T>(resultItems);
+                foreach (var item in cleaned.Where(p => p.Value))
+                {
+                    result.TrackAdded(item.Key);
+                }
+
+                foreach (var item in cleanupTuples.Where(p => p.Value.GetProperties().Any()))
+                {
+                    result.TrackMerged(item.Value.Target, item.Value.GetProperties());
+                }
+
+                return result;
+            }
+        }
+
         protected virtual void Dispose(bool disposing)
         {
             if (!_disposedValue)
@@ -353,7 +397,7 @@ namespace Lucile.Data
         private object Clean(
             object source,
             Dictionary<object, bool> cleaned,
-            Dictionary<object, object> cleanedTuples,
+            Dictionary<object, CleanupTuple> cleanedTuples,
             List<Tuple<object, NavigationPropertyMetadata>> fixups,
             Dictionary<EntityInfo, HashSet<object>> reverseFixups,
             MergeStrategy mergeStrategy)
@@ -365,10 +409,10 @@ namespace Lucile.Data
             }
 
             // Wurde dieses Objekt bereits gecleaned und als Duplikat erkannt
-            object tupleItem;
+            CleanupTuple tupleItem;
             if (cleanedTuples.TryGetValue(source, out tupleItem))
             {
-                return tupleItem;
+                return tupleItem.Target;
             }
 
             // Metadaten für Source ermitteln
@@ -469,18 +513,20 @@ namespace Lucile.Data
 
             if (source != result)
             {
+                var tuple = new CleanupTuple { Source = source, Target = result };
+
                 // Objekte nicht Referenzgleich
                 if (_trackingInfoProvider.GetState(source) == TrackingState.Added && _trackingInfoProvider.GetState(result) == TrackingState.Deleted)
                 {
-                    MergeScalarProperties(source, result, fixups, MergeStrategy.ForceUpdate, true);
+                    MergeScalarProperties(tuple, fixups, MergeStrategy.ForceUpdate, true);
                 }
                 else
                 {
-                    MergeScalarProperties(source, result, fixups, mergeStrategy);
+                    MergeScalarProperties(tuple, fixups, mergeStrategy);
                 }
 
                 // zu CleanedTuples hinzufügen
-                cleanedTuples.Add(source, result);
+                cleanedTuples.Add(source, tuple);
             }
             else
             {
@@ -599,10 +645,11 @@ namespace Lucile.Data
 
             Expression filterCondition = Expression.Equal(Expression.Property(param, prop.Name), Expression.Constant(null));
 
-            ////filterCondition = Expression.AndAlso(
-            ////    filterCondition,
-            ////    Expression.NotEqual(Expression.Property(Expression.Property(param, "ChangeTracker"), "State"), Expression.Constant(ObjectState.Deleted))
-            ////        );
+            filterCondition = Expression.AndAlso(
+                filterCondition,
+                Expression.NotEqual(
+                    Expression.Constant(TrackingState.Deleted, typeof(TrackingState?)),
+                    Expression.Call(Expression.Constant(_trackingInfoProvider, typeof(ITrackingInfoProvider)), typeof(ITrackingInfoProvider).GetMethod("GetState"), param)));
 
             baseQuery = Expression.Call(
                 typeof(Enumerable).GetMethods().First(p => p.Name == "Where").MakeGenericMethod(reverseEntityInfo.EntityMetadata.ClrType),
@@ -701,7 +748,7 @@ namespace Lucile.Data
             if (key != null)
             {
                 var target = GetTrackedObjectOrDefault(targetEntityInfo, key);
-                if (target != null) ////&& target.ChangeTracker.State != ObjectState.Deleted)
+                if (target != null && _trackingInfoProvider.GetState(target) != TrackingState.Deleted)
                 {
                     FillNavigationPropertyAndPrincipal(navProp, result, target);
                 }
@@ -775,34 +822,34 @@ namespace Lucile.Data
         }
 
         private void MergeScalarProperties(
-            object source,
-            object target,
+            CleanupTuple tuple,
             List<Tuple<object, NavigationPropertyMetadata>> fixups,
             MergeStrategy mergeStrategy,
             bool forceFixup = false)
         {
             // geänderte Objekte nur bei ForceUpdate aktualisieren
-            if (mergeStrategy == MergeStrategy.ForceUpdate || _trackingInfoProvider.GetState(target) == TrackingState.Unchanged)
+            if (mergeStrategy == MergeStrategy.ForceUpdate || _trackingInfoProvider.GetState(tuple.Target) == TrackingState.Unchanged)
             {
                 ////using (new ChangeTrackingScope(ChangeTracking.Disable, source, target))
                 ////{
-                var entity = GetEntityInfo(_model.GetEntityMetadata(target));
+                var entity = GetEntityInfo(_model.GetEntityMetadata(tuple.Target));
 
                 // Properties kopieren
                 foreach (var prop in entity.ScalarProperties)
                 {
-                    var oldValue = prop.GetValue(target);
-                    var newValue = prop.GetValue(source);
+                    var oldValue = prop.GetValue(tuple.Target);
+                    var newValue = prop.GetValue(tuple.Source);
 
                     if (!Equals(oldValue, newValue) || forceFixup)
                     {
-                        prop.SetValue(target, newValue);
+                        tuple.TrackProperty(prop);
+                        prop.SetValue(tuple.Target, newValue);
 
                         // ist dieses Skalar Property Schlüssel für ein Navigation Property?
                         NavigationPropertyMetadata navProp;
                         if (entity.ForeignKeyProperties.TryGetValue(prop, out navProp))
                         {
-                            fixups.Add(Tuple.Create(target, navProp));
+                            fixups.Add(Tuple.Create(tuple.Target, navProp));
                         }
                     }
                 }
@@ -816,22 +863,22 @@ namespace Lucile.Data
 
                 if (mergeStrategy == MergeStrategy.ForceUpdate)
                 {
-                    switch (_trackingInfoProvider.GetState(source).GetValueOrDefault())
+                    switch (_trackingInfoProvider.GetState(tuple.Source).GetValueOrDefault())
                     {
                         case TrackingState.Unchanged:
-                            _trackingInfoProvider.SetState(target, TrackingState.Unchanged);
+                            _trackingInfoProvider.SetState(tuple.Target, TrackingState.Unchanged);
                             break;
 
                         case TrackingState.Added:
-                            _trackingInfoProvider.SetState(target, TrackingState.Added);
+                            _trackingInfoProvider.SetState(tuple.Target, TrackingState.Added);
                             break;
 
                         case TrackingState.Modified:
-                            _trackingInfoProvider.SetState(target, TrackingState.Modified);
+                            _trackingInfoProvider.SetState(tuple.Target, TrackingState.Modified);
                             break;
 
                         case TrackingState.Deleted:
-                            _trackingInfoProvider.SetState(target, TrackingState.Deleted);
+                            _trackingInfoProvider.SetState(tuple.Target, TrackingState.Deleted);
                             break;
                     }
                 }
@@ -979,6 +1026,24 @@ namespace Lucile.Data
             }
         }
 
-        // To detect redundant calls
+        private class CleanupTuple
+        {
+            private List<ScalarProperty> _properties;
+
+            public object Source { get; set; }
+
+            public object Target { get; set; }
+
+            public IEnumerable<ScalarProperty> GetProperties()
+            {
+                return _properties ?? Enumerable.Empty<ScalarProperty>();
+            }
+
+            public void TrackProperty(ScalarProperty property)
+            {
+                _properties = _properties ?? new List<ScalarProperty>();
+                _properties.Add(property);
+            }
+        }
     }
 }

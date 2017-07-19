@@ -34,6 +34,8 @@ namespace Lucile.Data.Metadata.Builder
                 {
                     _clrType = value;
                     var assemblyName = _clrType?.GetTypeInfo()?.Assembly?.GetName();
+                    assemblyName.Version = null;
+
                     if (assemblyName != null)
                     {
                         _clrTypeName = $"{_clrType?.FullName}, {assemblyName}";
