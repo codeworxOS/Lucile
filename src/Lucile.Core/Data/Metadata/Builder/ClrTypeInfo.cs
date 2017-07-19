@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Reflection;
 using System.Runtime.Serialization;
 
 namespace Lucile.Data.Metadata.Builder
@@ -32,7 +33,15 @@ namespace Lucile.Data.Metadata.Builder
                 if (value != _clrType)
                 {
                     _clrType = value;
-                    _clrTypeName = _clrType?.AssemblyQualifiedName;
+                    var assemblyName = _clrType?.GetTypeInfo()?.Assembly?.GetName();
+                    if (assemblyName != null)
+                    {
+                        _clrTypeName = $"{_clrType?.FullName}, {assemblyName}";
+                    }
+                    else
+                    {
+                        _clrTypeName = null;
+                    }
                 }
             }
         }

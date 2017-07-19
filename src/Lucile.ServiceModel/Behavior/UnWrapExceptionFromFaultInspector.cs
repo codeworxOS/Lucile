@@ -1,5 +1,4 @@
-﻿using System;
-using System.ServiceModel.Channels;
+﻿using System.ServiceModel.Channels;
 using System.ServiceModel.Dispatcher;
 
 namespace Lucile.ServiceModel.Behavior
@@ -20,7 +19,9 @@ namespace Lucile.ServiceModel.Behavior
                         fault = detail;
                     }
                 }
+#pragma warning disable RECS0022 // A catch clause that catches System.Exception and has an empty body
                 catch
+#pragma warning restore RECS0022 // A catch clause that catches System.Exception and has an empty body
                 {
                     // do nothing
                 }

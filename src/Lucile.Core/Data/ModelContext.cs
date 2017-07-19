@@ -470,15 +470,14 @@ namespace Lucile.Data
             if (source != result)
             {
                 // Objekte nicht Referenzgleich
-
-                ////if (source.ChangeTracker.State == ObjectState.Added && result.ChangeTracker.State == ObjectState.Deleted)
-                ////{
-                ////    MergeScalarProperties(source, result, fixups, MergeStrategy.ForceUpdate, true);
-                ////}
-                ////else
-                ////{
-                MergeScalarProperties(source, result, fixups, mergeStrategy);
-                ////}
+                if (_trackingInfoProvider.GetState(source) == TrackingState.Added && _trackingInfoProvider.GetState(result) == TrackingState.Deleted)
+                {
+                    MergeScalarProperties(source, result, fixups, MergeStrategy.ForceUpdate, true);
+                }
+                else
+                {
+                    MergeScalarProperties(source, result, fixups, mergeStrategy);
+                }
 
                 // zu CleanedTuples hinzufügen
                 cleanedTuples.Add(source, result);
@@ -783,7 +782,7 @@ namespace Lucile.Data
             bool forceFixup = false)
         {
             // geänderte Objekte nur bei ForceUpdate aktualisieren
-            if (mergeStrategy == MergeStrategy.ForceUpdate) ////|| target.ChangeTracker.State == ObjectState.Unchanged
+            if (mergeStrategy == MergeStrategy.ForceUpdate || _trackingInfoProvider.GetState(target) == TrackingState.Unchanged)
             {
                 ////using (new ChangeTrackingScope(ChangeTracking.Disable, source, target))
                 ////{
@@ -815,26 +814,27 @@ namespace Lucile.Data
                 ////    cloneableSource.CopyExtendedProperties(target);
                 ////}
 
-                ////    if (mergeStrategy == MergeStrategy.ForceUpdate)
-                ////    {
-                ////        // Status bei ForceUpdate umsetzen
-                ////        target.ResetTracking();
-                ////        switch (source.ChangeTracker.State)
-                ////        {
-                ////            case ObjectState.Added:
-                ////                target.MarkAsAdded();
-                ////                break;
+                if (mergeStrategy == MergeStrategy.ForceUpdate)
+                {
+                    switch (_trackingInfoProvider.GetState(source).GetValueOrDefault())
+                    {
+                        case TrackingState.Unchanged:
+                            _trackingInfoProvider.SetState(target, TrackingState.Unchanged);
+                            break;
 
-                ////            case ObjectState.Modified:
-                ////                target.MarkAsModified();
-                ////                break;
+                        case TrackingState.Added:
+                            _trackingInfoProvider.SetState(target, TrackingState.Added);
+                            break;
 
-                ////            case ObjectState.Deleted:
-                ////                target.MarkAsDeleted();
-                ////                break;
-                ////        }
-                ////    }
-                ////}
+                        case TrackingState.Modified:
+                            _trackingInfoProvider.SetState(target, TrackingState.Modified);
+                            break;
+
+                        case TrackingState.Deleted:
+                            _trackingInfoProvider.SetState(target, TrackingState.Deleted);
+                            break;
+                    }
+                }
             }
         }
 

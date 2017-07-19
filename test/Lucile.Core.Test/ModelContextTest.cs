@@ -60,22 +60,70 @@ namespace Tests
         }
 
         [Fact]
+        public void DontUpdateIfModifiedTest()
+        {
+            var model = GetModel();
+
+            var context = new ModelContext(model);
+
+            var invoice = new Invoice
+            {
+                Id = Guid.NewGuid(),
+                State = TrackingState.Modified,
+                ReceiptNumber = "11111111"
+            };
+
+            var invoiceNew = new Invoice
+            {
+                Id = invoice.Id,
+                State = TrackingState.Unchanged,
+                ReceiptNumber = "22222222"
+            };
+
+            var attached1 = context.AttachSingle(invoice);
+            Assert.Equal("11111111", attached1.ReceiptNumber);
+            Assert.Equal(invoice, attached1);
+
+            var attached2 = context.AttachSingle(invoiceNew);
+            Assert.Equal(invoice, attached2);
+            Assert.Equal("11111111", attached2.ReceiptNumber);
+        }
+
+        [Fact]
+        public void ForceUpdateTest()
+        {
+            var model = GetModel();
+
+            var context = new ModelContext(model);
+
+            var invoice = new Invoice
+            {
+                Id = Guid.NewGuid(),
+                State = TrackingState.Modified,
+                ReceiptNumber = "11111111"
+            };
+
+            var invoiceNew = new Invoice
+            {
+                Id = invoice.Id,
+                State = TrackingState.Unchanged,
+                ReceiptNumber = "22222222"
+            };
+
+            var attached1 = context.AttachSingle(invoice);
+            Assert.Equal("11111111", attached1.ReceiptNumber);
+            Assert.Equal(invoice, attached1);
+
+            var attached2 = context.AttachSingle(invoiceNew, MergeStrategy.ForceUpdate);
+            Assert.Equal(invoice, attached2);
+            Assert.Equal("22222222", attached2.ReceiptNumber);
+            Assert.Equal(TrackingState.Unchanged, attached2.State);
+        }
+
+        [Fact]
         public void GetChangesTest()
         {
-            var metadataModelBuilder = new MetadataModelBuilder();
-            metadataModelBuilder.Exclude<EntityBase>();
-            metadataModelBuilder.Entity<ArticleName>().PrimaryKey.AddRange(new[] { "ArticleId", "LanguageId" });
-            var articleEntity = metadataModelBuilder.Entity<Article>();
-            metadataModelBuilder.Entity<ReceiptDetail>();
-            metadataModelBuilder.Entity<Invoice>().BaseEntity = metadataModelBuilder.Entity(typeof(Receipt));
-            var contactSettings = metadataModelBuilder.Entity<ContactSettings>();
-
-            articleEntity.HasOne(p => p.ArticleSettings).WithPrincipal();
-            contactSettings.HasOne(p => p.Contact).WithDependant();
-
-            metadataModelBuilder.ApplyConventions();
-
-            var model = metadataModelBuilder.ToModel();
+            MetadataModel model = GetModel();
 
             var country = new Country { Id = 1, CountryName = "Test" };
             var customer = new Contact { Id = Guid.NewGuid(), FirstName = "Max", LastName = "Mustermann", ContactType = ContactType.Customer, Country = country, CountryId = country.Id };
@@ -126,6 +174,55 @@ namespace Tests
 
             Assert.IsType<Contact>(changes[4]);
             Assert.Equal(TrackingState.Deleted, changes[4].State);
+        }
+
+        [Fact]
+        public void UpdateIfUnchangedTest()
+        {
+            var model = GetModel();
+
+            var context = new ModelContext(model);
+
+            var invoice = new Invoice
+            {
+                Id = Guid.NewGuid(),
+                State = TrackingState.Unchanged,
+                ReceiptNumber = "11111111"
+            };
+
+            var invoiceNew = new Invoice
+            {
+                Id = invoice.Id,
+                State = TrackingState.Unchanged,
+                ReceiptNumber = "22222222"
+            };
+
+            var attached1 = context.AttachSingle(invoice);
+            Assert.Equal("11111111", attached1.ReceiptNumber);
+            Assert.Equal(invoice, attached1);
+
+            var attached2 = context.AttachSingle(invoiceNew);
+            Assert.Equal(invoice, attached2);
+            Assert.Equal("22222222", attached2.ReceiptNumber);
+        }
+
+        private static MetadataModel GetModel()
+        {
+            var metadataModelBuilder = new MetadataModelBuilder();
+            metadataModelBuilder.Exclude<EntityBase>();
+            metadataModelBuilder.Entity<ArticleName>().PrimaryKey.AddRange(new[] { "ArticleId", "LanguageId" });
+            var articleEntity = metadataModelBuilder.Entity<Article>();
+            metadataModelBuilder.Entity<ReceiptDetail>();
+            metadataModelBuilder.Entity<Invoice>().BaseEntity = metadataModelBuilder.Entity(typeof(Receipt));
+            var contactSettings = metadataModelBuilder.Entity<ContactSettings>();
+
+            articleEntity.HasOne(p => p.ArticleSettings).WithPrincipal();
+            contactSettings.HasOne(p => p.Contact).WithDependant();
+
+            metadataModelBuilder.ApplyConventions();
+
+            var model = metadataModelBuilder.ToModel();
+            return model;
         }
     }
 }

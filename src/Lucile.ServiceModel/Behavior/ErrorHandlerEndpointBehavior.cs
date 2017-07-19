@@ -14,7 +14,7 @@ namespace Lucile.ServiceModel.Behavior
         public ErrorHandlerEndpointBehavior(Func<Exception, string> logDelegate, bool includeDetails = false)
         {
             LogDelegate = logDelegate;
-            IncludeDetails = false;
+            IncludeDetails = includeDetails;
         }
 #endif
 

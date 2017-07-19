@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Reflection;
-using System.Runtime.ExceptionServices;
 using System.Runtime.Serialization;
 
 namespace Lucile.ServiceModel
@@ -69,7 +68,9 @@ namespace Lucile.ServiceModel
                     ex = Deserialize(ExceptionPayload);
                 }
             }
+#pragma warning disable RECS0022 // A catch clause that catches System.Exception and has an empty body
             catch
+#pragma warning restore RECS0022 // A catch clause that catches System.Exception and has an empty body
             {
                 // do nothing
             }
@@ -84,7 +85,12 @@ namespace Lucile.ServiceModel
 
         private static Exception Deserialize(byte[] exceptionPayload)
         {
+            if (exceptionPayload == null)
+            {
+                throw new ArgumentNullException(nameof(exceptionPayload));
+            }
 #if NET45
+
             try
             {
                 var formatter = new System.Runtime.Serialization.Formatters.Binary.BinaryFormatter();
@@ -94,7 +100,9 @@ namespace Lucile.ServiceModel
                     return ex;
                 }
             }
+#pragma warning disable RECS0022 // A catch clause that catches System.Exception and has an empty body
             catch
+#pragma warning restore RECS0022 // A catch clause that catches System.Exception and has an empty body
             {
                 // do nothing
             }
@@ -104,6 +112,10 @@ namespace Lucile.ServiceModel
 
         private static byte[] Serialize(Exception exception)
         {
+            if (exception == null)
+            {
+                throw new ArgumentNullException(nameof(exception));
+            }
 #if NET45
             _captureDelegate(exception);
             try
@@ -115,7 +127,9 @@ namespace Lucile.ServiceModel
                     return ms.ToArray();
                 }
             }
+#pragma warning disable RECS0022 // A catch clause that catches System.Exception and has an empty body
             catch
+#pragma warning restore RECS0022 // A catch clause that catches System.Exception and has an empty body
             {
                 // do nothing
             }
