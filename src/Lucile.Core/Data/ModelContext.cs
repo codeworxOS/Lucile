@@ -155,6 +155,19 @@ namespace Lucile.Data
             }
         }
 
+        public bool Contains(object item)
+        {
+            var entity = _model.GetEntityMetadata(item);
+            var key = entity?.GetPrimaryKeyObject(item);
+            if (key != null)
+            {
+                var info = GetEntityInfo(entity);
+                return GetTrackedObjectOrDefault(info, key) != null;
+            }
+
+            return false;
+        }
+
         public T DetachSingle<T>(T item)
             where T : class
         {

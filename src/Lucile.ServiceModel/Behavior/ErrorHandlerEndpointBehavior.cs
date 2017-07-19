@@ -60,19 +60,7 @@ namespace Lucile.ServiceModel.Behavior
 
             public bool HandleError(Exception error)
             {
-                if (error is System.ServiceModel.FaultException)
-                {
-                    return false;
-                }
-                else
-                {
-                    if (error != null)
-                    {
-                        _logDelegate?.Invoke(error);
-                    }
-
-                    return true;
-                }
+                return !(error is System.ServiceModel.FaultException);
             }
 
             public void ProvideFault(Exception error, System.ServiceModel.Channels.MessageVersion version, ref System.ServiceModel.Channels.Message fault)
