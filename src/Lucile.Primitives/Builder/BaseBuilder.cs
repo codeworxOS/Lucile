@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Runtime.Serialization;
 
-namespace Lucile.Linq.Configuration.Builder
+namespace Lucile.Builder
 {
     [DataContract(IsReference = true)]
     public abstract class BaseBuilder<T>

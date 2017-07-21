@@ -2,13 +2,13 @@
 {
     public class SortItem
     {
-        public SortItem(string property, SortDirection sortDirection)
+        public SortItem(string propertyPath, SortDirection sortDirection)
         {
-            Property = property;
+            PropertyPath = propertyPath;
             SortDirection = sortDirection;
         }
 
-        public string Property { get; }
+        public string PropertyPath { get; }
 
         public SortDirection SortDirection { get; }
     }

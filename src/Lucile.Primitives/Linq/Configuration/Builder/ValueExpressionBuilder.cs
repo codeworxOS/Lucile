@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Runtime.Serialization;
+using Lucile.Builder;
 using Lucile.Json;
 
 namespace Lucile.Linq.Configuration.Builder
