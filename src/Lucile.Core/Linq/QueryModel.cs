@@ -98,6 +98,11 @@ namespace Lucile.Linq
 
             baseQuery = baseQuery.Provider.CreateQuery(queryExpression);
 
+            if (config.Sort.Any())
+            {
+                baseQuery = baseQuery.ApplySort(config.Sort);
+            }
+
             return baseQuery;
         }
 
@@ -205,6 +210,13 @@ namespace Lucile.Linq
             {
                 expressions.Add(item.Value);
                 members.Add(item.Key);
+            }
+
+            if (!ctr.GetParameters().Any())
+            {
+                return Expression.MemberInit(
+                    Expression.New(ctr),
+                    members.Select((p, i) => Expression.Bind(p, expressions[i])));
             }
 
             return Expression.New(ctr, expressions, members);

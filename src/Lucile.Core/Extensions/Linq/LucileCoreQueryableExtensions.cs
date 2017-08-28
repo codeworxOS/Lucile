@@ -49,6 +49,11 @@ namespace System.Linq
 
         public static IQueryable<TElement> ApplySort<TElement>(this IQueryable<TElement> query, IEnumerable<SortItem> sort)
         {
+            return (IQueryable<TElement>)ApplySort((IQueryable)query, sort);
+        }
+
+        public static IQueryable ApplySort(this IQueryable query, IEnumerable<SortItem> sort)
+        {
             var expr = query.Expression;
             var elementType = query.ElementType;
 
@@ -91,7 +96,7 @@ namespace System.Linq
                 expr = Expression.Call(method, expr, Expression.Quote(Expression.Lambda(body, param)));
             }
 
-            return query.Provider.CreateQuery<TElement>(expr);
+            return query.Provider.CreateQuery(expr);
         }
 
         public static IQueryable<TElement> ApplySort<TElement>(this IQueryable<TElement> query, params SortItem[] sort)

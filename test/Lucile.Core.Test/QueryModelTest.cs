@@ -567,12 +567,12 @@ namespace Tests
 
             var builder = QueryModel.Build(
                 p => p.Get<Contact>(),
-                p => new
+                p => new ContactInfo
                 {
                     Id = p.Id,
-                    p.FirstName,
-                    p.LastName,
-                    p.Street
+                    FirstName = p.FirstName,
+                    LastName = p.LastName,
+                    Street = p.Street
                 });
 
             var model = builder.ToModel();
