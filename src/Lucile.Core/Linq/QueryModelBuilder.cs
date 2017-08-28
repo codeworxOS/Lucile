@@ -10,6 +10,7 @@ using Lucile.Linq.Configuration;
 namespace Lucile.Linq
 {
     public class QueryModelBuilder<TSource, TResult>
+        where TSource : class
         where TResult : class
     {
         private readonly ConcurrentDictionary<PropertyInfo, PropertyConfigurationBuilder> _propertyBuilders;

@@ -559,6 +559,43 @@ namespace Tests
         }
 
         [Fact]
+        public void QueryModelSingleSourceAsync()
+        {
+            var dataSource = new DummyQuerySource();
+            var dummyReceipt = CreateDummyReceipt();
+            dataSource.RegisterData(new[] { dummyReceipt.Customer });
+
+            var builder = QueryModel.Build(
+                p => p.Get<Contact>(),
+                p => new
+                {
+                    Id = p.Id,
+                    p.FirstName,
+                    p.LastName,
+                    p.Street
+                });
+
+            var model = builder.ToModel();
+
+            var queryConfig = new QueryConfiguration(
+                new[] {
+                    new SelectItem("Id",Aggregate.None),
+                    new SelectItem("FirstName",Aggregate.None),
+                    new SelectItem("LastName",Aggregate.None)
+                });
+
+            var query = model.GetQuery(dataSource, queryConfig).ToList();
+
+            Assert.NotEmpty(query);
+
+            Assert.All(query, p =>
+            {
+                Assert.Null(p.Street);
+                Assert.NotNull(p.FirstName);
+            });
+        }
+
+        [Fact]
         public void QueryModelSourceDependenciesTest()
         {
             var builder = QueryModel.Build(

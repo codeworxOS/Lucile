@@ -4,6 +4,7 @@ namespace Lucile.Linq
 {
     public abstract class QuerySource
     {
-        public abstract IQueryable<TEntity> Query<TEntity>();
+        public abstract IQueryable<TEntity> Query<TEntity>()
+            where TEntity : class;
     }
 }

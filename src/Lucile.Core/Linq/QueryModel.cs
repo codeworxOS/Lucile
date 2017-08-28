@@ -31,6 +31,7 @@ namespace Lucile.Linq
 
         public static QueryModelBuilder<TSource, TModel> Build<TSource, TModel>(Expression<Func<QuerySourceBuilder, TSource>> sourceSelector, Expression<Func<TSource, TModel>> queryExpression)
             where TModel : class
+            where TSource : class
         {
             var builder = new QueryModelBuilder<TSource, TModel>(sourceSelector);
             builder.Map(queryExpression);
@@ -100,8 +101,15 @@ namespace Lucile.Linq
             return baseQuery;
         }
 
+        protected abstract IQueryable GetSourceQuery(QuerySource source);
+
         private IQueryable CreateBaseQuery(QuerySource source, IEnumerable<string> sortedDependencies)
         {
+            if (!sortedDependencies.Any())
+            {
+                return GetSourceQuery(source);
+            }
+
             var allConfigs = sortedDependencies
                                 .Select(p => this.SourceEntityConfigurations.First(x => x.Name == p))
                                 .Select(p => new

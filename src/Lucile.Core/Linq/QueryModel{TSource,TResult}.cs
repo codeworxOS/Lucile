@@ -7,6 +7,7 @@ using Lucile.Linq.Configuration;
 namespace Lucile.Linq
 {
     public class QueryModel<TSource, TResult> : QueryModel
+        where TSource : class
     {
         public QueryModel(EntityMetadata entity, IEnumerable<SourceEntityConfiguration> sourceEntityConfigs, IEnumerable<PropertyConfiguration> propConfigs)
             : base(entity, sourceEntityConfigs, propConfigs)
@@ -32,6 +33,11 @@ namespace Lucile.Linq
         public new IQueryable<TResult> GetQuery(QuerySource source, QueryConfiguration config)
         {
             return (IQueryable<TResult>)base.GetQuery(source, config);
+        }
+
+        protected override IQueryable GetSourceQuery(QuerySource source)
+        {
+            return source.Query<TSource>();
         }
     }
 }
