@@ -14,11 +14,11 @@ namespace Lucile.Linq
         where TResult : class
     {
         private readonly ConcurrentDictionary<PropertyInfo, PropertyConfigurationBuilder> _propertyBuilders;
-        private readonly ConcurrentDictionary<string, SourceEntityConfigurationBuilder> _sourceBuilders;
+        private readonly ConcurrentDictionary<object, SourceEntityConfigurationBuilder> _sourceBuilders;
 
         public QueryModelBuilder(Expression<Func<QuerySourceBuilder, TSource>> sourceSelector)
         {
-            _sourceBuilders = new ConcurrentDictionary<string, SourceEntityConfigurationBuilder>();
+            _sourceBuilders = new ConcurrentDictionary<object, SourceEntityConfigurationBuilder>();
             _propertyBuilders = new ConcurrentDictionary<PropertyInfo, PropertyConfigurationBuilder>();
 
             var methodCallExpression = sourceSelector.Body as MethodCallExpression;
@@ -27,6 +27,7 @@ namespace Lucile.Linq
             var param = sourceSelector.Parameters.First();
             if (IsQuerySourceBuilderGetMethodCall(param, methodCallExpression))
             {
+                Source();
                 IsSingleSourceQuery = true;
             }
             else if (newExpression != null && newExpression.Arguments.All(p => IsQuerySourceBuilderGetMethodCall(param, p as MethodCallExpression)))
@@ -124,7 +125,22 @@ namespace Lucile.Linq
                 throw new ArgumentException($"The given lambda expression is in a wrong format. Only Property Expressions are allowed in the body", nameof(entitySelector));
             }
 
-            return (SourceEntityConfigurationBuilder<TSource, TEntity>)_sourceBuilders.GetOrAdd(propExpression.Member.Name, p => new SourceEntityConfigurationBuilder<TSource, TEntity>());
+            if (_sourceBuilders.ContainsKey(QueryModel.GlobalSourceKey))
+            {
+                throw new InvalidOperationException("The is already a global QuerySource registerd.");
+            }
+
+            return (SourceEntityConfigurationBuilder<TSource, TEntity>)_sourceBuilders.GetOrAdd(propExpression.Member.Name, p => new SourceEntityConfigurationBuilder<TSource, TEntity>(p));
+        }
+
+        public SourceEntityConfigurationBuilder<TSource, TSource> Source()
+        {
+            if (_sourceBuilders.Keys.Except(new[] { QueryModel.GlobalSourceKey }).Any())
+            {
+                throw new InvalidOperationException("The is already a QuerySource for aliased entities registerd.");
+            }
+
+            return (SourceEntityConfigurationBuilder<TSource, TSource>)_sourceBuilders.GetOrAdd(QueryModel.GlobalSourceKey, p => new SourceEntityConfigurationBuilder<TSource, TSource>(p));
         }
 
         public SourceEntityConfigurationBuilder Source(string entityAlias)
@@ -135,7 +151,12 @@ namespace Lucile.Linq
                 throw new ArgumentException($"The source type {typeof(TSource)} does not have a property with name {entityAlias}.", nameof(entityAlias));
             }
 
-            return _sourceBuilders.GetOrAdd(entityAlias, p => (SourceEntityConfigurationBuilder)Activator.CreateInstance(typeof(SourceEntityConfigurationBuilder<,>).MakeGenericType(typeof(TSource), prop.PropertyType)));
+            if (_sourceBuilders.ContainsKey(QueryModel.GlobalSourceKey))
+            {
+                throw new InvalidOperationException("The is already a global QuerySource registerd.");
+            }
+
+            return _sourceBuilders.GetOrAdd(entityAlias, p => (SourceEntityConfigurationBuilder)Activator.CreateInstance(typeof(SourceEntityConfigurationBuilder<,>).MakeGenericType(typeof(TSource), prop.PropertyType), p));
         }
 
         public QueryModel<TSource, TResult> ToModel()
@@ -145,15 +166,7 @@ namespace Lucile.Linq
 
             var propConfigs = new List<PropertyConfiguration>();
 
-            var sourceEntityConfigs = new List<SourceEntityConfiguration>();
-
-            foreach (var item in _sourceBuilders)
-            {
-                var entityType = typeof(TSource).GetProperty(item.Key).PropertyType;
-
-                var sourceConfig = new SourceEntityConfiguration(item.Key, entityType, item.Value.QueryFactory, item.Value.JoinKeyType, item.Value.LocalJoinExpression, item.Value.RemoteJoinExpression);
-                sourceEntityConfigs.Add(sourceConfig);
-            }
+            var sourceEntityConfigs = _sourceBuilders.Select(p => p.Value.ToTarget()).ToList();
 
             foreach (var item in _propertyBuilders)
             {

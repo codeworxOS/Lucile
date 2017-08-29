@@ -294,6 +294,26 @@ namespace Tests
         }
 
         [Fact]
+        public void QueryModelBuilderAlialsAndRootSourceMethodTest()
+        {
+            var builder = QueryModel.Build(p =>
+            new
+            {
+                ReceiptDetail = p.Get<ReceiptDetail>()
+            },
+            p => new
+            {
+                Amount = p.ReceiptDetail.Amount
+            });
+
+            var source = builder.Source(p => p.ReceiptDetail);
+
+            Assert.NotNull(source);
+
+            Assert.Throws<InvalidOperationException>(() => builder.Source());
+        }
+
+        [Fact]
         public void QueryModelBuilderConstructorTest()
         {
             var builder1 = QueryModel.Build(p => p.Get<ReceiptDetail>(), p => new { Amount = p.Amount });
@@ -330,6 +350,22 @@ namespace Tests
             Assert.Equal(source, source2);
 
             Assert.Throws<ArgumentException>(() => builder.Source("ABC"));
+        }
+
+        [Fact]
+        public void QueryModelBuilderRootAndAliasSourceMethodTest()
+        {
+            var builder = QueryModel.Build(p => p.Get<ReceiptDetail>(),
+            p => new
+            {
+                Amount = p.Amount
+            });
+
+            var source = builder.Source();
+
+            Assert.NotNull(source);
+
+            Assert.Throws<InvalidOperationException>(() => builder.Source(p => p.Amount));
         }
 
         [Fact]
@@ -592,6 +628,47 @@ namespace Tests
             {
                 Assert.Null(p.Street);
                 Assert.NotNull(p.FirstName);
+            });
+        }
+
+        [Fact]
+        public void QueryModelSingleSourceWithFilterAsync()
+        {
+            var dataSource = new DummyQuerySource();
+            var dummyReceipt = CreateDummyReceipt();
+            dataSource.RegisterData(dummyReceipt.Details);
+
+            var builder = QueryModel.Build(
+                p => p.Get<ReceiptDetail>(),
+                p => new
+                {
+                    Id = p.Id,
+                    ArticleNumber = p.Article.ArticleNumber,
+                    Description = p.Description,
+                    Amount = p.Amount,
+                });
+
+            builder.Source().Query(p => p.Query<ReceiptDetail>().Where(x => x.Enabled));
+
+            var model = builder.ToModel();
+
+            var queryConfig = new QueryConfiguration(
+                new[] {
+                    new SelectItem("Id",Aggregate.None),
+                    new SelectItem("ArticleNumber",Aggregate.None),
+                    new SelectItem("Amount",Aggregate.None)
+                });
+
+            var query = model.GetQuery(dataSource, queryConfig).ToList();
+
+            Assert.NotEmpty(query);
+
+            Assert.Equal(1, query.Count);
+
+            Assert.All(query, p =>
+            {
+                Assert.Null(p.Description);
+                Assert.NotNull(p.ArticleNumber);
             });
         }
 

@@ -29,6 +29,8 @@ namespace Lucile.Linq
 
         public abstract Type SourceType { get; }
 
+        internal static object GlobalSourceKey { get; } = new object();
+
         public static QueryModelBuilder<TSource, TModel> Build<TSource, TModel>(Expression<Func<QuerySourceBuilder, TSource>> sourceSelector, Expression<Func<TSource, TModel>> queryExpression)
             where TModel : class
             where TSource : class
@@ -106,13 +108,12 @@ namespace Lucile.Linq
             return baseQuery;
         }
 
-        protected abstract IQueryable GetSourceQuery(QuerySource source);
-
         private IQueryable CreateBaseQuery(QuerySource source, IEnumerable<string> sortedDependencies)
         {
-            if (!sortedDependencies.Any())
+            var sourceConfig = this.SourceEntityConfigurations.First();
+            if (sourceConfig.Name == null)
             {
-                return GetSourceQuery(source);
+                return sourceConfig.QueryFactory(source);
             }
 
             var allConfigs = sortedDependencies

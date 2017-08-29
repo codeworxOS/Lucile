@@ -34,10 +34,5 @@ namespace Lucile.Linq
         {
             return (IQueryable<TResult>)base.GetQuery(source, config);
         }
-
-        protected override IQueryable GetSourceQuery(QuerySource source)
-        {
-            return source.Query<TSource>();
-        }
     }
 }
