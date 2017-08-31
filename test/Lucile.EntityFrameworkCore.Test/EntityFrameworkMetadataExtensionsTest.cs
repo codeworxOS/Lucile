@@ -8,7 +8,13 @@ using Xunit;
 
 namespace Tests
 {
-    public class EntityFrameworkMetadataExtensionsTest
+#if (NETCOREAPP1_1)
+
+    public class EntityFrameworkMetadataExtensions11Test
+#else
+
+    public class EntityFrameworkMetadataExtensions20Test
+#endif
     {
         [Fact]
         public void FromDbIdentityAnPrimaryKeyTest()

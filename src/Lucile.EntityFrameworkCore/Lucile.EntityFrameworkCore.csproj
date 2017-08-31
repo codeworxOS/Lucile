@@ -7,12 +7,10 @@
 		<Copyright>copyright © codeworx gmbh 2017</Copyright>
 		<AssemblyTitle>Lucile Framework Entity Framework Core Library</AssemblyTitle>
 		<Authors>Raphael Schwarz</Authors>
-		<TargetFramework>netstandard1.3</TargetFramework>
+		<TargetFrameworks>netstandard1.3;netstandard2.0</TargetFrameworks>
 		<TreatWarningsAsErrors>true</TreatWarningsAsErrors>
 		<AssemblyName>Lucile.EntityFrameworkCore</AssemblyName>
 		<PackageId>Lucile.EntityFrameworkCore</PackageId>
-		<NetStandardImplicitPackageVersion>1.6.1</NetStandardImplicitPackageVersion>
-		<PackageTargetFallback>$(PackageTargetFallback);dnxcore50</PackageTargetFallback>
 		<GenerateAssemblyConfigurationAttribute>false</GenerateAssemblyConfigurationAttribute>
 		<GenerateAssemblyProductAttribute>false</GenerateAssemblyProductAttribute>
 		<CodeAnalysisRuleSet>..\..\global\Stylecop.ruleset</CodeAnalysisRuleSet>
@@ -23,7 +21,7 @@
 	</ItemGroup>
 
 	<ItemGroup>
-	  <AdditionalFiles Include="..\..\global\stylecop.json" Link="stylecop.json" />
+		<AdditionalFiles Include="..\..\global\stylecop.json" Link="stylecop.json" />
 	</ItemGroup>
 
 	<ItemGroup>
@@ -34,7 +32,11 @@
 		<PackageReference Include="StyleCop.Analyzers" Version="1.1.0-beta001">
 			<PrivateAssets>All</PrivateAssets>
 		</PackageReference>
+	</ItemGroup>
+	<ItemGroup Condition="'$(TargetFramework)' == 'netstandard1.3'">
 		<PackageReference Include="Microsoft.EntityFrameworkCore" Version="1.0.3" />
 	</ItemGroup>
-
+	<ItemGroup Condition="'$(TargetFramework)' == 'netstandard2.0'">
+		<PackageReference Include="Microsoft.EntityFrameworkCore" Version="2.0.0" />
+	</ItemGroup>
 </Project>

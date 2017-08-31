@@ -1,12 +1,10 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
 	<PropertyGroup>
-		<TargetFramework>netcoreapp1.0</TargetFramework>
+		<TargetFrameworks>netcoreapp2.0;netcoreapp1.1</TargetFrameworks>
 		<AssemblyName>Lucile.entityFrameworkCore.Test</AssemblyName>
 		<PackageId>Lucile.entityFrameworkCore.Test</PackageId>
 		<GenerateRuntimeConfigurationFiles>true</GenerateRuntimeConfigurationFiles>
-		<PackageTargetFallback>$(PackageTargetFallback);dotnet5.4;portable-net451+win8</PackageTargetFallback>
-		<RuntimeFrameworkVersion>1.0.4</RuntimeFrameworkVersion>
 	</PropertyGroup>
 
 	<ItemGroup>
@@ -15,15 +13,21 @@
 	</ItemGroup>
 
 	<ItemGroup>
-		<PackageReference Include="Microsoft.NET.Test.Sdk" Version="15.0.0" />
+		<PackageReference Include="Microsoft.NET.Test.Sdk" Version="15.3.0" />
 		<PackageReference Include="xunit.runner.visualstudio" Version="2.2.0" />
 		<PackageReference Include="System.Runtime.Serialization.Primitives" Version="4.3.0" />
 		<PackageReference Include="xunit" Version="2.2.0" />
+	</ItemGroup>
+
+	<ItemGroup Condition="'$(TargetFramework)' == 'netcoreapp1.1'">
 		<PackageReference Include="Microsoft.EntityFrameworkCore.InMemory" Version="1.0.3" />
 	</ItemGroup>
 
-	<ItemGroup>
-	  <Service Include="{82a7f48d-3b50-4b1e-b82e-3ada8210c358}" />
+	<ItemGroup Condition="'$(TargetFramework)' == 'netcoreapp2.0'">
+		<PackageReference Include="Microsoft.EntityFrameworkCore.InMemory" Version="2.0.0" />
 	</ItemGroup>
 
+	<ItemGroup>
+		<Service Include="{82a7f48d-3b50-4b1e-b82e-3ada8210c358}" />
+	</ItemGroup>
 </Project>
