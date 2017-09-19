@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
 using Lucile.Reflection;
@@ -16,6 +17,15 @@ namespace Lucile.Linq.Configuration
         public FilterItem Filter { get; }
 
         public PathValueExpression Path { get; }
+
+        public override IEnumerable<ValueExpression> GetValueExpressions()
+        {
+            yield return Path;
+            foreach (var item in Filter.GetValueExpressions())
+            {
+                yield return item;
+            }
+        }
 
         protected override Expression BuildExpression(ParameterExpression parameter)
         {

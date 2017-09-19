@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq.Expressions;
 
 namespace Lucile.Linq.Configuration
@@ -14,6 +15,11 @@ namespace Lucile.Linq.Configuration
         public BooleanOperator Operator { get; }
 
         public ValueExpression Value { get; }
+
+        public override IEnumerable<ValueExpression> GetValueExpressions()
+        {
+            yield return Value;
+        }
 
         protected override Expression BuildExpression(ParameterExpression parameter)
         {

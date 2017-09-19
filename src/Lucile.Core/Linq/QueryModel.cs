@@ -46,8 +46,19 @@ namespace Lucile.Linq
 
             if (config.Select.Any())
             {
+                var columns = config.Select.ToList();
+
+                var filterPaths = config.TargetFilterItems.SelectMany(p => p.GetValueExpressions()).OfType<PathValueExpression>().Select(p => p.Path).ToList();
+                var fromSortAndFilter = config.Sort.Select(p => p.PropertyPath).Concat(filterPaths)
+                                            .Select(p => p.Split('.').First()).Distinct().ToList();
+
+                foreach (var missing in fromSortAndFilter.Where(p => !columns.Any(x => x.Property == p)).ToList())
+                {
+                    columns.Add(new SelectItem(missing));
+                }
+
                 propsToQuery = (from p in PropertyConfigurations
-                                join c in config.Select on p.Property.Name equals c.Property
+                                join c in columns on p.Property.Name equals c.Property
                                 select p).ToList();
             }
 
@@ -99,6 +110,12 @@ namespace Lucile.Linq
                                         Expression.Quote(selectExpresssion));
 
             baseQuery = baseQuery.Provider.CreateQuery(queryExpression);
+
+            if (config.TargetFilterItems.Any())
+            {
+                var targetFilter = new FilterItemGroup(config.TargetFilterItems);
+                baseQuery = baseQuery.ApplyFilterItem(targetFilter);
+            }
 
             if (config.Sort.Any())
             {
@@ -201,10 +218,19 @@ namespace Lucile.Linq
 
             foreach (var item in ctr.GetParameters())
             {
-                var member = localInits.First(p => p.Key.Name == item.Name);
-                expressions.Add(member.Value);
-                members.Add(member.Key);
-                localInits.Remove(member.Key);
+                var foundMembers = localInits.Where(p => p.Key.Name == item.Name);
+                if (foundMembers.Any())
+                {
+                    var member = foundMembers.First();
+                    expressions.Add(member.Value);
+                    members.Add(member.Key);
+                    localInits.Remove(member.Key);
+                }
+                else
+                {
+                    expressions.Add(Expression.Constant(null, item.ParameterType));
+                    members.Add(sourceType.GetProperty(item.Name));
+                }
             }
 
             foreach (var item in localInits)

@@ -19,6 +19,11 @@ namespace Lucile.Linq.Configuration
 
         public GroupType GroupType { get; }
 
+        public override IEnumerable<ValueExpression> GetValueExpressions()
+        {
+            return Children.SelectMany(p => p.GetValueExpressions());
+        }
+
         protected override Expression BuildExpression(ParameterExpression parameter)
         {
             Expression result = null;

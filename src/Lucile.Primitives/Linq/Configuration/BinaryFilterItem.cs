@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq.Expressions;
 using System.Reflection;
 
@@ -15,6 +16,12 @@ namespace Lucile.Linq.Configuration
         public ValueExpression Left { get; }
 
         public ValueExpression Right { get; }
+
+        public override IEnumerable<ValueExpression> GetValueExpressions()
+        {
+            yield return Left;
+            yield return Right;
+        }
 
         protected abstract Expression BuildBinaryExpression(Expression leftExpression, Expression rightExpression);
 

@@ -779,6 +779,43 @@ namespace Tests
         }
 
         [Fact]
+        public void QueryModelWithSourceAndTragetFilterAsync()
+        {
+            var model = GetSampleModel();
+
+            var receipt = CreateDummyReceipt("Demo1");
+            var receipt2 = CreateDummyReceipt("Demo2");
+            var source = new DummyQuerySource();
+            source.RegisterData(receipt.Details.Concat(receipt2.Details));
+
+            FilterItem[] filterItems = {
+                new BooleanFilterItem(new PathValueExpression("ReceiptDetail.Enabled"),BooleanOperator.IsTrue)
+            };
+            FilterItem[] targetFilterItems = {
+                new StringBinaryFilterItem(new PathValueExpression("Customer"),new StringConstantValue("Demo2"),StringOperator.Contains)
+            };
+
+            SortItem[] sortItems = {
+                new SortItem("Supplier",SortDirection.Ascending)
+            };
+            SelectItem[] selectItems = {
+                new SelectItem("ReceiptDetailId"  ),
+                new SelectItem("ReceiptNumber"    ),
+                new SelectItem("ArticleNumber"    ),
+                new SelectItem("ArticleSoldYear"  ),
+                new SelectItem("ArticleSoldMonth" )
+            };
+
+            var config = new QueryConfiguration(selectItems, sortItems, filterItems, targetFilterItems);
+
+            var query = model.GetQuery(source, config);
+            Assert.Equal(1, query.Cast<object>().Count());
+            Assert.All(query.Cast<object>(), p => Assert.NotNull(p.GetType().GetProperty("Supplier").GetValue(p)));
+
+            Assert.All(query.Cast<object>(), p => Assert.Contains("Demo2", (string)p.GetType().GetProperty("Customer").GetValue(p)));
+        }
+
+        [Fact]
         public void SourceEntityConfigurationConstructorTest()
         {
             var builder = QueryModel.Build(
@@ -906,7 +943,7 @@ namespace Tests
             return model;
         }
 
-        private Receipt CreateDummyReceipt()
+        private Receipt CreateDummyReceipt(string customerFirstName = "Demo")
         {
             var country = new Country { Id = 1, CountryName = "Austria" };
 
@@ -915,7 +952,7 @@ namespace Tests
                 Id = Guid.NewGuid(),
                 Country = country,
                 CountryId = country.Id,
-                FirstName = "Demo",
+                FirstName = customerFirstName,
                 LastName = "Customer",
                 Identity = "democustomer",
                 Street = "demostreet"

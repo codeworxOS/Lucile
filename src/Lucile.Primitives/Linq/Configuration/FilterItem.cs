@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq.Expressions;
 
 namespace Lucile.Linq.Configuration
@@ -16,6 +17,8 @@ namespace Lucile.Linq.Configuration
 
             return result;
         }
+
+        public abstract IEnumerable<ValueExpression> GetValueExpressions();
 
         protected abstract Expression BuildExpression(ParameterExpression parameter);
     }

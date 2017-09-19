@@ -13,6 +13,7 @@ namespace Lucile.Linq.Builder
         public QueryConfigurationBuilder()
         {
             this.FilterItems = new Collection<FilterItemBuilder>();
+            this.TargetFilterItems = new Collection<FilterItemBuilder>();
             this.SortItems = new Collection<SortItemBuilder>();
             this.Select = new Collection<SelectItem>();
         }
@@ -25,6 +26,9 @@ namespace Lucile.Linq.Builder
 
         [DataMember(Order = 2)]
         public Collection<SortItemBuilder> SortItems { get; }
+
+        [DataMember(Order = 4)]
+        public Collection<FilterItemBuilder> TargetFilterItems { get; }
 
         public override void LoadFrom(QueryConfiguration value)
         {
@@ -51,7 +55,7 @@ namespace Lucile.Linq.Builder
 
         public override QueryConfiguration ToTarget()
         {
-            return new QueryConfiguration(this.Select, this.SortItems.Select(p => p.ToTarget()), this.FilterItems.Select(p => p.ToTarget()));
+            return new QueryConfiguration(this.Select, this.SortItems.Select(p => p.ToTarget()), this.FilterItems.Select(p => p.ToTarget()), this.TargetFilterItems.Select(p => p.ToTarget()));
         }
     }
 }

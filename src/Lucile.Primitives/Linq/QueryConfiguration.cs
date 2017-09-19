@@ -28,10 +28,16 @@ namespace Lucile.Linq
         }
 
         public QueryConfiguration(IEnumerable<SelectItem> selectItems, IEnumerable<SortItem> sortItems, IEnumerable<FilterItem> filterItems)
+            : this(selectItems, sortItems, filterItems, Enumerable.Empty<FilterItem>())
+        {
+        }
+
+        public QueryConfiguration(IEnumerable<SelectItem> selectItems, IEnumerable<SortItem> sortItems, IEnumerable<FilterItem> filterItems, IEnumerable<FilterItem> targetFilterItems)
         {
             Select = ImmutableArray.Create<SelectItem>(selectItems.ToArray());
             Sort = ImmutableArray.Create<SortItem>(sortItems.ToArray());
             FilterItems = ImmutableArray.Create<FilterItem>(filterItems.ToArray());
+            TargetFilterItems = ImmutableArray.Create<FilterItem>(targetFilterItems.ToArray());
         }
 
         public IReadOnlyCollection<FilterItem> FilterItems { get; }
@@ -39,5 +45,7 @@ namespace Lucile.Linq
         public IReadOnlyCollection<SelectItem> Select { get; }
 
         public IReadOnlyCollection<SortItem> Sort { get; }
+
+        public IReadOnlyCollection<FilterItem> TargetFilterItems { get; }
     }
 }
