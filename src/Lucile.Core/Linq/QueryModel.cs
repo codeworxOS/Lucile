@@ -90,7 +90,7 @@ namespace Lucile.Linq
                 }
             }
 
-            var param = Expression.Parameter(this.SourceType);
+            var param = Expression.Parameter(this.SourceType, "p");
             IQueryable baseQuery = CreateBaseQuery(source, sortedDependencies);
             var filter = new FilterItemGroup(config.FilterItems);
             baseQuery = baseQuery.ApplyFilterItem(filter);
@@ -147,7 +147,7 @@ namespace Lucile.Linq
             var baseQuery = baseEntity.Key.QueryFactory(source);
             var baseExpression = baseQuery.Expression;
 
-            var param = Expression.Parameter(baseEntity.Key.EntityType);
+            var param = Expression.Parameter(baseEntity.Key.EntityType, "p");
 
             Dictionary<MemberInfo, Expression> memberInits = new Dictionary<MemberInfo, Expression>()
             {
@@ -171,23 +171,27 @@ namespace Lucile.Linq
                 var joinPairType = typeof(GroupJoinPair<,>).MakeGenericType(SourceType, entityType);
                 var localJoin = joined[i].Key.LocalJoinExpression;
                 var remoteJoin = joined[i].Key.RemoteJoinExpression;
-                var param1 = Expression.Parameter(SourceType);
-                var param2 = Expression.Parameter(typeof(IEnumerable<>).MakeGenericType(entityType));
+                var param1 = Expression.Parameter(SourceType, "p1");
+                var param2 = Expression.Parameter(typeof(IEnumerable<>).MakeGenericType(entityType), "p2");
                 var joinBody = Expression.MemberInit(
                                             Expression.New(joinPairType),
                                             Expression.Bind(joinPairType.GetProperty("Parent"), param1),
                                             Expression.Bind(joinPairType.GetProperty("Children"), param2));
 
+                var test = joined[i].Key.QueryFactory(source);
+
+                ////Expression.Constant(, typeof(IQueryable<>).MakeGenericType(joined[i].Key.EntityType)),
+
                 baseExpression = Expression.Call(
                     QueryableInfo.GroupJoin.MakeGenericMethod(SourceType, entityType, joined[i].Key.JoinKeyType, joinPairType),
                     baseExpression,
-                    Expression.Constant(joined[i].Key.QueryFactory(source)),
+                    test.Expression,
                     remoteJoin,
                     localJoin,
                     Expression.Quote(Expression.Lambda(joinBody, param1, param2)));
 
-                param1 = Expression.Parameter(joinPairType);
-                param2 = Expression.Parameter(entityType);
+                param1 = Expression.Parameter(joinPairType, "p1");
+                param2 = Expression.Parameter(entityType, "p2");
 
                 memberInits[baseEntity.Member] = Expression.Property(Expression.Property(param1, "Parent"), baseEntity.Key.Name);
                 for (int j = 0; j < i; j++)
