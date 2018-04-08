@@ -9,7 +9,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "global", "global", "{88DC6596-58CA-45A6-B5D3-59B9039B2E83}"
 	ProjectSection(SolutionItems) = preProject
-		global\GlobalAssemblyInfo.cs = global\GlobalAssemblyInfo.cs
+		global\GlobalInfo.targets = global\GlobalInfo.targets
 		global\stylecop.json = global\stylecop.json
 		global\Stylecop.ruleset = global\Stylecop.ruleset
 	EndProjectSection
@@ -34,7 +34,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Lucile.Core.Test.Module1", 
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Lucile.ServiceModel", "src\Lucile.ServiceModel\Lucile.ServiceModel.csproj", "{42E10DF2-CC69-4CC8-870F-F2DB6F80DB41}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Lucile.ServiceModel.Test", "test\Lucile.ServiceModel.Test\Lucile.ServiceModel.Test.csproj", "{DD2516E6-1B32-4472-ACD3-A099A09C38E7}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Lucile.ServiceModel.Test", "test\Lucile.ServiceModel.Test\Lucile.ServiceModel.Test.csproj", "{DD2516E6-1B32-4472-ACD3-A099A09C38E7}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -98,5 +98,8 @@ Global
 		{5B90541B-C6B6-4DC2-91AA-F6F4378A375B} = {FB263B3F-F589-4277-8C98-C3C3E0E65D5F}
 		{42E10DF2-CC69-4CC8-870F-F2DB6F80DB41} = {67FDFE16-B5A1-481C-8375-87EE40610DC2}
 		{DD2516E6-1B32-4472-ACD3-A099A09C38E7} = {FB263B3F-F589-4277-8C98-C3C3E0E65D5F}
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {E45E49B1-4BB8-4F18-9335-60428857A33F}
 	EndGlobalSection
 EndGlobal

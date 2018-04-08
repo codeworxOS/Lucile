@@ -12,6 +12,11 @@ namespace Lucile.Mapper
         private Func<TSource, TTarget> _conversionDelegate;
         private Expression<Func<TSource, TTarget>> _conversionExpression;
 
+        Expression IMappingConfiguration.ConversionExpression
+        {
+            get { return this.Expression; }
+        }
+
         public Expression<Func<TSource, TTarget>> Expression
         {
             get
@@ -19,11 +24,6 @@ namespace Lucile.Mapper
                 EnsureExpression();
                 return this._conversionExpression;
             }
-        }
-
-        Expression IMappingConfiguration.ConversionExpression
-        {
-            get { return this.Expression; }
         }
 
         Type IMappingConfiguration.SourceType
@@ -42,10 +42,20 @@ namespace Lucile.Mapper
             }
         }
 
+        bool IMappingConfiguration.CanConvert(object source)
+        {
+            return source is TSource;
+        }
+
         public bool CanConvertBack()
         {
             EnsureExpression();
             return false;
+        }
+
+        bool IMappingConfiguration.CanConvertType(Type sourceType)
+        {
+            return typeof(TSource).IsAssignableFrom(sourceType);
         }
 
         public TTarget Convert(TSource source)
@@ -54,26 +64,16 @@ namespace Lucile.Mapper
             return this._conversionDelegate(source);
         }
 
+        object IMappingConfiguration.Convert(object source)
+        {
+            return this.Convert((TSource)source);
+        }
+
         public TSource ConvertBack(TTarget target)
         {
             EnsureExpression();
             ////TODO implement;
             return default(TSource);
-        }
-
-        bool IMappingConfiguration.CanConvert(object source)
-        {
-            return source is TSource;
-        }
-
-        bool IMappingConfiguration.CanConvertType(Type sourceType)
-        {
-            return typeof(TSource).IsAssignableFrom(sourceType);
-        }
-
-        object IMappingConfiguration.Convert(object source)
-        {
-            return this.Convert((TSource)source);
         }
 
         protected abstract Expression<Func<TSource, TTarget>> GetConversionExpression();
@@ -120,7 +120,7 @@ namespace Lucile.Mapper
                     var param = System.Linq.Expressions.Expression.Parameter(typeof(MappingContainer));
                     var body = System.Linq.Expressions.Expression.Call(
                         param,
-                        MethodInfoCache.GetMappingOrDefaultMethod.MakeGenericMethod(item.Method.GetGenericArguments()),
+                        MappingContainer.MethodInfoCache.GetMappingOrDefaultMethod.MakeGenericMethod(item.Method.GetGenericArguments()),
                         System.Linq.Expressions.Expression.Default(item.Method.GetGenericArguments().First()));
 
                     var getMappingDelegate = System.Linq.Expressions.Expression.Lambda<Func<MappingContainer, IMappingConfiguration>>(body, param).Compile();
@@ -137,7 +137,7 @@ namespace Lucile.Mapper
                         this._conversionExpression = _conversionExpression.Replace(
                             item,
                             System.Linq.Expressions.Expression.Call(
-                                MethodInfoCache.QueryableSelectMethod.MakeGenericMethod(item.Method.GetGenericArguments()),
+                                MappingContainer.MethodInfoCache.QueryableSelectMethod.MakeGenericMethod(item.Method.GetGenericArguments()),
                                 item.Arguments.First(),
                                 mapping.ConversionExpression));
                     }
@@ -146,7 +146,7 @@ namespace Lucile.Mapper
                         this._conversionExpression = _conversionExpression.Replace(
                             item,
                             System.Linq.Expressions.Expression.Call(
-                                MethodInfoCache.EnumerableSelectMethod.MakeGenericMethod(item.Method.GetGenericArguments()),
+                                MappingContainer.MethodInfoCache.EnumerableSelectMethod.MakeGenericMethod(item.Method.GetGenericArguments()),
                                 item.Arguments.First(),
                                 mapping.ConversionExpression));
                     }
@@ -159,23 +159,6 @@ namespace Lucile.Mapper
                 }
 
                 _conversionDelegate = this._conversionExpression.Compile();
-            }
-        }
-
-        private class MethodInfoCache
-        {
-            public static readonly MethodInfo EnumerableSelectMethod;
-            public static readonly MethodInfo GetMappingOrDefaultMethod;
-
-            public static readonly MethodInfo QueryableSelectMethod;
-
-            static MethodInfoCache()
-            {
-                GetMappingOrDefaultMethod = typeof(MappingContainer).GetMethod("GetMappingOrDefault");
-                Expression<Func<IQueryable<string>, IQueryable<string>>> queryableSelect = p => p.Select(x => x);
-                Expression<Func<IEnumerable<string>, IEnumerable<string>>> enumerableSelect = p => p.Select(x => x);
-                QueryableSelectMethod = ((MethodCallExpression)queryableSelect.Body).Method.GetGenericMethodDefinition();
-                EnumerableSelectMethod = ((MethodCallExpression)enumerableSelect.Body).Method.GetGenericMethodDefinition();
             }
         }
     }

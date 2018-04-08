@@ -28,11 +28,11 @@ namespace Tests
                     var channel = cf.CreateChannel();
 
                     var error = Assert.Throws<ServiceProcessingException>(() => channel.RaiseError());
-                    Assert.True(error.Message.StartsWith("Service request threw exception System.ArgumentException", StringComparison.CurrentCulture));
+                    Assert.StartsWith("Service request threw exception System.ArgumentException", error.Message);
                     Assert.Equal("LogIdentifier", error.TracingIdentifier);
 
                     error = await Assert.ThrowsAsync<ServiceProcessingException>(async () => await channel.RaiseAsyncErrorAsync());
-                    Assert.True(error.Message.StartsWith("Service request threw exception System.ArgumentException", StringComparison.CurrentCulture));
+                    Assert.StartsWith("Service request threw exception System.ArgumentException", error.Message);
                     Assert.Equal("LogIdentifier", error.TracingIdentifier);
                 }
             }
@@ -109,11 +109,11 @@ namespace Tests
                     var channel = cf.CreateChannel();
 
                     var error = Assert.Throws<ServiceProcessingException>(() => channel.RaiseError());
-                    Assert.True(error.Message.StartsWith("Service request threw exception System.ArgumentException", StringComparison.CurrentCulture));
+                    Assert.StartsWith("Service request threw exception System.ArgumentException", error.Message);
                     Assert.Equal("LogIdentifier", error.TracingIdentifier);
 
                     error = await Assert.ThrowsAsync<ServiceProcessingException>(async () => await channel.RaiseAsyncErrorAsync());
-                    Assert.True(error.Message.StartsWith("Service request threw exception System.ArgumentException", StringComparison.CurrentCulture));
+                    Assert.StartsWith("Service request threw exception System.ArgumentException", error.Message);
                     Assert.Equal("LogIdentifier", error.TracingIdentifier);
                 }
             }

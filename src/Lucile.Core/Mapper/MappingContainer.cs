@@ -227,5 +227,23 @@ namespace Lucile.Mapper
             mapping = mappings.FirstOrDefault();
             return mapping != null;
         }
+
+        internal class MethodInfoCache
+        {
+            static MethodInfoCache()
+            {
+                GetMappingOrDefaultMethod = typeof(MappingContainer).GetMethod("GetMappingOrDefault");
+                Expression<Func<IQueryable<string>, IQueryable<string>>> queryableSelect = p => p.Select(x => x);
+                Expression<Func<IEnumerable<string>, IEnumerable<string>>> enumerableSelect = p => p.Select(x => x);
+                QueryableSelectMethod = ((MethodCallExpression)queryableSelect.Body).Method.GetGenericMethodDefinition();
+                EnumerableSelectMethod = ((MethodCallExpression)enumerableSelect.Body).Method.GetGenericMethodDefinition();
+            }
+
+            public static MethodInfo EnumerableSelectMethod { get; }
+
+            public static MethodInfo GetMappingOrDefaultMethod { get; }
+
+            public static MethodInfo QueryableSelectMethod { get; }
+        }
     }
 }

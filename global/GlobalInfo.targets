@@ -1,0 +1,11 @@
+<Project>
+  <PropertyGroup>
+    <Company>codeworx gmbh</Company>
+    <Copyright>copyright © codeworx 2018</Copyright>
+    <Version>1.0.0</Version>
+    <AssemblyVersion>1.0.0.0</AssemblyVersion>
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+    <CodeAnalysisRuleSet>..\..\global\StyleCop.ruleset</CodeAnalysisRuleSet>
+    <DebugType>Full</DebugType>
+  </PropertyGroup>
+</Project>
