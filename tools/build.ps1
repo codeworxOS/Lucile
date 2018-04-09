@@ -13,4 +13,4 @@ New-NugetPackages `
     -NugetServerUrl "https://www.myget.org/F/codeworx/api/v2" `
     -VersionPackage "Lucile.Core" `
     -OutputPath "..\dist\nuget" `
-    -MsBuildParams "SignAssembly=true;AssemblyOriginatorKeyFile=..\..\private\signkey.snk"
+    -MsBuildParams "SignAssembly=true;AssemblyOriginatorKeyFile=..\..\private\signkey.snk;SourceLinkCreate=true"

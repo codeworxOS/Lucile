@@ -6,6 +6,12 @@
     <AssemblyVersion>1.0.0.0</AssemblyVersion>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
     <CodeAnalysisRuleSet>..\..\global\StyleCop.ruleset</CodeAnalysisRuleSet>
-    <DebugType>Full</DebugType>
+    <DebugType>portable</DebugType>
   </PropertyGroup>
+  <PropertyGroup>
+    <SourceLinkUrl>https://codeworx.visualstudio.com/_apis/git/Lucile/repositories/Lucile/items?api-version=1&amp;contentOnly=false&amp;versionType=commit&amp;version={commit}&amp;path=*</SourceLinkUrl>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="SourceLink.Create.CommandLine" Version="2.8.0" PrivateAssets="all" />
+  </ItemGroup>
 </Project>
