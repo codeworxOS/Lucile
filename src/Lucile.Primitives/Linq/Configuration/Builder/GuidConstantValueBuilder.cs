@@ -14,7 +14,7 @@ namespace Lucile.Linq.Configuration.Builder
             this.Value = ((GuidConstantValue)value).Value;
         }
 
-        public override ValueExpression ToTarget()
+        protected override ValueExpression BuildTarget()
         {
             return new GuidConstantValue(this.Value);
         }

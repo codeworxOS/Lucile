@@ -53,14 +53,14 @@ namespace Tests
                 }
             };
 
-            var query = receipts.AsQueryable().ApplyFilterItem(filterItem.ToTarget());
+            var query = receipts.AsQueryable().ApplyFilterItem(filterItem.Build());
             Assert.Equal(1, query.Count());
 
             Assert.Equal(id1, query.First().Id);
 
             ((NumericFilterItemBuilder)filterItem.Filter).Operator = RelationalCompareOperator.LessThenOrEqual;
 
-            query = receipts.AsQueryable().ApplyFilterItem(filterItem.ToTarget());
+            query = receipts.AsQueryable().ApplyFilterItem(filterItem.Build());
             Assert.Equal(1, query.Count());
 
             Assert.Equal(id2, query.First().Id);
@@ -94,14 +94,14 @@ namespace Tests
                 Right = new GuidConstantValueBuilder { Value = id1 }
             };
 
-            var query = receipts.AsQueryable().ApplyFilterItem(filterItem.ToTarget());
+            var query = receipts.AsQueryable().ApplyFilterItem(filterItem.Build());
             Assert.Equal(1, query.Count());
 
             Assert.Equal(receipt1, query.First());
 
             ((GuidConstantValueBuilder)filterItem.Right).Value = id2;
 
-            query = receipts.AsQueryable().ApplyFilterItem(filterItem.ToTarget());
+            query = receipts.AsQueryable().ApplyFilterItem(filterItem.Build());
             Assert.Equal(1, query.Count());
 
             Assert.Equal(receipt2, query.First());
@@ -126,20 +126,20 @@ namespace Tests
                  new Invoice{ Id = id3 }
             };
 
-            var query = receipts.AsQueryable().ApplyFilterItem(builder.ToTarget());
+            var query = receipts.AsQueryable().ApplyFilterItem(builder.Build());
 
             Assert.Equal(1, query.Count());
             Assert.Equal(id3, query.First().Id);
 
             builder.Operator = RelationalCompareOperator.IsNotNull;
-            query = receipts.AsQueryable().ApplyFilterItem(builder.ToTarget());
+            query = receipts.AsQueryable().ApplyFilterItem(builder.Build());
 
             Assert.Equal(2, query.Count());
             Assert.All(query, p => Assert.NotEqual(id3, p.Id));
 
             builder.Operator = RelationalCompareOperator.GreaterThen;
             builder.Right = new DateTimeConstantValueBuilder { Value = DateTime.Today };
-            query = receipts.AsQueryable().ApplyFilterItem(builder.ToTarget());
+            query = receipts.AsQueryable().ApplyFilterItem(builder.Build());
 
             Assert.Equal(1, query.Count());
             Assert.Equal(id2, query.First().Id);
@@ -177,7 +177,7 @@ namespace Tests
                 Right = new NumericConstantValueBuilder { Value = (int)ContactType.Customer }
             };
 
-            var query = receipts.AsQueryable().ApplyFilterItem(filterItem.ToTarget());
+            var query = receipts.AsQueryable().ApplyFilterItem(filterItem.Build());
             Assert.Equal(1, query.Count());
             Assert.Equal(receipt1, query.First());
 
@@ -188,7 +188,7 @@ namespace Tests
                 Left = new NumericConstantValueBuilder { Value = (int)ContactType.Supplier }
             };
 
-            query = receipts.AsQueryable().ApplyFilterItem(filterItem.ToTarget());
+            query = receipts.AsQueryable().ApplyFilterItem(filterItem.Build());
             Assert.Equal(1, query.Count());
 
             Assert.Equal(receipt2, query.First());

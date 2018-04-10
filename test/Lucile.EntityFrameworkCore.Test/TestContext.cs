@@ -25,7 +25,7 @@ namespace Lucile.EntityFrameworkCore.Test
             base.OnConfiguring(optionsBuilder);
             if (!optionsBuilder.IsConfigured)
             {
-                optionsBuilder.UseInMemoryDatabase();
+                optionsBuilder.UseInMemoryDatabase("unittest");
             }
         }
 

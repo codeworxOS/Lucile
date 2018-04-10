@@ -18,9 +18,9 @@ namespace Lucile.Linq.Configuration.Builder
             this.Filter = GetBuilder(any.Filter);
         }
 
-        public override FilterItem ToTarget()
+        protected override FilterItem BuildTarget()
         {
-            return new AnyFilterItem(new PathValueExpression(this.Path), this.Filter.ToTarget());
+            return new AnyFilterItem(new PathValueExpression(this.Path), this.Filter.Build());
         }
     }
 }

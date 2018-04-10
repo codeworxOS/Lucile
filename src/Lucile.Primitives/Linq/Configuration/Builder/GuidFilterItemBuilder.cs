@@ -22,9 +22,9 @@ namespace Lucile.Linq.Configuration.Builder
             Operator = relational.Operator;
         }
 
-        public override FilterItem ToTarget()
+        protected override FilterItem BuildTarget()
         {
-            return new GuidBinaryFilterItem(Left.ToTarget(), Right?.ToTarget(), Operator);
+            return new GuidBinaryFilterItem(Left.Build(), Right?.Build(), Operator);
         }
     }
 }

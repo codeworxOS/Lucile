@@ -3,7 +3,7 @@ using System.Collections.ObjectModel;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace Codeworx.Threading
+namespace Lucile.Threading
 {
     public class CancellationManager
     {
@@ -62,7 +62,7 @@ namespace Codeworx.Threading
             return manager;
         }
 
-        public async Task Execute(Func<CancellationToken, Task> creator)
+        public async Task ExecuteAsync(Func<CancellationToken, Task> creator)
         {
             var token = GetToken();
 
@@ -72,11 +72,11 @@ namespace Codeworx.Threading
             }
             catch (OperationCanceledException)
             {
-                // shit happens!!!
+                // expected
             }
         }
 
-        public async Task<TData> Execute<TData>(Func<CancellationToken, Task<TData>> creator)
+        public async Task<TData> ExecuteAsync<TData>(Func<CancellationToken, Task<TData>> creator)
         {
             var token = GetToken();
             var result = default(TData);
@@ -87,7 +87,7 @@ namespace Codeworx.Threading
             }
             catch (OperationCanceledException)
             {
-                // shit happens!!!
+                // expected
             }
 
             return result;

@@ -18,9 +18,9 @@ namespace Lucile.Linq.Configuration.Builder
             Value = ValueExpressionBuilder.GetBuilder(boolean.Value);
         }
 
-        public override FilterItem ToTarget()
+        protected override FilterItem BuildTarget()
         {
-            return new BooleanFilterItem(Value.ToTarget(), Operator);
+            return new BooleanFilterItem(Value.Build(), Operator);
         }
     }
 }

@@ -4,8 +4,8 @@ namespace Lucile.ViewModel
 {
     public class JobScope : IDisposable
     {
+        private readonly object _state;
         private bool _disposed;
-        private object _state;
 
         public JobScope(ViewModelBase viewModel, string busyMessage = null)
         {
@@ -25,7 +25,7 @@ namespace Lucile.ViewModel
             Dispose(false);
         }
 
-        public ViewModelBase ViewModel { get; private set; }
+        public ViewModelBase ViewModel { get; }
 
         protected virtual bool IsDisposed
         {
@@ -50,8 +50,6 @@ namespace Lucile.ViewModel
                 if (disposing)
                 {
                     this.ViewModel.RemoveJob(this._state);
-                    this.ViewModel = null;
-                    this._state = null;
                 }
             }
         }

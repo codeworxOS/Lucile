@@ -38,9 +38,9 @@ namespace Lucile.Linq.Configuration.Builder
             }
         }
 
-        public override FilterItem ToTarget()
+        protected override FilterItem BuildTarget()
         {
-            return new FilterItemGroup(Children.Select(p => p.ToTarget()), GroupType);
+            return new FilterItemGroup(Children.Select(p => p.Build()), GroupType);
         }
     }
 }

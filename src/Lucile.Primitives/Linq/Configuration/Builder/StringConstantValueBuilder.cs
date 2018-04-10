@@ -13,7 +13,7 @@ namespace Lucile.Linq.Configuration.Builder
             this.Value = ((StringConstantValue)value).Value;
         }
 
-        public override ValueExpression ToTarget()
+        protected override ValueExpression BuildTarget()
         {
             return new StringConstantValue(this.Value);
         }

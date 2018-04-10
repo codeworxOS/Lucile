@@ -15,7 +15,7 @@ namespace Lucile.Linq.Configuration.Builder
             Path = path.Path;
         }
 
-        public override ValueExpression ToTarget()
+        protected override ValueExpression BuildTarget()
         {
             return new PathValueExpression(Path);
         }

@@ -6,9 +6,11 @@ using System.Threading.Tasks;
 namespace Lucile.ViewModel
 {
     [ViewModelProperty("IsActive", typeof(bool), IsReadOnly = true)]
-    public partial class ViewModelBase : NotificationObject, IActivationAware, INavigationAware
+    public class ViewModelBase : NotificationObject, IActivationAware, INavigationAware
     {
         private ConcurrentDictionary<object, string> _busyStates;
+
+        private bool _isActive;
 
         public ViewModelBase()
         {
@@ -16,6 +18,28 @@ namespace Lucile.ViewModel
         }
 
         public string BusyMessage { get; set; }
+
+        public bool IsActive
+        {
+            get
+            {
+                return _isActive;
+            }
+
+            private set
+            {
+                if (_isActive != value)
+                {
+                    bool handled = false;
+                    handled = handled || RaisePropertyChanging(oldValue: _isActive, newValue: value);
+                    if (!handled)
+                    {
+                        _isActive = value;
+                        RaisePropertyChanged();
+                    }
+                }
+            }
+        }
 
         public bool IsBusy { get; set; }
 
@@ -134,12 +158,12 @@ namespace Lucile.ViewModel
 
             if (this.IsBusy != isBusy)
             {
-                RaisePropertyChanged("IsBusy");
+                RaisePropertyChanged(nameof(IsBusy));
             }
 
             if (this.BusyMessage != message)
             {
-                RaisePropertyChanged("BusyMessage");
+                RaisePropertyChanged(nameof(BusyMessage));
             }
         }
     }

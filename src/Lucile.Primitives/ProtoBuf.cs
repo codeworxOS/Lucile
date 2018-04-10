@@ -1,5 +1,8 @@
 ﻿#pragma warning disable SA1402 // FileMayOnlyContainASingleClass
 #pragma warning disable SA1649 // SA1649FileNameMustMatchTypeName
+#pragma warning disable SA1609 // Property documentation should have value
+#pragma warning disable SA1623 // Property summary documentation should match accessors
+#pragma warning disable SA1642 // Constructor summary documentation should begin with standard text
 
 using System;
 
@@ -107,7 +110,7 @@ namespace ProtoBuf
             {
                 if (value < 1)
                 {
-                    throw new ArgumentOutOfRangeException("ImplicitFirstTag");
+                    throw new ArgumentOutOfRangeException(nameof(ImplicitFirstTag));
                 }
 
                 this._implicitFirstTag = value;
@@ -240,9 +243,9 @@ namespace ProtoBuf
 
         /// <summary>
         ///  Creates a new instance of the ProtoIncludeAttribute.
-        ///  </summary>
-        ///  <param name="tag">The unique index (within the type) that will identify this data.</param>
-        ///  <param name="knownType">The additional type to serialize/deserialize.</param>
+        /// </summary>
+        /// <param name="tag">The unique index (within the type) that will identify this data.</param>
+        /// <param name="knownType">The additional type to serialize/deserialize.</param>
         public ProtoIncludeAttribute(int tag, Type knownType)
         {
             this._tag = tag;
@@ -331,3 +334,6 @@ namespace ProtoBuf
 
 #pragma warning restore SA1402 // FileMayOnlyContainASingleClass
 #pragma warning restore SA1649 // SA1649FileNameMustMatchTypeName
+#pragma warning restore SA1609 // Property documentation should have value
+#pragma warning restore SA1623 // Property summary documentation should match accessors
+#pragma warning restore SA1642 // Constructor summary documentation should begin with standard text

@@ -52,7 +52,7 @@ namespace Lucile.Input
 
             if (_asyncCanExecute)
             {
-                CanExecuteAsync(parameter).Invoke();
+                CanExecuteAsync(parameter).InvokeAsync();
             }
             else
             {

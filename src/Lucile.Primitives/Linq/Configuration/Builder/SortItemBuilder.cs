@@ -18,7 +18,7 @@ namespace Lucile.Linq.Configuration.Builder
             this.SortDirection = value.SortDirection;
         }
 
-        public override SortItem ToTarget()
+        protected override SortItem BuildTarget()
         {
             return new SortItem(this.PropertyPath, this.SortDirection);
         }

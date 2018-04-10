@@ -53,9 +53,9 @@ namespace Lucile.Linq.Builder
             }
         }
 
-        public override QueryConfiguration ToTarget()
+        protected override QueryConfiguration BuildTarget()
         {
-            return new QueryConfiguration(this.Select, this.SortItems.Select(p => p.ToTarget()), this.FilterItems.Select(p => p.ToTarget()), this.TargetFilterItems.Select(p => p.ToTarget()));
+            return new QueryConfiguration(this.Select, this.SortItems.Select(p => p.Build()), this.FilterItems.Select(p => p.Build()), this.TargetFilterItems.Select(p => p.Build()));
         }
     }
 }

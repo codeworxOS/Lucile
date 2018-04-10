@@ -24,9 +24,9 @@ namespace Lucile.Linq.Configuration.Builder
             Operator = stringBinary.Operator;
         }
 
-        public override FilterItem ToTarget()
+        protected override FilterItem BuildTarget()
         {
-            return new StringBinaryFilterItem(Left.ToTarget(), Right?.ToTarget(), Operator);
+            return new StringBinaryFilterItem(Left.Build(), Right?.Build(), Operator);
         }
     }
 }

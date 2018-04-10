@@ -9,6 +9,6 @@
 
         public bool Cancel { get; set; }
 
-        public object NewContent { get; private set; }
+        public object NewContent { get; }
     }
 }

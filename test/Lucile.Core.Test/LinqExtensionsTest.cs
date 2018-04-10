@@ -33,7 +33,7 @@ namespace Tests
             configBuilder.FilterItems.Add(builder);
             configBuilder.SortItems.Add(new SortItemBuilder() { PropertyPath = "FirstName", SortDirection = SortDirection.Ascending });
 
-            var result = query.Apply(configBuilder.ToTarget());
+            var result = query.Apply(configBuilder.Build());
 
             Assert.Equal(2, result.Count());
             Assert.All(result, p => Assert.Equal("Doe", p.LastName));
@@ -57,7 +57,7 @@ namespace Tests
             builder.Right = new StringConstantValueBuilder { Value = "Doe" };
             builder.Operator = Lucile.Linq.Configuration.StringOperator.Equal;
 
-            var item = builder.ToTarget();
+            var item = builder.Build();
 
             var result = query.ApplyFilterItem(item);
 

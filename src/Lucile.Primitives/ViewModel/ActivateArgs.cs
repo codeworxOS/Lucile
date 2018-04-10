@@ -7,6 +7,6 @@
             this.PreviousContent = previousContent;
         }
 
-        public object PreviousContent { get; private set; }
+        public object PreviousContent { get; }
     }
 }
