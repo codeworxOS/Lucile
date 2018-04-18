@@ -14,5 +14,10 @@ namespace Lucile.ServiceModel.Test
         [OperationContract]
         [WebInvoke(Method = "POST", UriTemplate = "Raise")]
         void RaiseError();
+
+        [OperationContract]
+        [WebGet(UriTemplate = "RaiseSampleFault")]
+        [FaultContract(typeof(SampleFault))]
+        void RaiseSampleFault();
     }
 }

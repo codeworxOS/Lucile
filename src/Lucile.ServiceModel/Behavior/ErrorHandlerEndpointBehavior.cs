@@ -28,7 +28,7 @@ namespace Lucile.ServiceModel.Behavior
 
         public void ApplyClientBehavior(ServiceEndpoint endpoint, System.ServiceModel.Dispatcher.ClientRuntime clientRuntime)
         {
-            clientRuntime.ClientMessageInspectors.Add(new UnWrapExceptionFromFaultInspector());
+            clientRuntime.ClientMessageInspectors.Add(new UnWrapExceptionFromFaultInspector(clientRuntime, endpoint.Contract));
         }
 
         public void ApplyDispatchBehavior(ServiceEndpoint endpoint, System.ServiceModel.Dispatcher.EndpointDispatcher endpointDispatcher)

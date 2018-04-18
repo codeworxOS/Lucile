@@ -12,6 +12,28 @@ namespace Tests
     public class ErrorHandlerTest
     {
         [Fact]
+        public async Task ThrowFaultException()
+        {
+            var path = Guid.NewGuid().ToString();
+            using (var sh = new ServiceHost(typeof(ErrorService), new Uri($"net.tcp://localhost:1234/{path}")))
+            {
+                var ep = sh.AddServiceEndpoint(typeof(IErrorService), new NetTcpBinding(SecurityMode.None), string.Empty);
+                ep.EndpointBehaviors.Add(new Lucile.ServiceModel.Behavior.ErrorHandlerEndpointBehavior() { IncludeDetails = false });
+
+                sh.Open();
+
+                using (var cf = new ChannelFactory<IErrorService>(new NetTcpBinding(SecurityMode.None), new EndpointAddress($"net.tcp://localhost:1234/{path}")))
+                {
+                    cf.Endpoint.EndpointBehaviors.Add(new ErrorHandlerEndpointBehavior());
+                    var channel = cf.CreateChannel();
+
+                    var error = Assert.Throws<FaultException<SampleFault>>(() => channel.RaiseSampleFault());
+                    Assert.Equal("SampleFault", error.Detail.Text);
+                }
+            }
+        }
+
+        [Fact]
         private async Task IncludeDetailsFalseAsync()
         {
             var path = Guid.NewGuid().ToString();

@@ -1,18 +1,31 @@
-﻿using System.ServiceModel.Channels;
+﻿using System.Linq;
+using System.Runtime.ExceptionServices;
+using System.ServiceModel;
+using System.ServiceModel.Channels;
+using System.ServiceModel.Description;
 using System.ServiceModel.Dispatcher;
 
 namespace Lucile.ServiceModel.Behavior
 {
     public class UnWrapExceptionFromFaultInspector : IClientMessageInspector
     {
+        private readonly ContractDescription _contract;
+        private readonly ClientRuntime _runtime;
+
+        public UnWrapExceptionFromFaultInspector(ClientRuntime runtime, ContractDescription contract)
+        {
+            _contract = contract;
+            _runtime = runtime;
+        }
+
         public void AfterReceiveReply(ref System.ServiceModel.Channels.Message reply, object correlationState)
         {
             if (reply.IsFault || IsHttpInternalErrorFault(reply))
             {
                 ExceptionFault fault = null;
+                var mf = MessageFault.CreateFault(reply, int.MaxValue);
                 try
                 {
-                    var mf = MessageFault.CreateFault(reply, int.MaxValue);
                     if (mf.HasDetail && mf.Reason.ToString() == "UnhandledException")
                     {
                         var detail = mf.GetDetail<ExceptionFault>();
@@ -26,13 +39,24 @@ namespace Lucile.ServiceModel.Behavior
                     // do nothing
                 }
 
-                fault.ReThrow();
+                if (fault != null)
+                {
+                    fault.ReThrow();
+                }
+                else
+                {
+                    var operation = _runtime.ClientOperations.Single(p => p.Action == (string)correlationState);
+                    var faultTypes = _contract.Operations.Single(p => p.Name == operation.Name).Faults.Select(p => p.DetailType).ToArray();
+
+                    var ex = FaultException.CreateFault(mf, reply.Headers.Action, faultTypes);
+                    ExceptionDispatchInfo.Capture(ex).Throw();
+                }
             }
         }
 
         public object BeforeSendRequest(ref System.ServiceModel.Channels.Message request, System.ServiceModel.IClientChannel channel)
         {
-            return null;
+            return request.Headers.Action;
         }
 
         private bool IsHttpInternalErrorFault(Message reply)
