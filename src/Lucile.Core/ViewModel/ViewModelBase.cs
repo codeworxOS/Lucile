@@ -5,7 +5,6 @@ using System.Threading.Tasks;
 
 namespace Lucile.ViewModel
 {
-    [ViewModelProperty("IsActive", typeof(bool), IsReadOnly = true)]
     public class ViewModelBase : NotificationObject, IActivationAware, INavigationAware
     {
         private ConcurrentDictionary<object, string> _busyStates;
@@ -76,12 +75,6 @@ namespace Lucile.ViewModel
             await OnInitializeAsync();
         }
 
-        /// <summary>
-        /// Adds the job for busy state handling. This Method is threadsave.
-        /// The set operations for the IsBusy and BusyMessage property are syncronized with the ViewModelOperations DefaultSynchronizationContext.
-        /// </summary>
-        /// <param name="state">The state.</param>
-        /// <param name="busyMessage">The busy message.</param>
         protected internal virtual void AddJob(object state, string busyMessage = null)
         {
             if (state == null)
@@ -94,11 +87,6 @@ namespace Lucile.ViewModel
             SetBusyProperties();
         }
 
-        /// <summary>
-        /// Removes the job for busy state handling. This Method is threadsave.
-        /// The set operations for the IsBusy and BusyMessage property are syncronized with the ViewModelOperations DefaultSynchronizationContext.
-        /// </summary>
-        /// <param name="state">The state.</param>
         protected internal virtual void RemoveJob(object state)
         {
             if (state == null)
@@ -142,11 +130,6 @@ namespace Lucile.ViewModel
         }
 
 #pragma warning restore 1998
-
-        [Obsolete("This virtual method is called from the ViewModelBase constructor, which violates a major microsoft design pattern. This Method will be removed in future versions of this assembly.", true)]
-        protected virtual void OnInitialized()
-        {
-        }
 
         private void SetBusyProperties()
         {

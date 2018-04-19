@@ -36,6 +36,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Lucile.ServiceModel", "src\
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Lucile.ServiceModel.Test", "test\Lucile.ServiceModel.Test\Lucile.ServiceModel.Test.csproj", "{DD2516E6-1B32-4472-ACD3-A099A09C38E7}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Lucile.Windows", "src\Lucile.Windows\Lucile.Windows.csproj", "{415D5944-E59A-434F-B357-C543399E7A53}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -82,6 +84,10 @@ Global
 		{DD2516E6-1B32-4472-ACD3-A099A09C38E7}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{DD2516E6-1B32-4472-ACD3-A099A09C38E7}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{DD2516E6-1B32-4472-ACD3-A099A09C38E7}.Release|Any CPU.Build.0 = Release|Any CPU
+		{415D5944-E59A-434F-B357-C543399E7A53}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{415D5944-E59A-434F-B357-C543399E7A53}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{415D5944-E59A-434F-B357-C543399E7A53}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{415D5944-E59A-434F-B357-C543399E7A53}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -98,6 +104,7 @@ Global
 		{5B90541B-C6B6-4DC2-91AA-F6F4378A375B} = {FB263B3F-F589-4277-8C98-C3C3E0E65D5F}
 		{42E10DF2-CC69-4CC8-870F-F2DB6F80DB41} = {67FDFE16-B5A1-481C-8375-87EE40610DC2}
 		{DD2516E6-1B32-4472-ACD3-A099A09C38E7} = {FB263B3F-F589-4277-8C98-C3C3E0E65D5F}
+		{415D5944-E59A-434F-B357-C543399E7A53} = {67FDFE16-B5A1-481C-8375-87EE40610DC2}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {E45E49B1-4BB8-4F18-9335-60428857A33F}

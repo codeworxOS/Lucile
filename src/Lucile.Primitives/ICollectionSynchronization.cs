@@ -4,8 +4,8 @@ namespace Lucile
 {
     public interface ICollectionSynchronization
     {
-        void DisableCollectionSynchronization(IEnumerable collection);
+        void Disable(IEnumerable collection);
 
-        void EnableCollectionSynchronization(IEnumerable collection, object lockObject);
+        void Enable(IEnumerable collection, object lockObject);
     }
 }

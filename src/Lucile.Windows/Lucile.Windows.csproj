@@ -1,0 +1,29 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <Description>Windows components for the Lucile Framework. For detailed Documentation visit http://www.github.com/codeworxOS/Lucile</Description>
+    <Copyright>copyright © codeworx gmbh 2017</Copyright>
+    <AssemblyTitle>Lucile Framework Windows Library</AssemblyTitle>
+    <Authors>Raphael Schwarz</Authors>
+    <TargetFramework>net461</TargetFramework>
+  </PropertyGroup>
+
+  <Import Project="..\..\global\GlobalInfo.targets" />
+
+  <ItemGroup>
+    <AdditionalFiles Include="..\..\global\stylecop.json" Link="stylecop.json" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="StyleCop.Analyzers" Version="1.1.0-beta006" PrivateAssets="All" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Lucile.Primitives\Lucile.Primitives.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Reference Include="PresentationFramework" />
+    <Reference Include="WindowsBase" />
+  </ItemGroup>
+</Project>

@@ -5,7 +5,8 @@ $projects = "..\src\Lucile.Primitives\Lucile.Primitives.csproj",
 "..\src\Lucile.Core\Lucile.Core.csproj",
 "..\src\Lucile.EntityFramework\Lucile.EntityFramework.csproj",
 "..\src\Lucile.EntityFrameworkCore\Lucile.EntityFrameworkCore.csproj",
-"..\src\Lucile.ServiceModel\Lucile.ServiceModel.csproj"
+"..\src\Lucile.ServiceModel\Lucile.ServiceModel.csproj",
+"..\src\Lucile.Windows\Lucile.Windows.csproj"
 
 
 New-NugetPackages `
