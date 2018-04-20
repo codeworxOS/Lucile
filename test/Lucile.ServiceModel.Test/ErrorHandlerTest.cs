@@ -34,6 +34,30 @@ namespace Tests
         }
 
         [Fact]
+        public async Task ThrowWebFaultException()
+        {
+            var path = Guid.NewGuid().ToString();
+            using (var sh = new ServiceHost(typeof(ErrorService), new Uri($"http://localhost:4512/{path}")))
+            {
+                var ep = sh.AddServiceEndpoint(typeof(IErrorService), new WebHttpBinding(WebHttpSecurityMode.None), string.Empty);
+                ep.EndpointBehaviors.Add(new WebHttpBehavior { FaultExceptionEnabled = true });
+                ep.EndpointBehaviors.Add(new Lucile.ServiceModel.Behavior.ErrorHandlerEndpointBehavior() { IncludeDetails = false });
+
+                sh.Open();
+
+                using (var cf = new ChannelFactory<IErrorService>(new WebHttpBinding(WebHttpSecurityMode.None), new EndpointAddress($"http://localhost:4512/{path}")))
+                {
+                    cf.Endpoint.EndpointBehaviors.Add(new WebHttpBehavior { FaultExceptionEnabled = true });
+                    cf.Endpoint.EndpointBehaviors.Add(new ErrorHandlerEndpointBehavior());
+                    var channel = cf.CreateChannel();
+
+                    var error = Assert.Throws<FaultException<SampleFault>>(() => channel.RaiseSampleFault());
+                    Assert.Equal("SampleFault", error.Detail.Text);
+                }
+            }
+        }
+
+        [Fact]
         private async Task IncludeDetailsFalseAsync()
         {
             var path = Guid.NewGuid().ToString();

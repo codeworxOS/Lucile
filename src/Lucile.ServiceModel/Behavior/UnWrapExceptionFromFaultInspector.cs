@@ -45,8 +45,8 @@ namespace Lucile.ServiceModel.Behavior
                 }
                 else
                 {
-                    var operation = _runtime.ClientOperations.Single(p => p.Action == (string)correlationState);
-                    var faultTypes = _contract.Operations.Single(p => p.Name == operation.Name).Faults.Select(p => p.DetailType).ToArray();
+                    var operation = _runtime.ClientOperations.FirstOrDefault(p => p.Action == (string)correlationState);
+                    var faultTypes = _contract.Operations.Where(p => operation == null || p.Name == operation.Name).SelectMany(p => p.Faults.Select(x => x.DetailType)).Distinct().ToArray();
 
                     var ex = FaultException.CreateFault(mf, reply.Headers.Action, faultTypes);
                     ExceptionDispatchInfo.Capture(ex).Throw();
