@@ -290,7 +290,7 @@ namespace Tests
             config = new QueryConfiguration(filterItems);
 
             query = model.GetQuery(source, config);
-            Assert.Equal(1, query.Cast<object>().Count());
+            Assert.Equal(2, query.Cast<object>().Count());
         }
 
         [Fact]
@@ -362,6 +362,7 @@ namespace Tests
             var query = model.GetQuery(source, queryConfiguration);
             var result = query.ToList();
             Assert.NotEmpty(result);
+            Assert.Equal(2, result.Count);
         }
 
         [Fact]
@@ -513,7 +514,7 @@ namespace Tests
             config = new QueryConfiguration(filterItems);
 
             query = model.GetQuery(source, config);
-            Assert.Equal(1, query.Cast<object>().Count());
+            Assert.Equal(2, query.Cast<object>().Count());
 
             filterItems = new[] {
                 new DateTimeBinaryFilterItem(new PathValueExpression("ReceiptDetail.DeliveryTime"),new ConstantValueExpression<DateTime>(DateTime.Today.AddDays(-110)),RelationalCompareOperator.NotEqual)
@@ -521,7 +522,7 @@ namespace Tests
             config = new QueryConfiguration(filterItems);
 
             query = model.GetQuery(source, config);
-            Assert.Equal(2, query.Cast<object>().Count());
+            Assert.Equal(3, query.Cast<object>().Count());
 
             filterItems = new[] {
                 new DateTimeBinaryFilterItem(new PathValueExpression("ReceiptDetail.DeliveryTime"),new ConstantValueExpression<DateTime>(DateTime.Today.AddDays(-160)),RelationalCompareOperator.GreaterThen)
@@ -545,7 +546,7 @@ namespace Tests
             config = new QueryConfiguration(filterItems);
 
             query = model.GetQuery(source, config);
-            Assert.Equal(1, query.Cast<object>().Count());
+            Assert.Equal(2, query.Cast<object>().Count());
 
             filterItems = new[] {
                 new DateTimeBinaryFilterItem(new PathValueExpression("ReceiptDetail.DeliveryTime"),new ConstantValueExpression<DateTime>(DateTime.Today.AddDays(-150)),RelationalCompareOperator.LessThenOrEqual)
@@ -553,7 +554,7 @@ namespace Tests
             config = new QueryConfiguration(filterItems);
 
             query = model.GetQuery(source, config);
-            Assert.Equal(2, query.Cast<object>().Count());
+            Assert.Equal(3, query.Cast<object>().Count());
         }
 
         [Fact]
@@ -593,7 +594,7 @@ namespace Tests
             config = new QueryConfiguration(filterItems);
 
             query = model.GetQuery(source, config);
-            Assert.Equal(2, query.Cast<object>().Count());
+            Assert.Equal(3, query.Cast<object>().Count());
 
             filterItems = new[] {
                 new NumericBinaryFilterItem(new PathValueExpression("ReceiptDetail.Amount"),new ConstantValueExpression<decimal>(90),RelationalCompareOperator.GreaterThen)
@@ -609,7 +610,7 @@ namespace Tests
             config = new QueryConfiguration(filterItems);
 
             query = model.GetQuery(source, config);
-            Assert.Equal(2, query.Cast<object>().Count());
+            Assert.Equal(3, query.Cast<object>().Count());
 
             filterItems = new[] {
                 new NumericBinaryFilterItem(new PathValueExpression("ReceiptDetail.Amount"),new ConstantValueExpression<double>(120),RelationalCompareOperator.LessThen)
@@ -617,7 +618,7 @@ namespace Tests
             config = new QueryConfiguration(filterItems);
 
             query = model.GetQuery(source, config);
-            Assert.Equal(1, query.Cast<object>().Count());
+            Assert.Equal(2, query.Cast<object>().Count());
 
             filterItems = new[] {
                 new NumericBinaryFilterItem(new PathValueExpression("ReceiptDetail.Amount"),new ConstantValueExpression<float>(120),RelationalCompareOperator.LessThenOrEqual)
@@ -625,7 +626,7 @@ namespace Tests
             config = new QueryConfiguration(filterItems);
 
             query = model.GetQuery(source, config);
-            Assert.Equal(2, query.Cast<object>().Count());
+            Assert.Equal(3, query.Cast<object>().Count());
         }
 
         [Fact]
@@ -777,7 +778,7 @@ namespace Tests
             config = new QueryConfiguration(filterItems);
 
             query = model.GetQuery(source, config);
-            Assert.Equal(1, query.Cast<object>().Count());
+            Assert.Equal(2, query.Cast<object>().Count());
 
             filterItems = new[] {
                 new StringBinaryFilterItem(new PathValueExpression("ReceiptDetail.Description"),new ConstantValueExpression<string>("Testdescription2"),StringOperator.NotEqual)
@@ -785,7 +786,7 @@ namespace Tests
             config = new QueryConfiguration(filterItems);
 
             query = model.GetQuery(source, config);
-            Assert.Equal(1, query.Cast<object>().Count());
+            Assert.Equal(2, query.Cast<object>().Count());
 
             filterItems = new[] {
                 new StringBinaryFilterItem(new PathValueExpression("ReceiptDetail.Description"),new ConstantValueExpression<string>("TEST"),StringOperator.StartsWith)
@@ -1022,6 +1023,16 @@ namespace Tests
                 SupplierId = supplier.Id
             };
 
+            var article2 = new Article
+            {
+                Id = Guid.NewGuid(),
+                ArticleDescription = "Whatever",
+                ArticleNumber = "6789",
+                Price = 120,
+                Supplier = supplier,
+                SupplierId = supplier.Id
+            };
+
             var detail = new ReceiptDetail
             {
                 Id = Guid.NewGuid(),
@@ -1052,6 +1063,22 @@ namespace Tests
             };
 
             receipt.Details.Add(detail2);
+
+            var detail3 = new ReceiptDetail
+            {
+                Id = Guid.NewGuid(),
+                Amount = 90.0m,
+                Description = "whatever2",
+                Price = 120,
+                Receipt = receipt,
+                ReceiptId = receipt.Id,
+                Article = article2,
+                ArticleId = article2.Id,
+                DeliveryTime = DateTime.Today.AddDays(-170),
+                Enabled = false
+            };
+
+            receipt.Details.Add(detail3);
 
             return receipt;
         }

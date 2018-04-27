@@ -170,10 +170,19 @@ namespace Lucile.Linq
 
             foreach (var item in _propertyBuilders)
             {
-                entityBuilder.Property(item.Value.PropertyName);
-                if (item.Value.IsPrimaryKey)
+                var expression = item.Value.MappedExpression;
+
+                if (expression.Body.NodeType == ExpressionType.New)
                 {
-                    entityBuilder.PrimaryKey.Add(item.Value.PropertyName);
+                    var nav = entityBuilder.Navigation(item.Value.PropertyName);
+                }
+                else
+                {
+                    entityBuilder.Property(item.Value.PropertyName);
+                    if (item.Value.IsPrimaryKey)
+                    {
+                        entityBuilder.PrimaryKey.Add(item.Value.PropertyName);
+                    }
                 }
 
                 // TODO: Merge Metadata from mapped Properties
