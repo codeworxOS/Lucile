@@ -342,6 +342,41 @@ namespace Tests
                 p => new
                 {
                     p.Id,
+                    Article = new IdentifierValue
+                    {
+                        Id = p.ArticleId,
+                        Name = p.Article.ArticleNumber
+                    }
+                });
+            var model = builder.ToModel();
+
+            var targetFilterItems = new[] {
+                new StringBinaryFilterItem(new PathValueExpression("Article.Name"), new ConstantValueExpression<string>("123"), StringOperator.Contains)
+            };
+            var queryConfiguration = new QueryConfiguration(
+                Enumerable.Empty<SelectItem>(),
+                Enumerable.Empty<SortItem>(),
+                Enumerable.Empty<FilterItem>(),
+                targetFilterItems);
+
+            var query = model.GetQuery(source, queryConfiguration);
+            var result = query.ToList();
+            Assert.NotEmpty(result);
+            Assert.Equal(2, result.Count);
+        }
+
+        [Fact]
+        public void QueryModelBuilderCreateDynamicCompoundTypeInSelect()
+        {
+            var receipt = CreateDummyReceipt();
+            var source = new DummyQuerySource();
+            source.RegisterData(receipt.Details);
+
+            var builder = QueryModel.Build(
+                p => p.Get<ReceiptDetail>(),
+                p => new
+                {
+                    p.Id,
                     Article = new
                     {
                         p.ArticleId,

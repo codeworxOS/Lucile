@@ -172,7 +172,7 @@ namespace Lucile.Linq
             {
                 var expression = item.Value.MappedExpression;
 
-                if (expression.Body.NodeType == ExpressionType.New)
+                if (expression.Body.NodeType == ExpressionType.New || expression.Body.NodeType == ExpressionType.MemberInit)
                 {
                     var nav = entityBuilder.Navigation(item.Value.PropertyName);
                 }
