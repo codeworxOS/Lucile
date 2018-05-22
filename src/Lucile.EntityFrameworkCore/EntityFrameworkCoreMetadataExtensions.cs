@@ -8,7 +8,7 @@ using Microsoft.EntityFrameworkCore.Metadata;
 
 namespace Lucile.EntityFrameworkCore
 {
-    public static class EntityFrameworkMetadataExtensions
+    public static class EntityFrameworkCoreMetadataExtensions
     {
         public static void UseDbContext(this MetadataModelBuilder builder, DbContext context)
         {

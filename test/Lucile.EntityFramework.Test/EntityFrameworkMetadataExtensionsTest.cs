@@ -1,26 +1,23 @@
-﻿using System.Linq;
+﻿using System.Data.Entity;
+using System.Data.Entity.Infrastructure;
+using System.Linq;
 using Lucile.Data.Metadata;
 using Lucile.Data.Metadata.Builder;
-using Lucile.EntityFrameworkCore;
-using Lucile.EntityFrameworkCore.Test;
+using Lucile.EntityFramework;
+using Lucile.EntityFramework.Test;
 using Lucile.Test.Model;
 using Xunit;
 
 namespace Tests
 {
-#if (NETCOREAPP1_1)
-
-    public class EntityFrameworkMetadataExtensions11Test
-#else
-
-    public class EntityFrameworkMetadataExtensions20Test
-#endif
+    public class EntityFrameworkMetadataExtensionsTest
     {
         [Fact]
         public void FromDbIdentityAnPrimaryKeyTest()
         {
             var builder = new MetadataModelBuilder();
-            using (var ctx = new TestContext())
+
+            using (var ctx = CreateContext())
             {
                 builder.UseDbContext(ctx);
             }
@@ -56,7 +53,7 @@ namespace Tests
         public void FromDbOneToManyMultimplicityTest()
         {
             var builder = new MetadataModelBuilder();
-            using (var ctx = new TestContext())
+            using (var ctx = CreateContext())
             {
                 builder.UseDbContext(ctx);
             }
@@ -84,7 +81,7 @@ namespace Tests
         public void FromDbOneToOneMultimplicityTest()
         {
             var builder = new MetadataModelBuilder();
-            using (var ctx = new TestContext())
+            using (var ctx = CreateContext())
             {
                 builder.UseDbContext(ctx);
             }
@@ -98,6 +95,16 @@ namespace Tests
             Assert.Equal(NavigationPropertyMultiplicity.ZeroOrOne, contactSettingsContactProperty.TargetMultiplicity);
             Assert.Null(contactSettingsContactProperty.TargetNavigationProperty);
             Assert.Equal(contact, contactSettingsContactProperty.TargetEntity);
+        }
+
+        private static DbContext CreateContext()
+        {
+            var info = new DbContextInfo(typeof(TestContext), new DbProviderInfo("System.Data.SqlClient", "2012"));
+
+            var ctx = info.CreateInstance();
+            ctx.Database.Connection.ConnectionString = "Data Source=.\notneeded;Initial Catalog=EfUnitTest;Integrated Security=True";
+
+            return ctx;
         }
     }
 }
