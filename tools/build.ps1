@@ -6,6 +6,7 @@ $projects = "..\src\Lucile.Primitives\Lucile.Primitives.csproj",
 "..\src\Lucile.EntityFramework\Lucile.EntityFramework.csproj",
 "..\src\Lucile.EntityFrameworkCore\Lucile.EntityFrameworkCore.csproj",
 "..\src\Lucile.ServiceModel\Lucile.ServiceModel.csproj",
+"..\src\Lucile.ServiceModel.DependencyInjection\Lucile.ServiceModel.DependencyInjection.csproj",
 "..\src\Lucile.Windows\Lucile.Windows.csproj"
 
 
