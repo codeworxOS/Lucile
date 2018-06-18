@@ -3,6 +3,7 @@ Import-Module -Name "./Build-Versioning.psm1"
 
 $projects = "..\src\Lucile.Primitives\Lucile.Primitives.csproj",
 "..\src\Lucile.Core\Lucile.Core.csproj",
+"..\src\Lucile.Dynamic\Lucile.Dynamic.csproj",
 "..\src\Lucile.EntityFramework\Lucile.EntityFramework.csproj",
 "..\src\Lucile.EntityFrameworkCore\Lucile.EntityFrameworkCore.csproj",
 "..\src\Lucile.ServiceModel\Lucile.ServiceModel.csproj",

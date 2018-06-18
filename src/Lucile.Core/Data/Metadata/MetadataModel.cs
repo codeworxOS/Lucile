@@ -9,6 +9,11 @@ namespace Lucile.Data.Metadata
 {
     public class MetadataModel
     {
+        public MetadataModel(IEnumerable<EntityMetadata> entities)
+        {
+            Entities = ImmutableList.CreateRange(entities);
+        }
+
         internal MetadataModel(MetadataModelBuilder modelBuilder)
         {
             var scope = new ModelCreationScope(modelBuilder);
