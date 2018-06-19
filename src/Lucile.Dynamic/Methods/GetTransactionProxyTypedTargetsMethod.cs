@@ -9,18 +9,20 @@ namespace Lucile.Dynamic.Methods
 {
     public class GetTransactionProxyTypedTargetsMethod : DynamicMethod
     {
+        private readonly Type _proxyType;
         private MethodInfo _interfaceMethod;
 
         internal GetTransactionProxyTypedTargetsMethod(Type proxyType)
             : base(Guid.NewGuid().ToString(), typeof(IEnumerable<>).MakeGenericType(proxyType), false)
         {
+            _proxyType = proxyType;
         }
 
         public override bool IsExplicitImplementation(System.Reflection.MethodInfo methodInfo)
         {
             if (_interfaceMethod == null)
             {
-                _interfaceMethod = typeof(ITransactionProxy<>).MakeGenericType(this.DynamicTypeBuilder.BaseType).GetProperty("Targets").GetGetMethod();
+                _interfaceMethod = typeof(ITransactionProxy<>).MakeGenericType(_proxyType).GetProperty("Targets").GetGetMethod();
             }
 
             return methodInfo == _interfaceMethod;

@@ -10,7 +10,7 @@ namespace Lucile.Dynamic
 {
     public class DynamicProperty : DynamicMember
     {
-        private readonly List<IMethodBodyInterceptor> _setInterceptors;
+        private List<IMethodBodyInterceptor> _setInterceptors;
 
         public DynamicProperty(string memberName, Type memberType, bool isReadOnly = false)
             : base(memberName, memberType)
@@ -21,6 +21,8 @@ namespace Lucile.Dynamic
         }
 
         public FieldBuilder BackingField { get; private set; }
+
+        public bool HasBase { get; private set; }
 
         public virtual bool IsOverride { get; private set; }
 
@@ -43,33 +45,25 @@ namespace Lucile.Dynamic
         {
             var baseProperty = typeBuilder.BaseType.GetProperty(this.MemberName);
 
-            if (baseProperty != null && !baseProperty.GetAccessors().All(p => p.IsVirtual))
-            {
-                throw new MemberCreationException(this.MemberName, "The property has to be declared virtual on the base class.");
-            }
-            else if (baseProperty != null && baseProperty.PropertyType != this.MemberType)
+            if (baseProperty != null && baseProperty.PropertyType != this.MemberType)
             {
                 throw new MemberTypeMissmatchException(this.MemberName);
             }
             else if (baseProperty != null)
             {
-                IsOverride = true;
+                HasBase = true;
+                IsOverride = baseProperty.GetAccessors().All(p => p.IsVirtual && !p.IsFinal);
             }
 
-            if (!IsOverride)
+            if (!HasBase)
             {
                 BackingField = typeBuilder.DefineField(string.Format("val_{0}", this.MemberName), this.MemberType, FieldAttributes.Private);
             }
 
-            MethodAttributes methodAttributes = MethodAttributes.Public | MethodAttributes.SpecialName | MethodAttributes.HideBySig;
-
-            if (IsOverride)
-            {
-                methodAttributes = methodAttributes | MethodAttributes.Virtual;
-            }
+            MethodAttributes methodAttributes = GetMethodAttributes();
 
             PropertyGetMethod = typeBuilder.DefineMethod(
-                                IsOverride ? baseProperty.GetGetMethod().Name : string.Format("get_{0}", this.MemberName),
+                                HasBase ? baseProperty.GetGetMethod().Name : string.Format("get_{0}", this.MemberName),
                                 methodAttributes,
                                 this.MemberType,
                                 Type.EmptyTypes);
@@ -77,7 +71,7 @@ namespace Lucile.Dynamic
             if (!IsReadOnly)
             {
                 PropertySetMethod = typeBuilder.DefineMethod(
-                                    IsOverride ? baseProperty.GetSetMethod().Name : string.Format("set_{0}", this.MemberName),
+                                    HasBase ? baseProperty.GetSetMethod().Name : string.Format("set_{0}", this.MemberName),
                                     methodAttributes,
                                     null,
                                     new[] { this.MemberType });
@@ -93,11 +87,11 @@ namespace Lucile.Dynamic
 
         public override void Implement(DynamicTypeBuilder config, TypeBuilder typeBuilder)
         {
+            // GET method il
             var baseProperty = typeBuilder.BaseType.GetProperty(this.MemberName);
 
-            // Get il code
             var getMethodIlGenerator = PropertyGetMethod.GetILGenerator();
-            if (IsOverride)
+            if (HasBase)
             {
                 getMethodIlGenerator.Emit(OpCodes.Ldarg_0);
                 getMethodIlGenerator.Emit(OpCodes.Call, baseProperty.GetGetMethod());
@@ -110,7 +104,7 @@ namespace Lucile.Dynamic
                 getMethodIlGenerator.Emit(OpCodes.Ret);
             }
 
-            // Set il code
+            // SET method il
             if (!IsReadOnly)
             {
                 var setMethodIlGenerator = PropertySetMethod.GetILGenerator();
@@ -123,7 +117,7 @@ namespace Lucile.Dynamic
                     interceptor.Intercept(this, PropertySetMethod, setMethodIlGenerator, ref returnLabel);
                 }
 
-                if (IsOverride)
+                if (HasBase)
                 {
                     setMethodIlGenerator.Emit(OpCodes.Ldarg_0);
                     setMethodIlGenerator.Emit(OpCodes.Ldarg_1);
@@ -153,6 +147,18 @@ namespace Lucile.Dynamic
             }
 
             return false;
+        }
+
+        protected virtual MethodAttributes GetMethodAttributes()
+        {
+            MethodAttributes methodAttributes = MethodAttributes.Public | MethodAttributes.SpecialName | MethodAttributes.HideBySig;
+
+            if (IsOverride)
+            {
+                methodAttributes = methodAttributes | MethodAttributes.Virtual;
+            }
+
+            return methodAttributes;
         }
     }
 }

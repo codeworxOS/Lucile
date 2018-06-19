@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using System.Reflection.Emit;
@@ -7,14 +6,14 @@ using Lucile.Dynamic.Convention;
 
 namespace Lucile.Dynamic.Methods
 {
-    public class SetTransactionProxyTargetsMethod : DynamicMethod
+    public class GetValueEntriesMethod : DynamicMethod
     {
         private readonly MethodInfo _interfaceMethod;
 
-        internal SetTransactionProxyTargetsMethod()
-            : base(Guid.NewGuid().ToString(), typeof(void), false, typeof(IEnumerable<object>))
+        internal GetValueEntriesMethod()
+            : base("Lucile.Dynamic.ITransactionProxy.GetValueEntries", typeof(IEnumerable<IValueEntry<object, object>>), false, typeof(string))
         {
-            _interfaceMethod = typeof(ITransactionProxy).GetMethod("SetTargets");
+            _interfaceMethod = typeof(ITransactionProxy).GetMethod("GetValueEntries");
         }
 
         public override bool IsExplicitImplementation(System.Reflection.MethodInfo methodInfo)
@@ -26,12 +25,9 @@ namespace Lucile.Dynamic.Methods
         {
             var convention = config.Conventions.OfType<TransactionProxyConvention>().First();
 
-            var method = typeof(ITransactionProxy<>).MakeGenericType(convention.ItemType).GetMethod("SetTargets");
-
             il.Emit(OpCodes.Ldarg_0);
             il.Emit(OpCodes.Ldarg_1);
-            il.Emit(OpCodes.Castclass, typeof(IEnumerable<>).MakeGenericType(convention.ItemType));
-            il.EmitCall(OpCodes.Callvirt, method, null);
+            il.EmitCall(OpCodes.Callvirt, convention.GetValueEntiresTypedMethod.Method, null);
             il.Emit(OpCodes.Ret);
         }
     }

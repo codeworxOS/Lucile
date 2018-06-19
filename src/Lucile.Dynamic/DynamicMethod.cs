@@ -11,13 +11,60 @@ namespace Lucile.Dynamic
 {
     public abstract class DynamicMethod : DynamicMember
     {
+        private static readonly Dictionary<int, Type> _actionCache;
+        private static readonly Dictionary<int, Type> _funcCache;
         private List<Type> _argumentTypes;
 
         private List<GenericTypeParameterBuilder> _genericImplementationParameters;
         private List<GenericTypeParameterBuilder> _genericParameters;
 
+        static DynamicMethod()
+        {
+            _funcCache = new Dictionary<int, Type>
+            {
+                { 1, typeof(Func<>) },
+                { 2, typeof(Func<,>) },
+                { 3, typeof(Func<,,>) },
+                { 4, typeof(Func<,,,>) },
+                { 5, typeof(Func<,,,,>) },
+                { 6, typeof(Func<,,,,,>) },
+                { 7, typeof(Func<,,,,,,>) },
+                { 8, typeof(Func<,,,,,,,>) },
+                { 9, typeof(Func<,,,,,,,,>) },
+                { 10, typeof(Func<,,,,,,,,,>) },
+                { 11, typeof(Func<,,,,,,,,,,>) },
+                { 12, typeof(Func<,,,,,,,,,,,>) },
+                { 13, typeof(Func<,,,,,,,,,,,,>) },
+                { 14, typeof(Func<,,,,,,,,,,,,,>) },
+                { 15, typeof(Func<,,,,,,,,,,,,,,>) },
+                { 16, typeof(Func<,,,,,,,,,,,,,,,>) },
+                { 17, typeof(Func<,,,,,,,,,,,,,,,,>) }
+            };
+
+            _actionCache = new Dictionary<int, Type>
+            {
+                { 0, typeof(Action) },
+                { 1, typeof(Action<>) },
+                { 2, typeof(Action<,>) },
+                { 3, typeof(Action<,,>) },
+                { 4, typeof(Action<,,,>) },
+                { 5, typeof(Action<,,,,>) },
+                { 6, typeof(Action<,,,,,>) },
+                { 7, typeof(Action<,,,,,,>) },
+                { 8, typeof(Action<,,,,,,,>) },
+                { 9, typeof(Action<,,,,,,,,>) },
+                { 10, typeof(Action<,,,,,,,,,>) },
+                { 11, typeof(Action<,,,,,,,,,,>) },
+                { 12, typeof(Action<,,,,,,,,,,,>) },
+                { 13, typeof(Action<,,,,,,,,,,,,>) },
+                { 14, typeof(Action<,,,,,,,,,,,,,>) },
+                { 15, typeof(Action<,,,,,,,,,,,,,,>) },
+                { 16, typeof(Action<,,,,,,,,,,,,,,,>) }
+            };
+        }
+
         public DynamicMethod(string methodName, Delegate method, bool isProtected)
-            : base(methodName, method.GetMethodInfo().ReturnType)
+                    : base(methodName, method.GetMethodInfo().ReturnType)
         {
             this.IsProtected = isProtected;
             this._genericParameters = new List<GenericTypeParameterBuilder>();
@@ -31,7 +78,7 @@ namespace Lucile.Dynamic
         }
 
         public DynamicMethod(string memberName, Type memberType, bool isProtected, params Type[] arguments)
-            : base(memberName, memberType)
+        : base(memberName, memberType)
         {
             this.IsProtected = isProtected;
 
@@ -144,7 +191,7 @@ namespace Lucile.Dynamic
                     assembly = typeof(Enumerable).GetTypeInfo().Assembly;
                 }
 
-                var type = assembly.GetType(string.Format("System.Action{0}", this.ArgumentTypes.Count > 0 ? "`" + this._argumentTypes.Count.ToString() : string.Empty));
+                var type = GetActionType(this._argumentTypes.Count);
                 delegateCtor = type.GetConstructor(new[] { typeof(object), typeof(IntPtr) });
                 if (_argumentTypes.Count > 0)
                 {
@@ -162,17 +209,7 @@ namespace Lucile.Dynamic
             }
             else
             {
-                Assembly assembly = null;
-                if (this.ArgumentTypes.Count < 9)
-                {
-                    assembly = typeof(Action).GetTypeInfo().Assembly;
-                }
-                else
-                {
-                    assembly = typeof(Enumerable).GetTypeInfo().Assembly;
-                }
-
-                var type = assembly.GetType(string.Format("System.Func`{0}", this.ArgumentTypes.Count + 1));
+                var type = GetFuncType(this.ArgumentTypes.Count + 1);
                 delegateCtor = type.GetConstructor(new[] { typeof(object), typeof(IntPtr) });
                 type = type.MakeGenericType(TypeLookup(this.ArgumentTypes).Concat(new[] { TypeLookup(this.MemberType) }).ToArray());
 
@@ -314,6 +351,26 @@ namespace Lucile.Dynamic
             }
 
             return false;
+        }
+
+        protected static Type GetActionType(int parameters)
+        {
+            if (_actionCache.TryGetValue(parameters, out var action))
+            {
+                return action;
+            }
+
+            throw new NotSupportedException($"No action delegate found for parameter count {parameters}");
+        }
+
+        protected static Type GetFuncType(int parameters)
+        {
+            if (_funcCache.TryGetValue(parameters, out var func))
+            {
+                return func;
+            }
+
+            throw new NotSupportedException($"No func delegate found for parameter count {parameters}");
         }
 
         protected virtual IEnumerable<string> GetGenericArguments()

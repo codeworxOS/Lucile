@@ -1,5 +1,4 @@
 ﻿using System.Linq;
-using System.Reflection;
 using Lucile.Dynamic.Interceptor;
 using Lucile.Dynamic.Methods;
 

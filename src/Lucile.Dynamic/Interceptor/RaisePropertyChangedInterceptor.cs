@@ -28,7 +28,7 @@ namespace Lucile.Dynamic.Interceptor
                 generator.Emit(OpCodes.Box, prop.MemberType);
             }
 
-            if (!prop.IsOverride)
+            if (!prop.HasBase)
             {
                 generator.Emit(OpCodes.Ldarg_0);
                 generator.Emit(OpCodes.Ldfld, prop.BackingField);
@@ -62,12 +62,12 @@ namespace Lucile.Dynamic.Interceptor
 
             if (raiseMethod == null)
             {
-                raiseMethod = prop.DynamicTypeBuilder.BaseType.GetMethod("OnPropertyChanged", BindingFlags.NonPublic | BindingFlags.Instance);
+                raiseMethod = prop.DynamicTypeBuilder.BaseType.GetMethod("RaisePropertyChanged", BindingFlags.NonPublic | BindingFlags.Instance);
             }
 
             if (raiseMethod == null)
             {
-                throw new MissingMemberException($"Missing Member PropertyChanged on type {builder.DeclaringType.Name}");
+                throw new MissingMemberException(builder.DeclaringType.Name, "PropertyChanged");
             }
 
             generator.Emit(OpCodes.Nop);

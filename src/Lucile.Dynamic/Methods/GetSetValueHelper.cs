@@ -1,22 +1,15 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-
-#if !NETSTANDARD2_0
-
-using System.Reflection;
-
-#endif
-
 using System.Reflection.Emit;
 
 namespace Lucile.Dynamic.Methods
 {
     internal static class GetSetValueHelper
     {
-        internal static Dictionary<DynamicProperty, Label> CreateMethodBody(DynamicTypeBuilder config, ILGenerator methodIl, ref Label endLabel)
+        internal static Dictionary<DynamicProperty, Label> CreateMethodBody(IEnumerable<DynamicProperty> config, ILGenerator methodIl, ref Label endLabel)
         {
-            var grouped = config.DynamicMembers.OfType<DynamicProperty>().GroupBy(p => p.MemberName.GetHashCode()).ToList();
+            var grouped = config.GroupBy(p => p.MemberName.GetHashCode()).ToList();
 
             Dictionary<DynamicProperty, Label> propLabels = new Dictionary<DynamicProperty, Label>();
 
@@ -48,8 +41,7 @@ namespace Lucile.Dynamic.Methods
                     methodIl.Emit(OpCodes.Ldarg_1);
                     methodIl.Emit(OpCodes.Ldstr, prop.MemberName);
                     methodIl.Emit(OpCodes.Call, typeof(string).GetMethod("op_Equality", new Type[] { typeof(string), typeof(string) }));
-                    ////methodIl.Emit(OpCodes.Ldc_I4_0);
-                    ////methodIl.Emit(OpCodes.Ceq);
+
                     methodIl.Emit(OpCodes.Brtrue, label);
                     methodIl.Emit(OpCodes.Nop);
                 }

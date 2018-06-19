@@ -51,12 +51,24 @@
                 return obj == null;
             }
 
+            TValue otherValue;
+
             if (obj is Key<TValue>)
             {
-                return this.Value.Equals(((Key<TValue>)obj).Value);
+                otherValue = ((Key<TValue>)obj).Value;
+            }
+            else
+            {
+                otherValue = (TValue)obj;
             }
 
-            return obj != null && this.Value.Equals(obj);
+            var comparer = ComparerCache.Get<TValue>();
+            if (comparer != null)
+            {
+                return comparer.Equals(Value, otherValue);
+            }
+
+            return object.Equals(Value, otherValue);
         }
 
         public override int GetHashCode()
@@ -64,6 +76,12 @@
             if (!this.HasValue)
             {
                 return 0;
+            }
+
+            var comparer = ComparerCache.Get<TValue>();
+            if (comparer != null)
+            {
+                return comparer.GetHashCode(Value);
             }
 
             return this.Value.GetHashCode();

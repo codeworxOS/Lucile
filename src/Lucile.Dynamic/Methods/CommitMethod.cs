@@ -27,10 +27,10 @@ namespace Lucile.Dynamic.Methods
         {
             var convention = config.Conventions.OfType<TransactionProxyConvention>().First();
 
-            var listType = typeof(IEnumerable<>).MakeGenericType(config.BaseType);
-            var enumeratorType = typeof(IEnumerator<>).MakeGenericType(config.BaseType);
+            var listType = typeof(IEnumerable<>).MakeGenericType(convention.ItemType);
+            var enumeratorType = typeof(IEnumerator<>).MakeGenericType(convention.ItemType);
             var enumeratorVariable = il.DeclareLocal(enumeratorType);
-            var currentVariable = il.DeclareLocal(config.BaseType);
+            var currentVariable = il.DeclareLocal(convention.ItemType);
 
             il.Emit(OpCodes.Ldarg_0);
             il.Emit(OpCodes.Ldfld, convention.TargetsField.Field);
@@ -39,13 +39,14 @@ namespace Lucile.Dynamic.Methods
 
             var loopLabel = il.DefineLabel();
             var nextLabel = il.DefineLabel();
+            var leaveLabel = il.DefineLabel();
 
             var tryBlock = il.BeginExceptionBlock();
 
             il.MarkLabel(loopLabel);
             il.Emit(OpCodes.Ldloc, enumeratorVariable);
             il.EmitCall(OpCodes.Callvirt, typeof(IEnumerator).GetMethod("MoveNext"), null);
-            il.Emit(OpCodes.Brfalse, nextLabel);
+            il.Emit(OpCodes.Brfalse, leaveLabel);
 
             il.Emit(OpCodes.Ldloc, enumeratorVariable);
             il.EmitCall(OpCodes.Callvirt, enumeratorType.GetProperty("Current").GetGetMethod(), null);
@@ -70,6 +71,9 @@ namespace Lucile.Dynamic.Methods
 
             il.Emit(OpCodes.Br, loopLabel);
 
+            il.MarkLabel(leaveLabel);
+            il.Emit(OpCodes.Leave_S, nextLabel);
+
             var endFinally = il.DefineLabel();
 
             il.BeginFinallyBlock();
@@ -80,6 +84,7 @@ namespace Lucile.Dynamic.Methods
             il.Emit(OpCodes.Ldloc, enumeratorVariable);
             il.EmitCall(OpCodes.Callvirt, typeof(IDisposable).GetMethod("Dispose"), null);
             il.MarkLabel(endFinally);
+            il.Emit(OpCodes.Endfinally);
             il.EndExceptionBlock();
 
             il.MarkLabel(nextLabel);

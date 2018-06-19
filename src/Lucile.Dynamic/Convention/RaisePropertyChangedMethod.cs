@@ -15,7 +15,7 @@ namespace Lucile.Dynamic.Convention
     public class RaisePropertyChangedMethod : DynamicMethod
     {
         public RaisePropertyChangedMethod()
-            : base("OnPropertyChanged", null, true, typeof(string))
+            : base("RaisePropertyChanged", null, true, typeof(string))
         {
         }
 

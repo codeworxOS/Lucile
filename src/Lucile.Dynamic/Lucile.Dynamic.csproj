@@ -21,4 +21,8 @@
     <PackageReference Include="System.Reflection.Emit" Version="4.3.0" />
     <PackageReference Include="System.Reflection.TypeExtensions" Version="4.5.0" />
   </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Lucile.Primitives\Lucile.Primitives.csproj" />
+  </ItemGroup>
 </Project>

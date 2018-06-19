@@ -1,5 +1,5 @@
 ﻿using System.Collections.Generic;
-using System.Reflection;
+using System.Linq;
 using System.Reflection.Emit;
 
 namespace Lucile.Dynamic.Methods
@@ -15,14 +15,14 @@ namespace Lucile.Dynamic.Methods
         {
             Label endLabel = il.DefineLabel();
 
-            Dictionary<DynamicProperty, Label> propLabels = GetSetValueHelper.CreateMethodBody(config, il, ref endLabel);
+            Dictionary<DynamicProperty, Label> propLabels = GetSetValueHelper.CreateMethodBody(config.DynamicMembers.OfType<DynamicProperty>(), il, ref endLabel);
 
             foreach (var item in propLabels)
             {
                 il.MarkLabel(item.Value);
                 il.Emit(OpCodes.Ldarg_0);
                 il.EmitCall(OpCodes.Callvirt, item.Key.Property.GetGetMethod(), null);
-                if (item.Key.MemberType.GetTypeInfo().IsValueType)
+                if (item.Key.MemberType.IsValueType)
                 {
                     il.Emit(OpCodes.Box, item.Key.MemberType);
                 }

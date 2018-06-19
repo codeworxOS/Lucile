@@ -2,16 +2,12 @@
 
 namespace Lucile.Dynamic
 {
-    public interface ITransactionProxy : ICommitable
-    {
-        IEnumerable<object> Targets { get; }
-
-        void SetTargets(IEnumerable<object> targets);
-    }
-
     public interface ITransactionProxy<TTarget> : ICommitable
+           where TTarget : class
     {
         IEnumerable<TTarget> Targets { get; }
+
+        IEnumerable<IValueEntry<object, TTarget>> GetValueEntries(string propertyName);
 
         void SetTargets(IEnumerable<TTarget> targets);
     }

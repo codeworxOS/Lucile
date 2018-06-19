@@ -25,6 +25,12 @@ namespace Lucile.Dynamic
             return default(TValue);
         }
 
+        public static IEnumerable<IValueEntry<object, TTarget>> GetValueEntries<TKey, TTarget>(Dictionary<Key<TKey>, List<TTarget>> values)
+            where TTarget : class
+        {
+            return values.Select(p => new ValueEntry<object, TTarget>(p.Key.Value, (IEnumerable<TTarget>)p.Value));
+        }
+
         public static void SetCollectionValue<TValue, TCollection, TTarget>(Dictionary<Key<TCollection>, List<TTarget>> dictionary, ICollection<TValue> targetCollection)
             where TCollection : IEnumerable<TValue>
         {

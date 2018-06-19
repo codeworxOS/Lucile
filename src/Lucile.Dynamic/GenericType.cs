@@ -28,7 +28,7 @@ namespace Lucile.Dynamic
 
         public override Module Module => throw new NotImplementedException();
 
-        public override string Name => throw new NotImplementedException();
+        public override string Name => GenericName;
 
         public override string Namespace => throw new NotImplementedException();
 

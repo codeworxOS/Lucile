@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.ComponentModel;
 using System.Linq;
 using System.Reflection;
 using Lucile.Dynamic.Interceptor;
@@ -10,9 +11,11 @@ namespace Lucile.Dynamic.Convention
 {
     public class TransactionProxyConvention : DynamicTypeConvention
     {
-        public TransactionProxyConvention(bool propertyChangedNotifications = true)
+        public TransactionProxyConvention(Type itemType, bool propertyChangedNotifications = true)
         {
+            this.ItemType = itemType;
             this.NotifyPropertyChanged = propertyChangedNotifications;
+            this.IsInterface = itemType.IsInterface;
         }
 
         public CommitMethod CommitMethod { get; private set; }
@@ -20,6 +23,16 @@ namespace Lucile.Dynamic.Convention
         public GetTransactionProxyTargetsMethod GetTransactionProxyTargetsMethod { get; set; }
 
         public GetTransactionProxyTypedTargetsMethod GetTransactionProxyTypedTargetsMethod { get; set; }
+
+        public GetValueEntriesMethod GetValueEntiresMethod { get; private set; }
+
+        public GetValueEntriesTypedMethod GetValueEntiresTypedMethod { get; private set; }
+
+        public HasMultipleValuesMethod HasMultipleValuesMethod { get; private set; }
+
+        public bool IsInterface { get; }
+
+        public Type ItemType { get; }
 
         public bool NotifyPropertyChanged { get; private set; }
 
@@ -39,39 +52,53 @@ namespace Lucile.Dynamic.Convention
 
         public override void Apply(DynamicTypeBuilder typeBuilder)
         {
-            var properties = from p in typeBuilder.BaseType.GetProperties()
+            var properties = from p in ItemType.GetProperties()
                              let set = p.GetSetMethod(true)
                              where set != null && (set.IsPublic || set.IsFamily)
                              select p;
 
-            if (NotifyPropertyChanged)
-            {
-                foreach (var item in properties)
-                {
-                    typeBuilder.AddMember(new DynamicProperty(item.Name, item.PropertyType));
-                }
-            }
-
             this.TransactionProxyProperties = new Collection<TransactionProxyProperty>();
+
+            var baseTypeNotifications = !ItemType.IsInterface && ItemType.GetInterfaces().Contains(typeof(INotifyPropertyChanged));
 
             foreach (var item in properties)
             {
-                var tpp = new TransactionProxyProperty { Property = item };
+                DynamicProperty baseProp = null;
+
+                if (IsInterface)
+                {
+                    baseProp = new DynamicInterfaceProperty(item.Name, item.PropertyType);
+                }
+                else
+                {
+                    baseProp = new DynamicProperty(item.Name, item.PropertyType);
+                }
+
+                var tpp = new TransactionProxyProperty { Property = item, DynamicProperty = baseProp };
+
                 tpp.HasMultipleValuesProperty = new DynamicProperty(
-                    string.Format("{0}_HasMultipleValues", item.Name),
+                    $"{item.Name}_HasMultipleValues",
                     typeof(bool),
                     false);
 
                 tpp.ValuesProperty = new DynamicProperty(
-                    string.Format("{0}_Values", item.Name),
-                    typeof(Dictionary<,>).MakeGenericType(typeof(Key<>).MakeGenericType(item.PropertyType), typeof(List<>).MakeGenericType(typeBuilder.BaseType)),
+                    $"{item.Name}_Values",
+                    typeof(Dictionary<,>).MakeGenericType(typeof(Key<>).MakeGenericType(item.PropertyType), typeof(List<>).MakeGenericType(ItemType)),
                     true);
+
+                typeBuilder.AddMember(baseProp);
                 typeBuilder.AddMember(tpp.HasMultipleValuesProperty);
                 typeBuilder.AddMember(tpp.ValuesProperty);
+
+                if (NotifyPropertyChanged)
+                {
+                    tpp.DynamicProperty.AddSetInterceptor(new ResetHasMultipleValuesInterceptor());
+                }
+
                 this.TransactionProxyProperties.Add(tpp);
             }
 
-            this.TargetsField = new DynamicField(Guid.NewGuid().ToString(), typeof(List<>).MakeGenericType(typeBuilder.BaseType));
+            this.TargetsField = new DynamicField(Guid.NewGuid().ToString(), typeof(List<>).MakeGenericType(ItemType));
             typeBuilder.AddMember(this.TargetsField);
 
             this.CommitMethod = new CommitMethod();
@@ -80,20 +107,31 @@ namespace Lucile.Dynamic.Convention
             typeBuilder.AddMember(this.RollbackMethod);
             this.GetTransactionProxyTargetsMethod = new Methods.GetTransactionProxyTargetsMethod();
             typeBuilder.AddMember(this.GetTransactionProxyTargetsMethod);
-            this.GetTransactionProxyTypedTargetsMethod = new Methods.GetTransactionProxyTypedTargetsMethod(typeBuilder.BaseType);
+            this.GetTransactionProxyTypedTargetsMethod = new Methods.GetTransactionProxyTypedTargetsMethod(ItemType);
             typeBuilder.AddMember(this.GetTransactionProxyTypedTargetsMethod);
             this.SetTransactionProxyTargetsMethod = new Methods.SetTransactionProxyTargetsMethod();
             typeBuilder.AddMember(this.SetTransactionProxyTargetsMethod);
-            this.SetTransactionProxyTypedTargetsMethod = new Methods.SetTransactionProxyTypedTargetsMethod(typeBuilder.BaseType);
+            this.SetTransactionProxyTypedTargetsMethod = new Methods.SetTransactionProxyTypedTargetsMethod(ItemType);
             typeBuilder.AddMember(this.SetTransactionProxyTypedTargetsMethod);
+
+            this.GetValueEntiresMethod = new Methods.GetValueEntriesMethod();
+            typeBuilder.AddMember(this.GetValueEntiresMethod);
+
+            this.GetValueEntiresTypedMethod = new Methods.GetValueEntriesTypedMethod(ItemType);
+            typeBuilder.AddMember(this.GetValueEntiresTypedMethod);
+
+            this.HasMultipleValuesMethod = new Methods.HasMultipleValuesMethod();
+            typeBuilder.AddMember(this.HasMultipleValuesMethod);
 
             typeBuilder.AddInterceptor(new ImplementInterfaceInterceptor<ICommitable>());
             typeBuilder.AddInterceptor(new ImplementInterfaceInterceptor<ITransactionProxy>());
-            typeBuilder.AddInterceptor(new ImplementInterfaceInterceptor(typeof(ITransactionProxy<>).MakeGenericType(typeBuilder.BaseType)));
+            typeBuilder.AddInterceptor(new ImplementInterfaceInterceptor(typeof(ITransactionProxy<>).MakeGenericType(ItemType)));
         }
 
         public class TransactionProxyProperty
         {
+            public DynamicProperty DynamicProperty { get; set; }
+
             public DynamicProperty HasMultipleValuesProperty { get; set; }
 
             public PropertyInfo Property { get; set; }
