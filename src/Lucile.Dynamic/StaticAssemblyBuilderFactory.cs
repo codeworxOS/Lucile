@@ -10,6 +10,7 @@ namespace Lucile.Dynamic
         private readonly object _builderLocker = new object();
         private Guid _assemblyGuid;
         private AssemblyBuilder _builder;
+        private int _genericCount = 1;
 
         public StaticAssemblyBuilderFactory(string assemblyName)
         {
@@ -44,7 +45,14 @@ namespace Lucile.Dynamic
 
         public override string GetUniqueTypeName(Type baseType)
         {
-            return $"Lucile.Dynamic.TransactionProxy.{baseType.Name}";
+            var name = baseType.Name;
+
+            if (baseType.IsGenericType)
+            {
+                name = $"{name}_{_genericCount++}";
+            }
+
+            return $"{_assemblyName}.{name}";
         }
     }
 }

@@ -14,4 +14,8 @@
       <PrivateAssets>All</PrivateAssets>
     </PackageReference>
   </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Lucile.Dynamic\Lucile.Dynamic.csproj" />
+  </ItemGroup>
 </Project>

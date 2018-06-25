@@ -131,16 +131,45 @@ namespace Lucile.Dynamic
                 dynamicModule = AssemblyBuilder.GetDynamicModule("MainModule") ?? AssemblyBuilder.DefineDynamicModule("MainModule");
             }
 #else
-            ModuleBuilder dynamicModule = AssemblyBuilder.GetDynamicModule("MainModule") ?? AssemblyBuilder.DefineDynamicModule("MainModule");
+            ModuleBuilder dynamicModule = AssemblyBuilder.GetDynamicModule("MainModule") ?? AssemblyBuilder.GetDynamicModule(AssemblyBuilder.ManifestModule.ScopeName) ?? AssemblyBuilder.DefineDynamicModule("MainModule");
 #endif
 
             var typeBuilder = dynamicModule.DefineType(
                 this.AssemblyBuilderFactory.GetUniqueTypeName(baseType),
                 TypeAttributes.Public | TypeAttributes.Class | TypeAttributes.AutoClass | TypeAttributes.AnsiClass | TypeAttributes.BeforeFieldInit | TypeAttributes.AutoLayout,
                 baseType);
-            typeBuilder.DefineDefaultConstructor(
-                MethodAttributes.Public | MethodAttributes.HideBySig | MethodAttributes.SpecialName |
-                MethodAttributes.RTSpecialName);
+
+            var baseConstructors = baseType.GetConstructors();
+
+            if (baseConstructors.SingleOrDefault()?.GetParameters().Count() == 0)
+            {
+                typeBuilder.DefineDefaultConstructor(
+                    MethodAttributes.Public | MethodAttributes.HideBySig | MethodAttributes.SpecialName |
+                    MethodAttributes.RTSpecialName);
+            }
+            else
+            {
+                foreach (var item in baseConstructors)
+                {
+                    var arguments = item.GetParameters();
+
+                    var ctor = typeBuilder.DefineConstructor(
+                        MethodAttributes.Public | MethodAttributes.HideBySig | MethodAttributes.SpecialName | MethodAttributes.RTSpecialName,
+                        CallingConventions.Standard,
+                        arguments.Select(p => p.ParameterType).ToArray());
+
+                    var gen = ctor.GetILGenerator();
+                    gen.Emit(OpCodes.Ldarg_0);
+                    for (int i = 1; i <= arguments.Length; i++)
+                    {
+                        gen.Emit(OpCodes.Ldarg, i);
+                    }
+
+                    gen.Emit(OpCodes.Call, item);
+                    gen.Emit(OpCodes.Nop);
+                    gen.Emit(OpCodes.Ret);
+                }
+            }
 
             foreach (var item in this._conventions)
             {

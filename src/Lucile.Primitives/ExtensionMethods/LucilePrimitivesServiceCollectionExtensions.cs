@@ -46,12 +46,7 @@ namespace Microsoft.Extensions.DependencyInjection
                 .AddScoped<ILocal<TService>, LocalServiceImplementation<TService, TImplementation>>();
         }
 
-        public static IServiceCollection UseLocalServices(this IServiceCollection serviceCollection)
-        {
-            return serviceCollection.AddSingleton<IConnectionFactory, LocalConnectionFactory>();
-        }
-
-        private static TService GetServiceImplementation<TService>(IServiceProvider serviceProvider)
+        public static TService GetConnectedService<TService>(this IServiceProvider serviceProvider)
             where TService : class
         {
             var connected = serviceProvider.GetService<IConnected<TService>>();
@@ -69,6 +64,18 @@ namespace Microsoft.Extensions.DependencyInjection
             }
 
             return connected?.GetService();
+        }
+
+        public static IServiceCollection UseLocalServices(this IServiceCollection serviceCollection)
+        {
+            return serviceCollection.AddSingleton<IConnectionFactory, LocalConnectionFactory>();
+        }
+
+        private static TService GetServiceImplementation<TService>(IServiceProvider serviceProvider)
+            where TService : class
+        {
+            var proxy = serviceProvider.GetService<IConnectedServiceProxy<TService>>();
+            return proxy?.GetProxy(serviceProvider) ?? serviceProvider.GetConnectedService<TService>();
         }
     }
 }

@@ -72,9 +72,35 @@ namespace Lucile.Dynamic.Interceptor
 
         public async Task<object> ExecuteBodyAsync()
         {
-            var task = (Task)this.MethodBody.DynamicInvoke(this.Arguments);
+            var callDelegate = GetCallDelegate();
+
+            var task = (Task)callDelegate(this.MethodBody, this.Arguments);
             await task;
             _bodyExecuted = true;
+            return GetTaskResult(task);
+        }
+
+        public async Task<TResult> ExecuteBodyAsync<TResult>()
+        {
+            var callDelegate = GetCallDelegate();
+
+            var result = await (Task<TResult>)callDelegate(this.MethodBody, this.Arguments);
+            _bodyExecuted = true;
+            return result;
+        }
+
+        public async Task<object> ExecuteBodyOnAsync<TTarget>(TTarget target)
+        {
+            Delegate targetDelegate = GetTargetDelegate(target);
+            var callDelegate = GetCallDelegate();
+            var task = (Task)callDelegate(targetDelegate, Arguments);
+            await task;
+
+            return GetTaskResult(task);
+        }
+
+        private object GetTaskResult(Task task)
+        {
             if (HasResult)
             {
                 var param = Expression.Parameter(typeof(Task));
@@ -90,13 +116,6 @@ namespace Lucile.Dynamic.Interceptor
             }
 
             return null;
-        }
-
-        public async Task<TResult> ExecuteBodyAsync<TResult>()
-        {
-            var result = await (Task<TResult>)this.MethodBody.DynamicInvoke(this.Arguments);
-            _bodyExecuted = true;
-            return result;
         }
     }
 }
