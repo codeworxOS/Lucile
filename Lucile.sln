@@ -44,7 +44,9 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Lucile.ServiceModel.Depende
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Lucile.Dynamic", "src\Lucile.Dynamic\Lucile.Dynamic.csproj", "{F22BC92F-A37B-473F-91B4-BD62F99AD524}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Lucile.Dynamic.Test", "test\Lucile.Dynamic.Test\Lucile.Dynamic.Test.csproj", "{E35CD476-03FD-46D6-B9FC-451B9214E745}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Lucile.Dynamic.Test", "test\Lucile.Dynamic.Test\Lucile.Dynamic.Test.csproj", "{E35CD476-03FD-46D6-B9FC-451B9214E745}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Lucile.Dynamic.DependencyInjection", "src\Lucile.Dynamic.DependencyInjection\Lucile.Dynamic.DependencyInjection.csproj", "{0864C84F-4D34-47A3-87C0-B7C343733AF1}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -112,6 +114,10 @@ Global
 		{E35CD476-03FD-46D6-B9FC-451B9214E745}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{E35CD476-03FD-46D6-B9FC-451B9214E745}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{E35CD476-03FD-46D6-B9FC-451B9214E745}.Release|Any CPU.Build.0 = Release|Any CPU
+		{0864C84F-4D34-47A3-87C0-B7C343733AF1}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{0864C84F-4D34-47A3-87C0-B7C343733AF1}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{0864C84F-4D34-47A3-87C0-B7C343733AF1}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{0864C84F-4D34-47A3-87C0-B7C343733AF1}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -133,6 +139,7 @@ Global
 		{E1D2B1BB-A062-494F-9D44-775199DA4D1B} = {67FDFE16-B5A1-481C-8375-87EE40610DC2}
 		{F22BC92F-A37B-473F-91B4-BD62F99AD524} = {67FDFE16-B5A1-481C-8375-87EE40610DC2}
 		{E35CD476-03FD-46D6-B9FC-451B9214E745} = {FB263B3F-F589-4277-8C98-C3C3E0E65D5F}
+		{0864C84F-4D34-47A3-87C0-B7C343733AF1} = {67FDFE16-B5A1-481C-8375-87EE40610DC2}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {E45E49B1-4BB8-4F18-9335-60428857A33F}
