@@ -15,6 +15,7 @@ namespace Microsoft.Extensions.DependencyInjection
             _getServiceImplementationMethod = ((MethodCallExpression)getServiceImplementationExpression.Body).Method.GetGenericMethodDefinition();
         }
 
+        [Obsolete("Use AddConnectedLocal instead.", true)]
         public static IServiceCollection AddConnected<TService, TImplementation>(this IServiceCollection serviceCollection)
             where TService : class
             where TImplementation : class, TService
@@ -22,6 +23,15 @@ namespace Microsoft.Extensions.DependencyInjection
             return serviceCollection
                         .AddScoped<IConnected<TService>, ConnectedInstance<TService, TImplementation>>()
                         .AddScoped<TImplementation>();
+        }
+
+        public static IServiceCollection AddConnectedLocal<TService, TImplementation>(this IServiceCollection serviceCollection)
+            where TService : class
+            where TImplementation : class, TService
+        {
+            return serviceCollection
+                .AddScoped<TImplementation>()
+                .AddScoped<IConnected<TService>, ConnectedInstance<TService, TImplementation>>();
         }
 
         public static IServiceCollection AddConnectedService(this IServiceCollection serviceCollection, Type serviceType)
@@ -37,6 +47,7 @@ namespace Microsoft.Extensions.DependencyInjection
             return serviceCollection.AddScoped<TService>(GetServiceImplementation<TService>);
         }
 
+        [Obsolete("Not needed any more.")]
         public static IServiceCollection AddLocalService<TService, TImplementation>(this IServiceCollection serviceCollection)
             where TService : class
             where TImplementation : class, TService
@@ -66,6 +77,7 @@ namespace Microsoft.Extensions.DependencyInjection
             return connected?.GetService();
         }
 
+        [Obsolete("No longer needed")]
         public static IServiceCollection UseLocalServices(this IServiceCollection serviceCollection)
         {
             return serviceCollection.AddSingleton<IConnectionFactory, LocalConnectionFactory>();

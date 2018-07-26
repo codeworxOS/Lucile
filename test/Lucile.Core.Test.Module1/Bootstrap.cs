@@ -10,7 +10,7 @@ namespace Lucile.Core.Test.Module1
         public void Configure(IServiceCollection services)
         {
             services.AddConnectedService<ITestService>();
-            services.AddConnected<ITestService, TestService>();
+            services.AddConnectedLocal<ITestService, TestService>();
         }
     }
 }

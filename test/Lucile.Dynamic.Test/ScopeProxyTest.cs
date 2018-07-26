@@ -18,7 +18,7 @@ namespace Lucile.Dynamic.Test
             var serviceCollection = new ServiceCollection();
 
             serviceCollection.AddConnectedService<IAsyncService>();
-            serviceCollection.AddConnected<IAsyncService, AsyncService>();
+            serviceCollection.AddConnectedLocal<IAsyncService, AsyncService>();
             serviceCollection.AddScoped<ScopedDependency>();
             serviceCollection.AddScopeProxy();
 
@@ -44,7 +44,7 @@ namespace Lucile.Dynamic.Test
             dtb.AddConvention(new ProxyConvention<ISyncService>());
 
             serviceCollection.AddConnectedService<ISyncService>();
-            serviceCollection.AddConnected<ISyncService, SyncService>();
+            serviceCollection.AddConnectedLocal<ISyncService, SyncService>();
             serviceCollection.AddScoped<ScopedDependency>();
             serviceCollection.AddScopeProxy();
 

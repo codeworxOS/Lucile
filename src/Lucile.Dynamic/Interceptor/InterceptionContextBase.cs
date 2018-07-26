@@ -51,11 +51,25 @@ namespace Lucile.Dynamic.Interceptor
 
         protected Delegate GetTargetDelegate<TTarget>(TTarget target)
         {
-            var targetMethod = typeof(TTarget).GetMethod(MemberName, MethodBody.Method.GetParameters().Select(p => p.ParameterType).ToArray());
+            var paramTypes = MethodBody.Method.GetParameters().Select(p => p.ParameterType).ToArray();
+            var targetMethod = typeof(TTarget).GetMethod(MemberName, paramTypes);
 
             if (targetMethod == null)
             {
-                throw new MissingMethodException($"No matching method {MemberName} found on type {typeof(TTarget)}");
+                foreach (var i in typeof(TTarget).GetInterfaces())
+                {
+                    targetMethod = typeof(TTarget).GetMethod(MemberName, paramTypes);
+
+                    if (targetMethod != null)
+                    {
+                        break;
+                    }
+                }
+
+                if (targetMethod == null)
+                {
+                    throw new MissingMethodException($"No matching method {MemberName} found on type {typeof(TTarget)}");
+                }
             }
 
             var targetDelegate = Delegate.CreateDelegate(MethodBody.GetType(), target, targetMethod);
