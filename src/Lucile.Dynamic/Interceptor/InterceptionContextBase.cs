@@ -58,7 +58,7 @@ namespace Lucile.Dynamic.Interceptor
             {
                 foreach (var i in typeof(TTarget).GetInterfaces())
                 {
-                    targetMethod = typeof(TTarget).GetMethod(MemberName, paramTypes);
+                    targetMethod = i.GetMethod(MemberName, paramTypes);
 
                     if (targetMethod != null)
                     {
