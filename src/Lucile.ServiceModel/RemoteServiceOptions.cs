@@ -7,18 +7,24 @@ namespace Lucile.ServiceModel
 {
     public class RemoteServiceOptions
     {
-        internal RemoteServiceOptions(string baseAddress, long maxMessageSize, ServiceAuthentication authentication)
+        internal RemoteServiceOptions(string baseAddress, long maxMessageSize, ServiceAuthentication authentication, Action<ChannelFactory> onChannelFactoryAction, Func<string, Type, string> addressConvention)
         {
-            this.Authentication = authentication;
-            this.BaseAddress = baseAddress;
-            this.MaxMessageSize = maxMessageSize;
+            OnChannelFactoryAction = onChannelFactoryAction;
+            Authentication = authentication;
+            BaseAddress = baseAddress;
+            MaxMessageSize = maxMessageSize;
+            AddressConvention = addressConvention ?? new Func<string, Type, string>((ba, contract) => $"{ba.TrimEnd('/')}/{contract.Name.Substring(1)}.svc");
         }
+
+        public Func<string, Type, string> AddressConvention { get; }
 
         public ServiceAuthentication Authentication { get; }
 
         public string BaseAddress { get; }
 
         public long MaxMessageSize { get; }
+
+        public Action<ChannelFactory> OnChannelFactoryAction { get; }
 
         internal Binding GetBinding<T>()
         {
@@ -31,7 +37,7 @@ namespace Lucile.ServiceModel
                 switch (this.Authentication)
                 {
                     case ServiceAuthentication.None:
-                        nettcp.Security.Transport.ClientCredentialType = TcpClientCredentialType.None;
+                        nettcp.Security.Mode = SecurityMode.None;
                         break;
 
                     case ServiceAuthentication.Windows:
@@ -111,7 +117,7 @@ namespace Lucile.ServiceModel
 
         internal EndpointAddress GetEndpointAddress<T>()
         {
-            return new EndpointAddress($"{BaseAddress}/{typeof(T).Name.Substring(1)}.svc");
+            return new EndpointAddress(AddressConvention(BaseAddress, typeof(T)));
         }
     }
 }

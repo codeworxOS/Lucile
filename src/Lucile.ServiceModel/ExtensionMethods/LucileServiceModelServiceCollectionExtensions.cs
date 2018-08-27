@@ -8,12 +8,14 @@ namespace Microsoft.Extensions.DependencyInjection
     {
         public static IServiceCollection UseRemoteServices(this IServiceCollection serviceCollection, Action<RemoteServiceOptionsBuilder> optionBuilder)
         {
-            return serviceCollection.AddSingleton<IConnectionFactory>(p =>
+            serviceCollection.AddSingleton<RemoteServiceOptions>(sp =>
             {
                 var builder = new RemoteServiceOptionsBuilder();
                 optionBuilder(builder);
-                return new RemoteConnectionFactory(builder.ToOptions());
+                return builder.ToOptions();
             });
+
+            return serviceCollection.AddSingleton<IConnectionFactory, RemoteConnectionFactory>();
         }
     }
 }

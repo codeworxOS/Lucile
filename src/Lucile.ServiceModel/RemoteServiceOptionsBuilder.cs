@@ -1,4 +1,7 @@
-﻿namespace Lucile.ServiceModel
+﻿using System;
+using System.ServiceModel;
+
+namespace Lucile.ServiceModel
 {
     public class RemoteServiceOptionsBuilder
     {
@@ -7,11 +10,21 @@
             this.MaxMessageSize = 1024 * 64;
         }
 
+        public Func<string, Type, string> AddressConvention { get; set; }
+
         public ServiceAuthentication Authentication { get; set; }
 
         public string BaseAddress { get; set; }
 
         public long MaxMessageSize { get; set; }
+
+        public Action<ChannelFactory> OnChannelFactoryAction { get; set; }
+
+        public RemoteServiceOptionsBuilder Addressing(Func<string, Type, string> convention)
+        {
+            AddressConvention = convention;
+            return this;
+        }
 
         public RemoteServiceOptionsBuilder Base(string address)
         {
@@ -26,6 +39,12 @@
             return this;
         }
 
+        public RemoteServiceOptionsBuilder OnChannelFactory(Action<ChannelFactory> action)
+        {
+            OnChannelFactoryAction = action;
+            return this;
+        }
+
         public RemoteServiceOptionsBuilder Size(long maxMessageSize)
         {
             MaxMessageSize = maxMessageSize;
@@ -34,7 +53,7 @@
 
         public RemoteServiceOptions ToOptions()
         {
-            return new RemoteServiceOptions(this.BaseAddress, this.MaxMessageSize, this.Authentication);
+            return new RemoteServiceOptions(this.BaseAddress, this.MaxMessageSize, this.Authentication, this.OnChannelFactoryAction, this.AddressConvention);
         }
     }
 }
