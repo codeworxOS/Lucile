@@ -9,6 +9,7 @@ namespace Lucile.Dynamic.Interceptor
     public abstract class InterceptionContextBase
     {
         private static readonly ConcurrentDictionary<Type, Func<Delegate, object[], object>> _invokeCache = new ConcurrentDictionary<Type, Func<Delegate, object[], object>>();
+        private static readonly ConcurrentDictionary<MethodInfo, Func<object, object[], object>> _targetDelegateCache = new ConcurrentDictionary<MethodInfo, Func<object, object[], object>>();
 
         public InterceptionContextBase(object instance, string memberName, Delegate methodBody, params object[] arguments)
         {
@@ -49,7 +50,29 @@ namespace Lucile.Dynamic.Interceptor
             this.Result = value;
         }
 
-        protected Delegate GetTargetDelegate<TTarget>(TTarget target)
+        protected Func<object, object[], object> CreateTargetDelegate(MethodInfo method)
+        {
+            var param = Expression.Parameter(typeof(object), "target");
+            var param2 = Expression.Parameter(typeof(object[]), "parameters");
+
+            var args = method.GetParameters().ToList().Select((p, i) => Expression.Convert(Expression.ArrayIndex(param2, Expression.Constant(i)), p.ParameterType)).ToArray();
+
+            Expression body = Expression.Call(Expression.Convert(param, method.DeclaringType), method, args);
+
+            if (method.ReturnType == typeof(void))
+            {
+                body = Expression.Block(body, Expression.Constant(null));
+            }
+
+            var expression = Expression.Lambda<Func<object, object[], object>>(
+                body,
+                param,
+                param2);
+
+            return expression.Compile();
+        }
+
+        protected Func<object, object[], object> GetTargetDelegate<TTarget>()
         {
             var paramTypes = MethodBody.Method.GetParameters().Select(p => p.ParameterType).ToArray();
             var targetMethod = typeof(TTarget).GetMethod(MemberName, paramTypes);
@@ -72,8 +95,7 @@ namespace Lucile.Dynamic.Interceptor
                 }
             }
 
-            var targetDelegate = Delegate.CreateDelegate(MethodBody.GetType(), target, targetMethod);
-            return targetDelegate;
+            return _targetDelegateCache.GetOrAdd(targetMethod, CreateTargetDelegate);
         }
 
         private static Func<Delegate, object[], object> CreateInvokeFunc(Type delegateType)

@@ -91,9 +91,8 @@ namespace Lucile.Dynamic.Interceptor
 
         public async Task<object> ExecuteBodyOnAsync<TTarget>(TTarget target)
         {
-            Delegate targetDelegate = GetTargetDelegate(target);
-            var callDelegate = GetCallDelegate();
-            var task = (Task)callDelegate(targetDelegate, Arguments);
+            var targetDelegate = GetTargetDelegate<TTarget>();
+            var task = (Task)targetDelegate(target, Arguments);
             await task;
 
             return GetTaskResult(task);

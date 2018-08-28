@@ -63,9 +63,8 @@ namespace Lucile.Dynamic.Interceptor
 
         public object ExecuteBodyOn<TTarget>(TTarget target)
         {
-            var targetDelegate = GetTargetDelegate(target);
-            var func = GetCallDelegate();
-            var result = func.Invoke(targetDelegate, this.Arguments);
+            var targetDelegate = GetTargetDelegate<TTarget>();
+            var result = targetDelegate.Invoke(target, this.Arguments);
             _bodyExecuted = true;
             return result;
         }

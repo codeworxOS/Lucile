@@ -26,6 +26,11 @@ namespace Lucile.Dynamic.Test.DependencyInjection
             throw new AsyncServiceException(_scopedDependency);
         }
 
+        public Task<bool> IsAliveAsync()
+        {
+            return Task.FromResult(true);
+        }
+
         [Serializable]
         public class AsyncServiceException : Exception
         {

@@ -51,6 +51,7 @@ namespace Lucile.Dynamic.Test
 
             var text = Guid.NewGuid().ToString();
 
+            await Assert.ThrowsAsync<EndpointNotFoundException>(() => service.IsAliveAsync());
             var ex = await Assert.ThrowsAsync<EndpointNotFoundException>(() => service.AsyncMethodWithResult(text, 1234));
             var ex2 = await Assert.ThrowsAsync<EndpointNotFoundException>(() => service.AsyncVoidMethod(text, 1234));
         }

@@ -14,5 +14,8 @@ namespace Lucile.Dynamic.Test.DependencyInjection
 
         [OperationContract]
         Task AsyncVoidMethod(string param1, int param2);
+
+        [OperationContract]
+        Task<bool> IsAliveAsync();
     }
 }

@@ -3,7 +3,7 @@ using Lucile.Dynamic.Convention;
 using Lucile.Dynamic.Test.Proxy;
 using Xunit;
 
-namespace Lucile.Dynamic.Text
+namespace Lucile.Dynamic.Test
 {
     public class DynamicProxyTest
     {
