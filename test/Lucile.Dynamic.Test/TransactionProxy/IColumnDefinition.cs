@@ -6,7 +6,7 @@ using System.Runtime.Serialization;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Lucile.Dynamic.Text.TransactionProxy
+namespace Lucile.Dynamic.Test.TransactionProxy
 {
     public interface IColumnDefinition : INotifyPropertyChanged, INotifyPropertyChanging
     {

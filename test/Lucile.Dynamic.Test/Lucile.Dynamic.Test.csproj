@@ -19,6 +19,7 @@
     <ProjectReference Include="..\..\src\Lucile.Dynamic.DependencyInjection\Lucile.Dynamic.DependencyInjection.csproj" />
     <ProjectReference Include="..\..\src\Lucile.Dynamic\Lucile.Dynamic.csproj" />
     <ProjectReference Include="..\..\src\Lucile.Primitives\Lucile.Primitives.csproj" />
+    <ProjectReference Include="..\..\src\Lucile.ServiceModel\Lucile.ServiceModel.csproj" />
   </ItemGroup>
 
 </Project>

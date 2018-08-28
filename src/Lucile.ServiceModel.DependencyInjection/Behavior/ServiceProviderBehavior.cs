@@ -15,12 +15,19 @@ namespace Lucile.ServiceModel.DependencyInjection.Behavior
         {
         }
 
+        public ServiceProviderBehavior(IServiceProvider serviceProvider)
+        {
+            this.ServiceProvider = serviceProvider;
+        }
+
         public ServiceProviderBehavior(Type serviceConfiguration)
         {
             this.ServiceConfiguration = serviceConfiguration;
         }
 
         public Type ServiceConfiguration { get; set; }
+
+        public IServiceProvider ServiceProvider { get; }
 
         public void AddBindingParameters(ServiceDescription serviceDescription, ServiceHostBase serviceHostBase, Collection<ServiceEndpoint> endpoints, BindingParameterCollection bindingParameters)
         {
@@ -39,7 +46,7 @@ namespace Lucile.ServiceModel.DependencyInjection.Behavior
 
                 foreach (EndpointDispatcher endpointDispatcher in channelDispatcher.Endpoints)
                 {
-                    var provider = GetServiceProvider(ServiceConfiguration);
+                    var provider = GetServiceProvider();
 
                     endpointDispatcher.DispatchRuntime.MessageInspectors.Add(new ServiceProviderMessageInspector(provider));
                     endpointDispatcher.DispatchRuntime.InstanceProvider = new ServiceInstanceProvider(provider);
@@ -51,12 +58,15 @@ namespace Lucile.ServiceModel.DependencyInjection.Behavior
         {
         }
 
-        private IServiceProvider GetServiceProvider(Type serviceProviderConfiguration)
+        private IServiceProvider GetServiceProvider()
         {
-            var test = serviceProviderConfiguration;
+            if (ServiceProvider != null)
+            {
+                return ServiceProvider;
+            }
 
             var collection = new ServiceCollection();
-            var configuration = Activator.CreateInstance(serviceProviderConfiguration) as IServiceConfiguration;
+            var configuration = Activator.CreateInstance(ServiceConfiguration) as IServiceConfiguration;
 
             if (configuration == null)
             {

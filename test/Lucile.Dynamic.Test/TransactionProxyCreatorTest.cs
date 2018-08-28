@@ -3,10 +3,10 @@ using System.Collections.Generic;
 using System.Linq;
 using Lucile.Dynamic.Test.Dynamic;
 using Lucile.Dynamic.Test.Dynamic.Test;
-using Lucile.Dynamic.Text.TransactionProxy;
+using Lucile.Dynamic.Test.TransactionProxy;
 using Xunit;
 
-namespace Lucile.Dynamic.Text
+namespace Lucile.Dynamic.Test
 {
     public class TransactionProxyCreatorTest
     {

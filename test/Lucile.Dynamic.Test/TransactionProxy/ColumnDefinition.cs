@@ -5,7 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Lucile.Dynamic.Text.TransactionProxy
+namespace Lucile.Dynamic.Test.TransactionProxy
 {
     public class ColumnDefinition : IColumnDefinition
     {
