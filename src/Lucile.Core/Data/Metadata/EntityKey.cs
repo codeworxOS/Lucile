@@ -10,7 +10,7 @@
 using System;
 using Lucile.Data.Metadata;
 
-namespace Lucile.Entity.Metadata
+namespace Lucile.Data
 {
     public abstract class EntityKey
     {

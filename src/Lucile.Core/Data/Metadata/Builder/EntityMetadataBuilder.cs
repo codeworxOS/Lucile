@@ -102,6 +102,33 @@ namespace Lucile.Data.Metadata.Builder
         [DataMember(Order = 1)]
         public virtual ClrTypeInfo TypeInfo { get; set; }
 
+        public EntityMetadataBuilder CopyFrom(EntityMetadataBuilder source)
+        {
+            if (source.TypeInfo.ClrType != TypeInfo.ClrType)
+            {
+                throw new NotSupportedException("The provided Source MetadataBuilder is for a differenct entity");
+            }
+
+            foreach (var item in source.Properties)
+            {
+                var targetProperty = this.Property(item.Name);
+                targetProperty.CopyFrom(item);
+            }
+
+            foreach (var item in source.Navigations)
+            {
+                var targetNavigation = this.Navigation(item.Name);
+                targetNavigation.CopyFrom(item);
+            }
+
+            if (source.BaseEntity != null)
+            {
+                BaseEntity = ModelBuilder.Entity(source.BaseEntity.TypeInfo.ClrType);
+            }
+
+            return this;
+        }
+
         public ManyNavigationBuilder HasMany<TTarget>(string propertyName = null)
         {
             return HasMany(typeof(TTarget), propertyName);

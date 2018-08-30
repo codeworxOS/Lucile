@@ -39,9 +39,9 @@
   </ItemGroup>
 
   <ItemGroup>
-    <None Update="Data\Tuple.tt">
+    <None Update="Data\DynamicTuple.tt">
       <Generator>TextTemplatingFileGenerator</Generator>
-      <LastGenOutput>Tuple.cs</LastGenOutput>
+      <LastGenOutput>DynamicTuple.cs</LastGenOutput>
     </None>
   </ItemGroup>
 
@@ -50,10 +50,10 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Compile Update="Data\Tuple.cs">
+    <Compile Update="Data\DynamicTuple.cs">
       <DesignTime>True</DesignTime>
       <AutoGen>True</AutoGen>
-      <DependentUpon>Tuple.tt</DependentUpon>
+      <DependentUpon>DynamicTuple.tt</DependentUpon>
     </Compile>
   </ItemGroup>
 </Project>

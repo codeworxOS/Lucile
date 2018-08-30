@@ -1,4 +1,5 @@
-﻿using System.Runtime.Serialization;
+﻿using System;
+using System.Runtime.Serialization;
 
 namespace Lucile.Data.Metadata.Builder
 {
@@ -13,6 +14,19 @@ namespace Lucile.Data.Metadata.Builder
 
         [DataMember(Order = 3)]
         public byte Scale { get; set; }
+
+        protected override void CopyValues(ScalarPropertyBuilder source)
+        {
+            var numericSource = source as NumericPropertyBuilder;
+            if (numericSource == null)
+            {
+                throw new NotSupportedException("The provided source was not a NumericPropertyBuilder.");
+            }
+
+            this.NumericType = numericSource.NumericType;
+            this.Precision = numericSource.Precision;
+            this.Scale = numericSource.Scale;
+        }
 
         protected override ScalarProperty MapToProperty(EntityMetadata entity, bool isPrimaryKey)
         {

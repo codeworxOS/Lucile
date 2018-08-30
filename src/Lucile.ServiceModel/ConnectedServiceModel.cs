@@ -3,11 +3,11 @@ using Lucile.Service;
 
 namespace Lucile.ServiceModel
 {
-    internal class ConectedServiceModel<TService> : IConnected<TService>
+    internal class ConnectedServiceModel<TService> : IConnected<TService>
     {
         private RemoteServiceOptions _remoteServiceOptions;
 
-        public ConectedServiceModel(RemoteServiceOptions remoteServiceOptions)
+        public ConnectedServiceModel(RemoteServiceOptions remoteServiceOptions)
         {
             _remoteServiceOptions = remoteServiceOptions;
         }

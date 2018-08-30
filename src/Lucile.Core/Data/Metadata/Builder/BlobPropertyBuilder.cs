@@ -1,4 +1,5 @@
-﻿using System.Runtime.Serialization;
+﻿using System;
+using System.Runtime.Serialization;
 
 namespace Lucile.Data.Metadata.Builder
 {
@@ -12,6 +13,17 @@ namespace Lucile.Data.Metadata.Builder
 
         [DataMember(Order = 1)]
         public int? MaxLength { get; set; }
+
+        protected override void CopyValues(ScalarPropertyBuilder source)
+        {
+            var blobSource = source as BlobPropertyBuilder;
+            if (blobSource == null)
+            {
+                throw new NotSupportedException("The provided source was not a BlobPropertyBuilder");
+            }
+
+            this.MaxLength = blobSource.MaxLength;
+        }
 
         protected override ScalarProperty MapToProperty(EntityMetadata entity, bool isPrimaryKey)
         {

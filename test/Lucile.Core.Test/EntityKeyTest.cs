@@ -1,9 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
+﻿using Lucile.Data;
 using Lucile.Data.Metadata.Builder;
-using Lucile.Entity.Metadata;
 using Lucile.Test.Model;
 using Xunit;
 

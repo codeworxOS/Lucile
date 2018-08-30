@@ -1,4 +1,5 @@
-﻿using System.Runtime.Serialization;
+﻿using System;
+using System.Runtime.Serialization;
 
 namespace Lucile.Data.Metadata.Builder
 {
@@ -10,6 +11,18 @@ namespace Lucile.Data.Metadata.Builder
 
         [DataMember(Order = 1)]
         public NumericPropertyType UnderlyingNumericType { get; set; }
+
+        protected override void CopyValues(ScalarPropertyBuilder source)
+        {
+            var enumSource = source as EnumPropertyBuilder;
+            if (enumSource == null)
+            {
+                throw new NotSupportedException("The provided source was not a EnumPropertyBuilder.");
+            }
+
+            EnumTypeInfo = enumSource.EnumTypeInfo;
+            UnderlyingNumericType = enumSource.UnderlyingNumericType;
+        }
 
         protected override ScalarProperty MapToProperty(EntityMetadata entity, bool isPrimaryKey)
         {

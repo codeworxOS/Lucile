@@ -1,4 +1,5 @@
-﻿using System.Runtime.Serialization;
+﻿using System;
+using System.Runtime.Serialization;
 
 namespace Lucile.Data.Metadata.Builder
 {
@@ -19,6 +20,19 @@ namespace Lucile.Data.Metadata.Builder
 
         [DataMember(Order = 3)]
         public bool Unicode { get; set; }
+
+        protected override void CopyValues(ScalarPropertyBuilder source)
+        {
+            var textSource = source as TextPropertyBuilder;
+            if (textSource == null)
+            {
+                throw new NotSupportedException("The provided source was not a TextPropertyBuilder.");
+            }
+
+            this.MaxLength = textSource.MaxLength;
+            this.FixedLength = textSource.FixedLength;
+            this.Unicode = textSource.Unicode;
+        }
 
         protected override ScalarProperty MapToProperty(EntityMetadata entity, bool isPrimaryKey)
         {

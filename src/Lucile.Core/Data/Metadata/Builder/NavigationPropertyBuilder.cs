@@ -26,6 +26,18 @@ namespace Lucile.Data.Metadata.Builder
         [DataMember(Order = 4)]
         public string TargetProperty { get; set; }
 
+        public void CopyFrom(NavigationPropertyBuilder source)
+        {
+            this.Target = source.Target;
+            this.ForeignKey.Clear();
+            this.ForeignKey.AddRange(source.ForeignKey);
+            this.IsExcluded = source.IsExcluded;
+            this.Multiplicity = source.Multiplicity;
+            this.Nullable = source.Nullable;
+            this.TargetMultiplicity = source.TargetMultiplicity;
+            this.TargetProperty = source.TargetProperty;
+        }
+
         internal NavigationPropertyMetadata ToNavigation(ModelCreationScope scope, EntityMetadata entityMetadata)
         {
             return new NavigationPropertyMetadata(scope, entityMetadata, this);
