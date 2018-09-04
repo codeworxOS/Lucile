@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <Description>Windows components for the Lucile Framework. For detailed Documentation visit http://www.github.com/codeworxOS/Lucile</Description>
@@ -25,5 +25,6 @@
   <ItemGroup>
     <Reference Include="PresentationFramework" />
     <Reference Include="WindowsBase" />
+    <Reference Include="System.Xaml" />
   </ItemGroup>
 </Project>
