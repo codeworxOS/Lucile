@@ -1,9 +1,11 @@
-﻿using System.Linq;
+﻿using System.IO;
+using System.Linq;
 using Lucile.Data.Metadata;
 using Lucile.Data.Metadata.Builder;
 using Lucile.EntityFrameworkCore;
 using Lucile.EntityFrameworkCore.Test;
 using Lucile.Test.Model;
+using ProtoBuf.Meta;
 using Xunit;
 
 namespace Tests
@@ -98,6 +100,52 @@ namespace Tests
             Assert.Equal(NavigationPropertyMultiplicity.ZeroOrOne, contactSettingsContactProperty.TargetMultiplicity);
             Assert.Null(contactSettingsContactProperty.TargetNavigationProperty);
             Assert.Equal(contact, contactSettingsContactProperty.TargetEntity);
+        }
+
+        [Fact]
+        public void FromDbSerializationTest()
+        {
+            var builder = new MetadataModelBuilder();
+            MetadataModelBuilder newBuilder = null;
+
+            using (var ctx = new TestContext())
+            {
+                builder.UseDbContext(ctx);
+            }
+
+            using (var ms = new MemoryStream())
+            {
+                ProtoBuf.Serializer.Serialize(ms, builder);
+                ms.Seek(0, SeekOrigin.Begin);
+                newBuilder = ProtoBuf.Serializer.Deserialize<MetadataModelBuilder>(ms);
+            }
+
+            foreach (var item in builder.Entities)
+            {
+                var newItem = newBuilder.Entities.FirstOrDefault(p => p.Name == item.Name);
+                Assert.NotNull(newItem);
+                foreach (var prop in item.Properties)
+                {
+                    var newProp = newItem.Properties.FirstOrDefault(p => p.Name == prop.Name);
+                    Assert.NotNull(newProp);
+                    Assert.Equal(prop.IsExcluded, newProp.IsExcluded);
+                    Assert.Equal(prop.IsIdentity, newProp.IsIdentity);
+                    Assert.Equal(prop.Nullable, newProp.Nullable);
+                }
+
+                foreach (var nav in item.Navigations)
+                {
+                    var newNav = newItem.Navigations.FirstOrDefault(p => p.Name == nav.Name);
+                    Assert.NotNull(newNav);
+                    Assert.Equal(nav.IsExcluded, newNav.IsExcluded);
+                    Assert.Equal(nav.Multiplicity, newNav.Multiplicity);
+                    Assert.Equal(nav.ForeignKey, newNav.ForeignKey);
+                    Assert.Equal(nav.Nullable, newNav.Nullable);
+                    Assert.Equal(nav.Target, newNav.Target);
+                    Assert.Equal(nav.TargetMultiplicity, newNav.TargetMultiplicity);
+                    Assert.Equal(nav.TargetProperty, newNav.TargetProperty);
+                }
+            }
         }
     }
 }

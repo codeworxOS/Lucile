@@ -72,5 +72,23 @@ namespace Lucile.Data.Metadata.Builder
                 }
             }
         }
+
+        public override bool Equals(object obj)
+        {
+            var typedObj = obj as ClrTypeInfo;
+            if (typedObj != null)
+            {
+                return typedObj.ClrType.Equals(_clrType);
+            }
+
+            return object.ReferenceEquals(this, obj);
+        }
+
+        public override int GetHashCode()
+        {
+#pragma warning disable RECS0025 // Non-readonly field referenced in 'GetHashCode()'
+            return _clrType?.GetHashCode() ?? 0;
+#pragma warning restore RECS0025 // Non-readonly field referenced in 'GetHashCode()'
+        }
     }
 }

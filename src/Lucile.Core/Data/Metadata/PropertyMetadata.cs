@@ -13,7 +13,7 @@ namespace Lucile.Data.Metadata
 
         private readonly Action<object, object> _setValueDelegate;
 
-        internal PropertyMetadata(EntityMetadata entity, PropertyMetadataBuilder propBuilder)
+        internal PropertyMetadata(EntityMetadata entity, IMetadataBuilder propBuilder)
             : base(propBuilder.Name)
         {
             this.Entity = entity;

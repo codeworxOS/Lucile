@@ -8,7 +8,6 @@ namespace Lucile.Data.Metadata.Builder
     {
         public BlobPropertyBuilder()
         {
-            this.Nullable = true;
         }
 
         [DataMember(Order = 1)]

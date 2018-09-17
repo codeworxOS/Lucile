@@ -9,6 +9,7 @@ using Lucile.Data.Metadata.Builder.Navigation;
 namespace Lucile.Data.Metadata.Builder
 {
     [DataContract(IsReference = true)]
+    [ProtoBuf.ProtoContract(AsReferenceDefault = true)]
     public class EntityMetadataBuilder
     {
         private MetadataModelBuilder _modelBuilder;
@@ -54,7 +55,7 @@ namespace Lucile.Data.Metadata.Builder
         {
             get
             {
-                return _navigations.Values.ToList();
+                return _navigations?.Values?.ToList();
             }
 
             set
@@ -86,7 +87,7 @@ namespace Lucile.Data.Metadata.Builder
         {
             get
             {
-                return _properties.Values.ToList();
+                return _properties?.Values?.ToList();
             }
 
             set
@@ -217,7 +218,7 @@ namespace Lucile.Data.Metadata.Builder
                 throw new ArgumentException($"Propertys {name} does not exist on Type {type}.", nameof(name));
             }
 
-            return PropertyMetadataBuilder.CreateScalar(propertyInfo);
+            return ScalarPropertyBuilder.CreateScalar(propertyInfo);
         }
     }
 }

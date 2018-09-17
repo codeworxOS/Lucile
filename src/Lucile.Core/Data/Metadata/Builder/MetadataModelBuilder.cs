@@ -9,6 +9,7 @@ using System.Runtime.Serialization;
 namespace Lucile.Data.Metadata.Builder
 {
     [DataContract(IsReference = true)]
+    [ProtoBuf.ProtoContract(AsReferenceDefault = true)]
     public class MetadataModelBuilder
     {
         private ConcurrentDictionary<EntityKey, EntityMetadataBuilder> _entities;
@@ -23,7 +24,7 @@ namespace Lucile.Data.Metadata.Builder
         {
             get
             {
-                return _entities.Values.ToList();
+                return _entities.Any() ? _entities.Values.ToList() : null;
             }
 
             set

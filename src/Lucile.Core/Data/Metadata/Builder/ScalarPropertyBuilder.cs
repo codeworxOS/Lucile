@@ -1,4 +1,6 @@
-﻿using System.Runtime.Serialization;
+﻿using System;
+using System.Reflection;
+using System.Runtime.Serialization;
 using ProtoBuf;
 
 namespace Lucile.Data.Metadata.Builder
@@ -22,10 +24,68 @@ namespace Lucile.Data.Metadata.Builder
     [ProtoInclude(107, typeof(GeometryPropertyBuilder))]
     [ProtoInclude(108, typeof(GeographyPropertyBuilder))]
     [ProtoInclude(109, typeof(EnumPropertyBuilder))]
-    public abstract class ScalarPropertyBuilder : PropertyMetadataBuilder
+    public abstract class ScalarPropertyBuilder : IMetadataBuilder
     {
-        [DataMember(Order = 1)]
+        [DataMember(Order = 3)]
+        public bool IsExcluded { get; set; }
+
+        [DataMember(Order = 4)]
         public bool IsIdentity { get; set; }
+
+        [DataMember(Order = 2)]
+        public string Name { get; set; }
+
+        [DataMember(Order = 1)]
+        public bool Nullable { get; set; }
+
+        public static ScalarPropertyBuilder CreateScalar(PropertyInfo propertyInfo)
+        {
+            var nullable = System.Nullable.GetUnderlyingType(propertyInfo.PropertyType);
+
+            var type = nullable ?? propertyInfo.PropertyType;
+            var numeric = NumericProperty.GetNumericTypeFromClrType(type);
+
+            if (type == typeof(string))
+            {
+                return new TextPropertyBuilder { Name = propertyInfo.Name, Nullable = true, Unicode = true };
+            }
+            else if (numeric.HasValue)
+            {
+                return new NumericPropertyBuilder { Name = propertyInfo.Name, Nullable = nullable != null, NumericType = numeric.Value };
+            }
+            else if (type == typeof(bool))
+            {
+                return new BooleanPropertyBuilder { Name = propertyInfo.Name, Nullable = nullable != null };
+            }
+            else if (type == typeof(byte[]))
+            {
+                return new BlobPropertyBuilder { Name = propertyInfo.Name, Nullable = true };
+            }
+            else if (type == typeof(DateTime))
+            {
+                return new DateTimePropertyBuilder { Name = propertyInfo.Name, Nullable = nullable != null, DateTimeType = DateTimePropertyType.DateTime };
+            }
+            else if (type == typeof(DateTimeOffset))
+            {
+                return new DateTimePropertyBuilder { Name = propertyInfo.Name, Nullable = nullable != null, DateTimeType = DateTimePropertyType.DateTimeOffset };
+            }
+            else if (type == typeof(Guid))
+            {
+                return new GuidPropertyBuilder { Name = propertyInfo.Name, Nullable = nullable != null };
+            }
+            else if (type.GetTypeInfo().IsEnum)
+            {
+                return new EnumPropertyBuilder
+                {
+                    Name = propertyInfo.Name,
+                    Nullable = nullable != null,
+                    EnumTypeInfo = new ClrTypeInfo(type),
+                    UnderlyingNumericType = NumericProperty.GetNumericTypeFromClrType(Enum.GetUnderlyingType(type)).GetValueOrDefault()
+                };
+            }
+
+            throw new InvalidOperationException($"PropertyType {type} not supported.");
+        }
 
         public ScalarPropertyBuilder CopyFrom(ScalarPropertyBuilder source)
         {

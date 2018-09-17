@@ -5,26 +5,35 @@ using System.Runtime.Serialization;
 namespace Lucile.Data.Metadata.Builder
 {
     [DataContract(IsReference = true)]
-    public class NavigationPropertyBuilder : PropertyMetadataBuilder
+    public class NavigationPropertyBuilder : IMetadataBuilder
     {
         public NavigationPropertyBuilder()
         {
             this.ForeignKey = new List<string>();
         }
 
-        [DataMember(Order = 5)]
+        [DataMember(Order = 4)]
         public List<string> ForeignKey { get; set; }
 
         [DataMember(Order = 2)]
+        public bool IsExcluded { get; set; }
+
+        [DataMember(Order = 5)]
         public NavigationPropertyMultiplicity Multiplicity { get; set; }
 
         [DataMember(Order = 1)]
-        public ClrTypeInfo Target { get; set; }
+        public string Name { get; set; }
 
         [DataMember(Order = 3)]
+        public bool Nullable { get; set; }
+
+        [DataMember(Order = 6)]
+        public ClrTypeInfo Target { get; set; }
+
+        [DataMember(Order = 7)]
         public NavigationPropertyMultiplicity TargetMultiplicity { get; set; }
 
-        [DataMember(Order = 4)]
+        [DataMember(Order = 8)]
         public string TargetProperty { get; set; }
 
         public void CopyFrom(NavigationPropertyMetadata source)

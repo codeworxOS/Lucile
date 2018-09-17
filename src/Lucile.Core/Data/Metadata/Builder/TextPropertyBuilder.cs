@@ -8,8 +8,6 @@ namespace Lucile.Data.Metadata.Builder
     {
         public TextPropertyBuilder()
         {
-            Nullable = true;
-            Unicode = true;
         }
 
         [DataMember(Order = 2)]
