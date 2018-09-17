@@ -15,6 +15,15 @@ namespace Lucile.Data.Metadata.Builder
             }
         }
 
+        protected override void CopyValues(ScalarProperty source)
+        {
+            var geometrySource = source as GeometryProperty;
+            if (geometrySource == null)
+            {
+                throw new NotSupportedException("The provided source was not a GeometryPropertyBuilder.");
+            }
+        }
+
         protected override ScalarProperty MapToProperty(EntityMetadata entity, bool isPrimaryKey)
         {
             return new GeometryProperty(entity, this, isPrimaryKey);

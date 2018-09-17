@@ -57,6 +57,32 @@ namespace Lucile.Data.Metadata.Builder
             return this;
         }
 
+        public MetadataModelBuilder FromModel(MetadataModel model)
+        {
+            foreach (var item in model.Entities)
+            {
+                var entity = this.Entity(item.ClrType);
+                if (item.BaseEntity != null)
+                {
+                    entity.BaseEntity = this.Entity(item.BaseEntity.ClrType);
+                }
+
+                foreach (var prop in item.GetProperties().Where(p => p.Entity == item))
+                {
+                    var scalar = entity.Property(prop.Name);
+                    scalar.CopyFrom(prop);
+                }
+
+                foreach (var nav in item.GetNavigations().Where(p => p.Entity == item))
+                {
+                    var navigation = entity.Navigation(nav.Name);
+                    navigation.CopyFrom(nav);
+                }
+            }
+
+            return this;
+        }
+
         public MetadataModel ToModel()
         {
             return new MetadataModel(this);

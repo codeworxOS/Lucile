@@ -38,12 +38,24 @@ namespace Lucile.Data.Metadata.Builder
             return this;
         }
 
+        public ScalarPropertyBuilder CopyFrom(ScalarProperty source)
+        {
+            this.IsIdentity = source.IsIdentity;
+            this.Nullable = source.Nullable;
+
+            CopyValues(source);
+
+            return this;
+        }
+
         internal ScalarProperty ToProperty(EntityMetadata entity, bool isPrimaryKey)
         {
             return MapToProperty(entity, isPrimaryKey);
         }
 
         protected abstract void CopyValues(ScalarPropertyBuilder source);
+
+        protected abstract void CopyValues(ScalarProperty source);
 
         protected abstract ScalarProperty MapToProperty(EntityMetadata entity, bool isPrimaryKey);
     }

@@ -25,6 +25,17 @@ namespace Lucile.Data.Metadata.Builder
             this.MaxLength = blobSource.MaxLength;
         }
 
+        protected override void CopyValues(ScalarProperty source)
+        {
+            var blobSource = source as BlobProperty;
+            if (blobSource == null)
+            {
+                throw new NotSupportedException("The provided source was not a BlobPropertyBuilder");
+            }
+
+            this.MaxLength = blobSource.Length;
+        }
+
         protected override ScalarProperty MapToProperty(EntityMetadata entity, bool isPrimaryKey)
         {
             return new BlobProperty(entity, this, isPrimaryKey);

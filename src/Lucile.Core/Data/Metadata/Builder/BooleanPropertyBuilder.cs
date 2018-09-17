@@ -15,6 +15,15 @@ namespace Lucile.Data.Metadata.Builder
             }
         }
 
+        protected override void CopyValues(ScalarProperty source)
+        {
+            var boolSource = source as BooleanProperty;
+            if (boolSource == null)
+            {
+                throw new NotSupportedException("The provided source was not a BooleanPropertyBuilder");
+            }
+        }
+
         protected override ScalarProperty MapToProperty(EntityMetadata entity, bool isPrimaryKey)
         {
             return new BooleanProperty(entity, this, isPrimaryKey);

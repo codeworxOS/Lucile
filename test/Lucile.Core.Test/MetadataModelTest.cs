@@ -320,6 +320,37 @@ namespace Tests
         }
 
         [Fact]
+        public void MetadataModelBuilderFromModelTest()
+        {
+            var builder = new MetadataModelBuilder();
+            var entityBuilder = builder.Entity<Receipt>();
+            entityBuilder.Property(p => p.Id).IsIdentity = true;
+            var nr = entityBuilder.Property(p => p.ReceiptNumber);
+            nr.MaxLength = 20;
+            nr.Nullable = false;
+
+            entityBuilder.PrimaryKey.Add("Id");
+
+            var invoice = builder.Entity<Invoice>();
+            invoice.BaseEntity = entityBuilder;
+            var delivery = invoice.Property(p => p.ExpectedDeliveryDate);
+            delivery.DateTimeType = DateTimePropertyType.DateTime;
+
+            var oldModel = builder.ToModel();
+
+            var newBuilder = new MetadataModelBuilder().FromModel(oldModel);
+            var newModel = newBuilder.ToModel();
+
+            Assert.All(oldModel.Entities, p => Assert.NotNull(newModel.GetEntityMetadata(p.ClrType)));
+            Assert.All(oldModel.Entities,
+                p =>
+                {
+                    var newEntity = newModel.GetEntityMetadata(p.ClrType);
+                    Assert.All(p.GetProperties(), x => Assert.NotNull(newEntity.GetProperties().FirstOrDefault(y => y.Name == x.Name)));
+                });
+        }
+
+        [Fact]
         public void MetadataModelBuilderGenericEntityTest()
         {
             var builder = new MetadataModelBuilder();

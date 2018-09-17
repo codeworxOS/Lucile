@@ -24,7 +24,7 @@ namespace Lucile.Data.Metadata
                 return this.Equals(other);
             }
 
-            return base.Equals(obj);
+            return object.ReferenceEquals(this, obj);
         }
 
         public bool Equals(MultiValueKey other)

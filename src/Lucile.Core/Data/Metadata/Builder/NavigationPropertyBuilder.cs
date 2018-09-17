@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Linq;
 using System.Runtime.Serialization;
 
 namespace Lucile.Data.Metadata.Builder
@@ -25,6 +26,17 @@ namespace Lucile.Data.Metadata.Builder
 
         [DataMember(Order = 4)]
         public string TargetProperty { get; set; }
+
+        public void CopyFrom(NavigationPropertyMetadata source)
+        {
+            this.Target = new ClrTypeInfo(source.TargetEntity.ClrType);
+            this.ForeignKey.Clear();
+            this.ForeignKey.AddRange(source.ForeignKeyProperties.Select(p => p.Dependant.Name));
+            this.Multiplicity = source.Multiplicity;
+            this.Nullable = source.Nullable;
+            this.TargetMultiplicity = source.TargetMultiplicity;
+            this.TargetProperty = source.TargetNavigationProperty.Name;
+        }
 
         public void CopyFrom(NavigationPropertyBuilder source)
         {

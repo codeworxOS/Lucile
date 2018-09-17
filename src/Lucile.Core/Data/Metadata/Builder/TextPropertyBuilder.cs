@@ -34,6 +34,19 @@ namespace Lucile.Data.Metadata.Builder
             this.Unicode = textSource.Unicode;
         }
 
+        protected override void CopyValues(ScalarProperty source)
+        {
+            var textSource = source as TextProperty;
+            if (textSource == null)
+            {
+                throw new NotSupportedException("The provided source was not a TextProperty.");
+            }
+
+            this.MaxLength = textSource.MaxLength;
+            this.FixedLength = textSource.IsFixedLength;
+            this.Unicode = textSource.Unicode;
+        }
+
         protected override ScalarProperty MapToProperty(EntityMetadata entity, bool isPrimaryKey)
         {
             return new TextProperty(entity, this, isPrimaryKey);

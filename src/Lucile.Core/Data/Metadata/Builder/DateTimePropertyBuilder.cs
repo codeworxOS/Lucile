@@ -20,6 +20,17 @@ namespace Lucile.Data.Metadata.Builder
             this.DateTimeType = dateTimeSource.DateTimeType;
         }
 
+        protected override void CopyValues(ScalarProperty source)
+        {
+            var dateTimeSource = source as DateTimeProperty;
+            if (dateTimeSource == null)
+            {
+                throw new NotSupportedException("The provided source was not a DateTimePropertyBuilder");
+            }
+
+            this.DateTimeType = dateTimeSource.DateTimePropertyType;
+        }
+
         protected override ScalarProperty MapToProperty(EntityMetadata entity, bool isPrimaryKey)
         {
             return new DateTimeProperty(entity, this, isPrimaryKey);

@@ -24,6 +24,18 @@ namespace Lucile.Data.Metadata.Builder
             UnderlyingNumericType = enumSource.UnderlyingNumericType;
         }
 
+        protected override void CopyValues(ScalarProperty source)
+        {
+            var enumSource = source as EnumProperty;
+            if (enumSource == null)
+            {
+                throw new NotSupportedException("The provided source was not a EnumPropertyBuilder.");
+            }
+
+            EnumTypeInfo = new ClrTypeInfo(enumSource.EnumType);
+            UnderlyingNumericType = enumSource.UnderlyingNumericType;
+        }
+
         protected override ScalarProperty MapToProperty(EntityMetadata entity, bool isPrimaryKey)
         {
             return new EnumProperty(entity, this, isPrimaryKey);
