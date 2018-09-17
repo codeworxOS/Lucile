@@ -35,7 +35,7 @@ namespace Lucile.Data.Metadata.Builder
             this.Multiplicity = source.Multiplicity;
             this.Nullable = source.Nullable;
             this.TargetMultiplicity = source.TargetMultiplicity;
-            this.TargetProperty = source.TargetNavigationProperty.Name;
+            this.TargetProperty = source.TargetNavigationProperty?.Name;
         }
 
         public void CopyFrom(NavigationPropertyBuilder source)
