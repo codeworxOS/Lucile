@@ -32,25 +32,25 @@ namespace Tests
             var country = model.GetEntityMetadata<Country>();
             var countryIdProp = (ScalarProperty)country["Id"];
             Assert.Equal(1, country.GetProperties().Count(p => p.IsPrimaryKey));
-            Assert.True(countryIdProp.IsIdentity);
+            Assert.Equal(AutoGenerateValue.OnInsert, countryIdProp.ValueGeneration);
             Assert.True(countryIdProp.IsPrimaryKey);
 
             var contact = model.GetEntityMetadata<Contact>();
             var contactIdProp = (ScalarProperty)contact["Id"];
             Assert.Equal(1, contact.GetProperties().Count(p => p.IsPrimaryKey));
-            Assert.False(contactIdProp.IsIdentity);
+            Assert.Equal(AutoGenerateValue.None, contactIdProp.ValueGeneration);
             Assert.True(contactIdProp.IsPrimaryKey);
 
             var contactSettings = model.GetEntityMetadata<ContactSettings>();
             var contactSettingsIdProperty = (ScalarProperty)contactSettings["Id"];
             Assert.Equal(1, contactSettings.GetProperties().Count(p => p.IsPrimaryKey));
-            Assert.False(contactSettingsIdProperty.IsIdentity);
+            Assert.Equal(AutoGenerateValue.None, contactSettingsIdProperty.ValueGeneration);
             Assert.True(contactSettingsIdProperty.IsPrimaryKey);
 
             var invoice = model.GetEntityMetadata<Invoice>();
             var invoiceIdProperty = (ScalarProperty)invoice["Id"];
             Assert.Equal(1, invoice.GetProperties().Count(p => p.IsPrimaryKey));
-            Assert.False(invoiceIdProperty.IsIdentity);
+            Assert.Equal(AutoGenerateValue.None, invoiceIdProperty.ValueGeneration);
             Assert.True(invoiceIdProperty.IsPrimaryKey);
         }
 
@@ -129,7 +129,7 @@ namespace Tests
                     var newProp = newItem.Properties.FirstOrDefault(p => p.Name == prop.Name);
                     Assert.NotNull(newProp);
                     Assert.Equal(prop.IsExcluded, newProp.IsExcluded);
-                    Assert.Equal(prop.IsIdentity, newProp.IsIdentity);
+                    Assert.Equal(prop.ValueGeneration, newProp.ValueGeneration);
                     Assert.Equal(prop.Nullable, newProp.Nullable);
                 }
 

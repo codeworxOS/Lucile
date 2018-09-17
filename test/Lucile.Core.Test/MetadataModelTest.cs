@@ -324,7 +324,7 @@ namespace Tests
         {
             var builder = new MetadataModelBuilder();
             var entityBuilder = builder.Entity<Receipt>();
-            entityBuilder.Property(p => p.Id).IsIdentity = true;
+            entityBuilder.Property(p => p.Id).ValueGeneration = AutoGenerateValue.OnInsert;
             var nr = entityBuilder.Property(p => p.ReceiptNumber);
             nr.MaxLength = 20;
             nr.Nullable = false;

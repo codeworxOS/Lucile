@@ -59,7 +59,14 @@ namespace Lucile.EntityFramework
             {
                 var propBuilder = entityBuilder.Property(prop.Property.Name);
                 propBuilder.Nullable = prop.Property.Nullable;
-                propBuilder.IsIdentity = prop.Column.IsStoreGeneratedIdentity;
+                if (prop.Column.IsStoreGeneratedComputed)
+                {
+                    propBuilder.ValueGeneration = AutoGenerateValue.Both;
+                }
+                else if (prop.Column.IsStoreGeneratedIdentity)
+                {
+                    propBuilder.ValueGeneration = AutoGenerateValue.OnInsert;
+                }
             }
 
             if (entityType.BaseType == null)

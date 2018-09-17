@@ -7,12 +7,12 @@ namespace Lucile.Data.Metadata
         public ScalarProperty(EntityMetadata enity, ScalarPropertyBuilder scalarBuilder, bool isPrimaryKey)
                 : base(enity, scalarBuilder)
         {
-            IsIdentity = scalarBuilder.IsIdentity;
+            ValueGeneration = scalarBuilder.ValueGeneration;
             IsPrimaryKey = isPrimaryKey;
         }
 
-        public bool IsIdentity { get; }
-
         public bool IsPrimaryKey { get; }
+
+        public AutoGenerateValue ValueGeneration { get; }
     }
 }

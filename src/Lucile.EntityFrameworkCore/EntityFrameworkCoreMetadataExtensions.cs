@@ -36,7 +36,20 @@ namespace Lucile.EntityFrameworkCore
             {
                 var propBuilder = entityBuilder.Property(prop.Name);
                 propBuilder.Nullable = prop.IsNullable;
-                propBuilder.IsIdentity = prop.ValueGenerated == ValueGenerated.OnAdd;
+                if (prop.ValueGenerated == ValueGenerated.OnAdd)
+                {
+                    propBuilder.ValueGeneration = AutoGenerateValue.OnInsert;
+                }
+                else if (prop.ValueGenerated == ValueGenerated.OnAddOrUpdate)
+                {
+                    propBuilder.ValueGeneration = AutoGenerateValue.Both;
+                }
+#if NETSTANDARD2_0
+                else if (prop.ValueGenerated == ValueGenerated.OnUpdate)
+                {
+                    propBuilder.ValueGeneration = AutoGenerateValue.Both;
+                }
+#endif
             }
 
             if (entityType.BaseType == null)

@@ -29,14 +29,14 @@ namespace Lucile.Data.Metadata.Builder
         [DataMember(Order = 3)]
         public bool IsExcluded { get; set; }
 
-        [DataMember(Order = 4)]
-        public bool IsIdentity { get; set; }
-
         [DataMember(Order = 2)]
         public string Name { get; set; }
 
         [DataMember(Order = 1)]
         public bool Nullable { get; set; }
+
+        [DataMember(Order = 4)]
+        public AutoGenerateValue ValueGeneration { get; set; }
 
         public static ScalarPropertyBuilder CreateScalar(PropertyInfo propertyInfo)
         {
@@ -90,7 +90,7 @@ namespace Lucile.Data.Metadata.Builder
         public ScalarPropertyBuilder CopyFrom(ScalarPropertyBuilder source)
         {
             this.IsExcluded = source.IsExcluded;
-            this.IsIdentity = source.IsIdentity;
+            this.ValueGeneration = source.ValueGeneration;
             this.Nullable = source.Nullable;
 
             CopyValues(source);
@@ -100,7 +100,7 @@ namespace Lucile.Data.Metadata.Builder
 
         public ScalarPropertyBuilder CopyFrom(ScalarProperty source)
         {
-            this.IsIdentity = source.IsIdentity;
+            this.ValueGeneration = source.ValueGeneration;
             this.Nullable = source.Nullable;
 
             CopyValues(source);
