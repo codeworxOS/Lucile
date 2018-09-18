@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
@@ -12,21 +11,22 @@ namespace Lucile.Data.Metadata.Builder
     [ProtoBuf.ProtoContract(AsReferenceDefault = true)]
     public class EntityMetadataBuilder
     {
+        private readonly ICollection<NavigationPropertyBuilder> _navigations;
+        private readonly ICollection<ScalarPropertyBuilder> _properties;
+        private readonly object _propertiesLocker = new object();
         private MetadataModelBuilder _modelBuilder;
-        private ConcurrentDictionary<string, NavigationPropertyBuilder> _navigations;
-
         private List<string> _primaryKeys;
-        private ConcurrentDictionary<string, ScalarPropertyBuilder> _properties;
 
         public EntityMetadataBuilder()
         {
+            _properties = new HashSet<ScalarPropertyBuilder>();
+            _navigations = new HashSet<NavigationPropertyBuilder>();
         }
 
         public EntityMetadataBuilder(MetadataModelBuilder modelBuilder)
+            : this()
         {
             _modelBuilder = modelBuilder;
-            _properties = new ConcurrentDictionary<string, ScalarPropertyBuilder>();
-            _navigations = new ConcurrentDictionary<string, NavigationPropertyBuilder>();
         }
 
         [DataMember(Order = 2)]
@@ -51,20 +51,11 @@ namespace Lucile.Data.Metadata.Builder
         }
 
         [DataMember(Order = 5)]
-        public virtual IEnumerable<NavigationPropertyBuilder> Navigations
+        public virtual ICollection<NavigationPropertyBuilder> Navigations
         {
             get
             {
-                return _navigations?.Values?.ToList();
-            }
-
-            set
-            {
-                var values = value.ToDictionary(
-                                        p => p.Name,
-                                        p => p);
-
-                _navigations = new ConcurrentDictionary<string, NavigationPropertyBuilder>(values);
+                return _navigations;
             }
         }
 
@@ -83,20 +74,11 @@ namespace Lucile.Data.Metadata.Builder
         }
 
         [DataMember(Order = 6)]
-        public virtual IEnumerable<ScalarPropertyBuilder> Properties
+        public virtual ICollection<ScalarPropertyBuilder> Properties
         {
             get
             {
-                return _properties?.Values?.ToList();
-            }
-
-            set
-            {
-                var values = value.ToDictionary(
-                                        p => p.Name,
-                                        p => p);
-
-                _properties = new ConcurrentDictionary<string, ScalarPropertyBuilder>(values);
+                return _properties;
             }
         }
 
@@ -157,7 +139,17 @@ namespace Lucile.Data.Metadata.Builder
                 throw new InvalidOperationException($"The {nameof(TypeInfo)} property is not set.");
             }
 
-            return _navigations.GetOrAdd(propertyName, CreatNavigationBuilder);
+            lock (_propertiesLocker)
+            {
+                var result = _navigations.FirstOrDefault(p => p.Name == propertyName);
+                if (result == null)
+                {
+                    result = CreateNavigationBuilder(propertyName);
+                    _navigations.Add(result);
+                }
+
+                return result;
+            }
         }
 
         public virtual ScalarPropertyBuilder Property(string name)
@@ -167,10 +159,20 @@ namespace Lucile.Data.Metadata.Builder
                 throw new InvalidOperationException($"The {nameof(TypeInfo)} property is not set.");
             }
 
-            return _properties.GetOrAdd(name, CreatPropertyMetadata);
+            lock (_propertiesLocker)
+            {
+                var result = _properties.FirstOrDefault(p => p.Name == name);
+                if (result == null)
+                {
+                    result = CreatePropertyMetadata(name);
+                    _properties.Add(result);
+                }
+
+                return result;
+            }
         }
 
-        private NavigationPropertyBuilder CreatNavigationBuilder(string propertyName)
+        private NavigationPropertyBuilder CreateNavigationBuilder(string propertyName)
         {
             var type = TypeInfo.ClrType;
 
@@ -199,7 +201,7 @@ namespace Lucile.Data.Metadata.Builder
             };
         }
 
-        private ScalarPropertyBuilder CreatPropertyMetadata(string name)
+        private ScalarPropertyBuilder CreatePropertyMetadata(string name)
         {
             var type = TypeInfo.ClrType;
 

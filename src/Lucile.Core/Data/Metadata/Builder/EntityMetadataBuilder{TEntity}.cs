@@ -63,16 +63,11 @@ namespace Lucile.Data.Metadata.Builder
             }
         }
 
-        public override IEnumerable<NavigationPropertyBuilder> Navigations
+        public override ICollection<NavigationPropertyBuilder> Navigations
         {
             get
             {
                 return _innerBuilder.Navigations;
-            }
-
-            set
-            {
-                _innerBuilder.Navigations = value;
             }
         }
 
@@ -84,16 +79,11 @@ namespace Lucile.Data.Metadata.Builder
             }
         }
 
-        public override IEnumerable<ScalarPropertyBuilder> Properties
+        public override ICollection<ScalarPropertyBuilder> Properties
         {
             get
             {
                 return _innerBuilder.Properties;
-            }
-
-            set
-            {
-                _innerBuilder.Properties = value;
             }
         }
 
