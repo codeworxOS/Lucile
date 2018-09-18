@@ -81,7 +81,18 @@ namespace Lucile.EntityFramework
             {
                 NavigationPropertyBuilder navBuilder = null;
 
-                var inverse = nav.ToEndMember.MetadataProperties.FirstOrDefault(p => p.Name == "ClrPropertyInfo")?.Value as PropertyInfo;
+                ////var navpropMatch = from l in item.EntityMetadata.Properties.OfType<NavigationPropertyMetadata>()
+                ////                   join r in item.EntityType.NavigationProperties on l.Name equals r.Name
+                ////                   select new { Left = l, Right = r };
+
+                ////foreach (var npmatch in navpropMatch)
+                ////{
+                ////    var test = entityTypes.SelectMany(p => p.NavigationProperties)
+                ////                          .FirstOrDefault(p => p.ToEndMember == npmatch.Right.FromEndMember);
+
+                var inverse = nav.ToEndMember.GetEntityType().NavigationProperties.FirstOrDefault(p => p.FromEndMember == nav.ToEndMember);
+
+                ////var inverse = nav.ToEndMember.MetadataProperties.FirstOrDefault(p => p.Name == "ClrPropertyInfo")?.Value as PropertyInfo;
 
                 var targetObjectType = objectTypes.Single(p => p.Name == nav.ToEndMember.GetEntityType().Name);
                 var targetClrType = objectItemCollection.GetClrType(targetObjectType);
