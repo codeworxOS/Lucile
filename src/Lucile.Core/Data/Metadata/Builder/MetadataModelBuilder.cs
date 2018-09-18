@@ -72,6 +72,10 @@ namespace Lucile.Data.Metadata.Builder
                 {
                     var scalar = entity.Property(prop.Name);
                     scalar.CopyFrom(prop);
+                    if (prop.IsPrimaryKey)
+                    {
+                        entity.PrimaryKey.Add(prop.Name);
+                    }
                 }
 
                 foreach (var nav in item.GetNavigations().Where(p => p.Entity == item))
