@@ -216,7 +216,7 @@ namespace Lucile.Data.Metadata
         {
             foreach (var item in GetProperties().Where(p => p.IsPrimaryKey))
             {
-                if (!object.Equals(item.GetValue(source), item.DefaultValue))
+                if (!object.Equals(item.GetValue(source), item.Default))
                 {
                     return true;
                 }

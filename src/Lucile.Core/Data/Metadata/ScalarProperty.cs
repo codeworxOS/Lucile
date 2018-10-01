@@ -8,8 +8,11 @@ namespace Lucile.Data.Metadata
                 : base(enity, scalarBuilder)
         {
             ValueGeneration = scalarBuilder.ValueGeneration;
+            HasDefaultValue = scalarBuilder.HasDefaultValue;
             IsPrimaryKey = isPrimaryKey;
         }
+
+        public bool HasDefaultValue { get; }
 
         public bool IsPrimaryKey { get; }
 

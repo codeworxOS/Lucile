@@ -13,6 +13,25 @@ namespace Tests
     public class EntityFrameworkMetadataExtensionsTest
     {
         [Fact]
+        public void DefaultValueAnnotationTest()
+        {
+            var builder = new MetadataModelBuilder();
+
+            using (var ctx = CreateContext())
+            {
+                builder.UseDbContext(ctx);
+            }
+
+            var model = builder.ToModel();
+
+            var prop = model.GetEntityMetadata<ArticleName>().GetProperties().First(p => p.Name == "TranlatedText");
+            var prop2 = model.GetEntityMetadata<ArticleName>().GetProperties().First(p => p.Name == "LanguageId");
+
+            Assert.True(prop.HasDefaultValue);
+            Assert.False(prop2.HasDefaultValue);
+        }
+
+        [Fact]
         public void FromDbIdentityAnPrimaryKeyTest()
         {
             var builder = new MetadataModelBuilder();

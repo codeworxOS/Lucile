@@ -31,7 +31,7 @@ namespace Lucile.Data.Metadata
             }
         }
 
-        public object DefaultValue
+        public object Default
         {
             get
             {

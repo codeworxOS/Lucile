@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Threading.Tasks;
@@ -17,6 +18,7 @@ namespace Lucile.Test.Model
         public string LanguageId { get; set; }
 
         [MaxLength(255)]
+        [DefaultValue("testchen")]
         public string TranlatedText { get; set; }
     }
 }

@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Data.Entity;
 using System.Linq;
+using Lucile.EntityFramework.Metadata;
 using Lucile.Test.Model;
 
 namespace Lucile.EntityFramework.Test
@@ -40,6 +41,8 @@ namespace Lucile.EntityFramework.Test
             modelBuilder.Entity<Article>().HasOptional(p => p.ArticleSettings).WithRequired();
 
             modelBuilder.Entity<ArticleName>().HasKey(p => new { p.ArticleId, p.LanguageId });
+
+            modelBuilder.AddDefaultValues();
         }
     }
 }

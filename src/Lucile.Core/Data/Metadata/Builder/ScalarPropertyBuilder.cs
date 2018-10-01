@@ -26,6 +26,9 @@ namespace Lucile.Data.Metadata.Builder
     [ProtoInclude(109, typeof(EnumPropertyBuilder))]
     public abstract class ScalarPropertyBuilder : IMetadataBuilder
     {
+        [DataMember(Order = 5)]
+        public bool HasDefaultValue { get; set; }
+
         [DataMember(Order = 3)]
         public bool IsExcluded { get; set; }
 

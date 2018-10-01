@@ -1,18 +1,29 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Data.Entity;
 using System.Data.Entity.Core.Mapping;
 using System.Data.Entity.Core.Metadata.Edm;
 using System.Data.Entity.Infrastructure;
+using System.Data.Entity.ModelConfiguration.Conventions;
 using System.Linq;
-using System.Reflection;
 using Lucile.Data.Metadata;
 using Lucile.Data.Metadata.Builder;
+using Lucile.EntityFramework.Metadata;
 
 namespace Lucile.EntityFramework
 {
     public static class EntityFrameworkMetadataExtensions
     {
+        public static DbModelBuilder AddDefaultValues(this DbModelBuilder modelBuilder)
+        {
+            var convention = new AttributeToColumnAnnotationConvention<DefaultValueAttribute, string>(DefaultValueAnnotation.AnnotationName, (p, attributes) => attributes.SingleOrDefault().Value.ToString());
+
+            modelBuilder.Conventions.Add(convention);
+
+            return modelBuilder;
+        }
+
         public static void UseDbContext(this MetadataModelBuilder builder, DbContext context)
         {
             UseWorkspace(builder, ((IObjectContextAdapter)context).ObjectContext.MetadataWorkspace);
@@ -67,6 +78,8 @@ namespace Lucile.EntityFramework
                 {
                     propBuilder.ValueGeneration = AutoGenerateValue.OnInsert;
                 }
+
+                propBuilder.HasDefaultValue = prop.Column.MetadataProperties.Any(p => p.IsAnnotation && p.Name.EndsWith(":" + DefaultValueAnnotation.AnnotationName, StringComparison.Ordinal));
             }
 
             if (entityType.BaseType == null)

@@ -99,7 +99,7 @@ namespace Lucile.Linq
 
             foreach (var item in PropertyConfigurations.Where(p => !members.ContainsKey(p.PropertyInfo)))
             {
-                members.Add(item.PropertyInfo, Expression.Constant(item.Property.DefaultValue, item.PropertyInfo.PropertyType));
+                members.Add(item.PropertyInfo, Expression.Constant(item.Property.Default, item.PropertyInfo.PropertyType));
             }
 
             var getInitExpression = GetInitExpression(ResultType, members);
