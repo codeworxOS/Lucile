@@ -15,7 +15,7 @@ namespace Lucile.Data.Metadata.Builder
         private readonly ICollection<ScalarPropertyBuilder> _properties;
         private readonly object _propertiesLocker = new object();
         private MetadataModelBuilder _modelBuilder;
-        private List<string> _primaryKeys;
+        private ICollection<string> _primaryKeys;
 
         public EntityMetadataBuilder()
         {
@@ -60,13 +60,13 @@ namespace Lucile.Data.Metadata.Builder
         }
 
         [DataMember(Order = 4)]
-        public virtual List<string> PrimaryKey
+        public virtual ICollection<string> PrimaryKey
         {
             get
             {
                 if (_primaryKeys == null)
                 {
-                    _primaryKeys = new List<string>();
+                    _primaryKeys = new HashSet<string>();
                 }
 
                 return _primaryKeys;
@@ -96,6 +96,11 @@ namespace Lucile.Data.Metadata.Builder
             {
                 var targetProperty = this.Property(item.Name);
                 targetProperty.CopyFrom(item);
+            }
+
+            foreach (var item in source.PrimaryKey)
+            {
+                this.PrimaryKey.Add(item);
             }
 
             foreach (var item in source.Navigations)
