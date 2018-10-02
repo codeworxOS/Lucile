@@ -71,7 +71,7 @@ namespace Lucile.Data.Metadata.Builder
             }
         }
 
-        public override List<string> PrimaryKey
+        public override ICollection<string> PrimaryKey
         {
             get
             {
