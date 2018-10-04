@@ -665,6 +665,22 @@ namespace Tests
         }
 
         [Fact]
+        public void QueryModelResultWithBaseClass()
+        {
+            var model = QueryModel.Create(p => p.Get<ReceiptDetail>(),
+                p => new ResultDto
+                {
+                    Id = p.Id,
+                    Name = p.Description,
+                    Amount = p.Amount
+                }).Build();
+
+            var query = model.GetQuery(new DummyQuerySource(), new QueryConfiguration());
+
+            Assert.NotNull(query);
+        }
+
+        [Fact]
         public void QueryModelSingleSourceAsync()
         {
             var dataSource = new DummyQuerySource();

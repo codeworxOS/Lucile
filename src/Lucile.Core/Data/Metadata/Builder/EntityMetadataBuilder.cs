@@ -212,13 +212,13 @@ namespace Lucile.Data.Metadata.Builder
 
             var propertyInfo = type.GetProperty(name);
 
-            if (propertyInfo != null && propertyInfo.DeclaringType != this.TypeInfo.ClrType)
-            {
-                var entity = this.ModelBuilder.Entity(propertyInfo.DeclaringType);
-                var prop = entity.Property(name);
-                prop.IsExcluded = entity.IsExcluded;
-                return prop;
-            }
+            ////if (propertyInfo != null && propertyInfo.DeclaringType != this.TypeInfo.ClrType)
+            ////{
+            ////    var entity = this.ModelBuilder.Entity(propertyInfo.DeclaringType);
+            ////    var prop = entity.Property(name);
+            ////    prop.IsExcluded = entity.IsExcluded;
+            ////    return prop;
+            ////}
 
             if (propertyInfo == null)
             {

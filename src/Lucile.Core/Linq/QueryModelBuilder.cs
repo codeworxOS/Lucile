@@ -52,6 +52,16 @@ namespace Lucile.Linq
 
         public bool IsSingleSourceQuery { get; }
 
+        public QueryModel<TResult> Build()
+        {
+            List<PropertyConfiguration> propConfigs;
+            List<SourceEntityConfiguration> sourceEntityConfigs;
+            Data.Metadata.EntityMetadata entity;
+            BuildModel(out propConfigs, out sourceEntityConfigs, out entity);
+
+            return new QueryModel<TResult>(typeof(TSource), entity, sourceEntityConfigs, propConfigs);
+        }
+
         public QueryModelBuilder<TSource, TResult> HasKey<TKey>(Expression<Func<TResult, TKey>> keySelector)
         {
             var member = keySelector.Body as MemberExpression;
@@ -159,15 +169,29 @@ namespace Lucile.Linq
             return _sourceBuilders.GetOrAdd(entityAlias, p => (SourceEntityConfigurationBuilder)Activator.CreateInstance(typeof(SourceEntityConfigurationBuilder<,>).MakeGenericType(typeof(TSource), prop.PropertyType), p));
         }
 
+        [Obsolete("Use Build Method instead.")]
         public QueryModel<TSource, TResult> ToModel()
+        {
+            List<PropertyConfiguration> propConfigs;
+            List<SourceEntityConfiguration> sourceEntityConfigs;
+            Data.Metadata.EntityMetadata entity;
+            BuildModel(out propConfigs, out sourceEntityConfigs, out entity);
+
+            return new QueryModel<TSource, TResult>(entity, sourceEntityConfigs, propConfigs);
+        }
+
+        private static bool IsQuerySourceBuilderGetMethodCall(ParameterExpression param, MethodCallExpression methodCallExpression)
+        {
+            return methodCallExpression != null && methodCallExpression.Object == param && methodCallExpression.Method.Name == "Get";
+        }
+
+        private void BuildModel(out List<PropertyConfiguration> propConfigs, out List<SourceEntityConfiguration> sourceEntityConfigs, out Data.Metadata.EntityMetadata entity)
         {
             var entityModelBuilder = new MetadataModelBuilder();
             var entityBuilder = entityModelBuilder.Entity<TResult>();
 
-            var propConfigs = new List<PropertyConfiguration>();
-
-            var sourceEntityConfigs = _sourceBuilders.Select(p => p.Value.ToTarget()).ToList();
-
+            propConfigs = new List<PropertyConfiguration>();
+            sourceEntityConfigs = _sourceBuilders.Select(p => p.Value.ToTarget()).ToList();
             foreach (var item in _propertyBuilders)
             {
                 var expression = item.Value.MappedExpression;
@@ -189,21 +213,13 @@ namespace Lucile.Linq
             }
 
             var model = entityModelBuilder.ToModel();
-            var entity = model.GetEntityMetadata<TResult>();
-
+            entity = model.GetEntityMetadata<TResult>();
             foreach (var item in _propertyBuilders)
             {
                 var prop = entity[item.Value.PropertyName];
                 var config = new PropertyConfiguration(prop, item.Value.Label, item.Value.CanAggregate, item.Value.CanFilter, item.Value.CanSort, item.Value.CustomFilterExpression, item.Value.MappedExpression, !IsSingleSourceQuery);
                 propConfigs.Add(config);
             }
-
-            return new QueryModel<TSource, TResult>(entity, sourceEntityConfigs, propConfigs);
-        }
-
-        private static bool IsQuerySourceBuilderGetMethodCall(ParameterExpression param, MethodCallExpression methodCallExpression)
-        {
-            return methodCallExpression != null && methodCallExpression.Object == param && methodCallExpression.Method.Name == "Get";
         }
     }
 }

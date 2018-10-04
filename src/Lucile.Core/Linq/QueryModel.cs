@@ -31,7 +31,15 @@ namespace Lucile.Linq
 
         internal static object GlobalSourceKey { get; } = new object();
 
+        [Obsolete("Use Create method instead.")]
         public static QueryModelBuilder<TSource, TModel> Build<TSource, TModel>(Expression<Func<QuerySourceBuilder, TSource>> sourceSelector, Expression<Func<TSource, TModel>> queryExpression)
+            where TModel : class
+            where TSource : class
+        {
+            return Create(sourceSelector, queryExpression);
+        }
+
+        public static QueryModelBuilder<TSource, TModel> Create<TSource, TModel>(Expression<Func<QuerySourceBuilder, TSource>> sourceSelector, Expression<Func<TSource, TModel>> queryExpression)
             where TModel : class
             where TSource : class
         {
