@@ -20,7 +20,7 @@ using System;
 
 <#
 int startItem = 1;
-int endItem = 150;
+int endItem = 100;
 #>
 namespace Lucile.Data
 {

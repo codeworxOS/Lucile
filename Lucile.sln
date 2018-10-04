@@ -46,7 +46,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Lucile.Dynamic", "src\Lucil
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Lucile.Dynamic.Test", "test\Lucile.Dynamic.Test\Lucile.Dynamic.Test.csproj", "{E35CD476-03FD-46D6-B9FC-451B9214E745}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Lucile.Dynamic.DependencyInjection", "src\Lucile.Dynamic.DependencyInjection\Lucile.Dynamic.DependencyInjection.csproj", "{0864C84F-4D34-47A3-87C0-B7C343733AF1}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Lucile.Dynamic.DependencyInjection", "src\Lucile.Dynamic.DependencyInjection\Lucile.Dynamic.DependencyInjection.csproj", "{0864C84F-4D34-47A3-87C0-B7C343733AF1}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
