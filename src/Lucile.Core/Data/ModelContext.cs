@@ -168,26 +168,38 @@ namespace Lucile.Data
             return false;
         }
 
-        public T DetachSingle<T>(T item)
+        public IEnumerable<T> Detach<T>(IEnumerable<T> items)
             where T : class
         {
+            var result = new List<T>();
+
             using (BeginAttach<T>())
             {
-                var entity = _model.GetEntityMetadata(item);
+                var dict = new ConcurrentDictionary<EntityMetadata, Dictionary<object, object>>();
 
-                var entityInfo = GetEntityInfo(entity);
-
-                ReplaceItem(entityInfo, item, null);
-
-                if (TryRemoveTrackedObject(entityInfo, entity.GetPrimaryKeyObject(item)))
+                foreach (var item in items)
                 {
-                    return item;
+                    var entity = _model.GetEntityMetadata(item);
+                    var entities = dict.GetOrAdd(entity, p => new Dictionary<object, object>());
+                    entities.Add(item, null);
                 }
-                else
+
+                foreach (var item in dict)
                 {
-                    return null;
+                    var entityInfo = GetEntityInfo(item.Key);
+                    ReplaceItems(entityInfo, item.Value);
+
+                    result.AddRange(TryRemoveTrackedObjects<T>(entityInfo, item.Value.Keys.Select(p => entityInfo.EntityMetadata.GetPrimaryKeyObject(p))));
                 }
             }
+
+            return result;
+        }
+
+        public T DetachSingle<T>(T item)
+        where T : class
+        {
+            return Detach(new[] { item }).FirstOrDefault();
         }
 
         public void Dispose()
@@ -887,18 +899,23 @@ namespace Lucile.Data
 
         private void ReplaceItem(EntityInfo entityInfo, object source, object target)
         {
+            ReplaceItems(entityInfo, new Dictionary<object, object> { { source, target } });
+        }
+
+        private void ReplaceItems(EntityInfo entityInfo, IDictionary<object, object> replaces)
+        {
             foreach (var navProp in entityInfo.ReverseNavigationProperties)
             {
                 var reverseEntityInfo = GetEntityInfo(navProp.Entity);
-                foreach (var reverseEntity in GetTrackedObjectsForEntity(reverseEntityInfo))
+
+                var joined = from o in GetTrackedObjectsForEntity(reverseEntityInfo).Where(p => reverseEntityInfo.EntityMetadata.IsOfType(p))
+                             from i in navProp.GetItems(o)
+                             join r in replaces on i equals r.Key
+                             select new { Object = o, Source = r.Key, Target = r.Value };
+
+                foreach (var item in joined.ToList())
                 {
-                    if (reverseEntityInfo.EntityMetadata.IsOfType(reverseEntity))
-                    {
-                        ////using (new ChangeTrackingScope(ChangeTracking.Disable, target, reverseEntity))
-                        ////{
-                        navProp.ReplaceItem(reverseEntity, source, target);
-                        ////}
-                    }
+                    navProp.ReplaceItem(item.Object, item.Source, item.Target);
                 }
             }
         }
@@ -952,6 +969,41 @@ namespace Lucile.Data
                 }
 
                 return false;
+            }
+        }
+
+        private IEnumerable<T> TryRemoveTrackedObjects<T>(EntityInfo entityInfo, IEnumerable<object> keys)
+        {
+            var result = new List<T>();
+
+            lock (_updateLocker)
+            {
+                Dictionary<object, System.WeakReference<object>> first;
+                if (!_trackedObjects.TryGetValue(entityInfo.RootType, out first))
+                {
+                    // EntityInfo noch überhaupt nicht in TrackedObjects
+                    first = new Dictionary<object, System.WeakReference<object>>();
+                    _trackedObjects.Add(entityInfo.RootType, first);
+                    return result;
+                }
+
+                foreach (var key in keys)
+                {
+                    System.WeakReference<object> data;
+
+                    // Objekte versuchen zu entfernen
+                    if (first.TryGetValue(key, out data))
+                    {
+                        first.Remove(key);
+                        object value;
+                        if (data.TryGetTarget(out value))
+                        {
+                            result.Add((T)value);
+                        }
+                    }
+                }
+
+                return result;
             }
         }
 

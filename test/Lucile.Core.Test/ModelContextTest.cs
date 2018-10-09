@@ -202,6 +202,37 @@ namespace Tests
         }
 
         [Fact]
+        public void MassDetachTest()
+        {
+            var model = GetModel();
+            var context = new ModelContext(model);
+
+            var rand = new Random();
+
+            var customers = Enumerable.Range(0, 1000)
+                                .Select(p => new Contact { Id = Guid.NewGuid(), ContactType = ContactType.Customer, Receipts = new HashSet<Receipt>(), State = TrackingState.Added, Street = $"Street {p}", LastName = $"LastName {p}", FirstName = $"FirstName {p}" })
+                                .ToList();
+
+            var invoices = Enumerable.Range(0, 20000)
+                                .Select(p => new Invoice { Id = Guid.NewGuid(), CustomerId = customers[rand.Next(999)].Id, ReceiptNumber = p.ToString(), State = TrackingState.Added, LastPaymentDate = DateTime.Now.AddHours(-1 * rand.Next(4000)) })
+                                .ToList();
+
+            var lines = Enumerable.Range(0, 200000)
+                                .Select(p => new ReceiptDetail { Id = Guid.NewGuid(), Amount = rand.Next(), Description = $"Description {p}", State = TrackingState.Added, ReceiptId = invoices[rand.Next(0, 19999)].Id })
+                                .ToList();
+
+            context.Attach(customers);
+            context.Attach(invoices);
+            context.Attach(lines);
+
+            Assert.Equal(221000, context.TrackedObjects.Count());
+
+            context.Detach(invoices);
+
+            Assert.Equal(201000, context.TrackedObjects.Count());
+        }
+
+        [Fact]
         public void UpdateIfUnchangedTest()
         {
             var model = GetModel();
