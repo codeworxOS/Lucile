@@ -1,6 +1,8 @@
 ﻿using System.Data.Entity;
 using System.Data.Entity.Infrastructure;
+using System.IO;
 using System.Linq;
+using System.Runtime.Serialization;
 using Lucile.Data.Metadata;
 using Lucile.Data.Metadata.Builder;
 using Lucile.EntityFramework;
@@ -114,6 +116,56 @@ namespace Tests
             Assert.Equal(NavigationPropertyMultiplicity.ZeroOrOne, contactSettingsContactProperty.TargetMultiplicity);
             Assert.Null(contactSettingsContactProperty.TargetNavigationProperty);
             Assert.Equal(contact, contactSettingsContactProperty.TargetEntity);
+        }
+
+        [Fact]
+        public void MetadataDataContractSerializationTest()
+        {
+            var builder = new MetadataModelBuilder();
+            MetadataModelBuilder clone = null;
+            using (var ctx = CreateContext())
+            {
+                builder.UseDbContext(ctx);
+            }
+
+            var model = builder.ToModel();
+
+            var dc = new DataContractSerializer(typeof(MetadataModelBuilder));
+            using (var ms = new MemoryStream())
+            {
+                dc.WriteObject(ms, builder);
+                ms.Seek(0, SeekOrigin.Begin);
+                clone = dc.ReadObject(ms) as MetadataModelBuilder;
+            }
+
+            var cloneModel = clone.ToModel();
+
+            Assert.Equal(model.Entities, cloneModel.Entities, new EntityMetadataComparer());
+        }
+
+        [Fact]
+        public void MetadataProtobufSerializationTest()
+        {
+            var builder = new MetadataModelBuilder();
+            MetadataModelBuilder clone = null;
+            using (var ctx = CreateContext())
+            {
+                builder.UseDbContext(ctx);
+            }
+
+            var model = builder.ToModel();
+
+            var proto = ProtoBuf.Meta.RuntimeTypeModel.Default.CreateFormatter(typeof(MetadataModelBuilder));
+            using (var ms = new MemoryStream())
+            {
+                proto.Serialize(ms, builder);
+                ms.Seek(0, SeekOrigin.Begin);
+                clone = proto.Deserialize(ms) as MetadataModelBuilder;
+            }
+
+            var cloneModel = clone.ToModel();
+
+            Assert.Equal(model.Entities, cloneModel.Entities, new EntityMetadataComparer());
         }
 
         private static DbContext CreateContext()

@@ -175,14 +175,6 @@ namespace Lucile.Data.Metadata.Builder
             }
         }
 
-        [OnDeserializing]
-        internal void OnDeserializingMethod(StreamingContext context)
-        {
-            _navigations = new HashSet<NavigationPropertyBuilder>();
-            _properties = new HashSet<ScalarPropertyBuilder>();
-            _propertiesLocker = new object();
-        }
-
         private NavigationPropertyBuilder CreateNavigationBuilder(string propertyName)
         {
             var type = TypeInfo.ClrType;
@@ -232,6 +224,16 @@ namespace Lucile.Data.Metadata.Builder
             }
 
             return ScalarPropertyBuilder.CreateScalar(propertyInfo);
+        }
+
+        [OnDeserializing]
+#pragma warning disable RECS0154 // Parameter is never used
+        private void OnDeserializing(StreamingContext context)
+#pragma warning restore RECS0154 // Parameter is never used
+        {
+            _navigations = new HashSet<NavigationPropertyBuilder>();
+            _properties = new HashSet<ScalarPropertyBuilder>();
+            _propertiesLocker = new object();
         }
     }
 }
