@@ -30,11 +30,11 @@ namespace Tests
 
             Assert.Equal(2, operations.Items.Count());
             Assert.Equal(customerOld, operations.Items.First());
-            Assert.Equal(1, operations.Added.Count);
+            Assert.Single(operations.Added);
             Assert.Equal(customerOther, operations.Added.First());
-            Assert.Equal(1, operations.Merged.Count);
+            Assert.Single(operations.Merged);
             Assert.Equal(customerOld, operations.Merged.First().Key);
-            Assert.Equal(1, operations.Merged.First().Value.Count());
+            Assert.Single(operations.Merged.First().Value);
             Assert.Equal(nameof(Contact.LastName), operations.Merged.First().Value.First().Name);
         }
 

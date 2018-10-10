@@ -91,33 +91,9 @@ namespace Lucile.Data
         public IEnumerable<T> Attach<T>(IEnumerable<T> items, MergeStrategy mergeStrategy = MergeStrategy.UpdateIfUnchanged)
             where T : class
         {
-            var itemsList = items.Where(p => p != null).ToList();
-
             using (BeginAttach<T>())
             {
-                // Liste der bereinigten Objekte für Rekursionsvermeidung
-                var cleaned = new Dictionary<object, bool>();
-
-                // Liste der Objekte, die ausgetauscht wurden
-                var cleanupTuples = new Dictionary<object, CleanupTuple>();
-
-                // Liste von Objekten mit Naviagtion-Property, für die ein Fixup gemacht werden muss
-                var fixups = new List<Tuple<object, NavigationPropertyMetadata>>();
-
-                // Liste der Objekte, für die ein reverse Fixup gemacht werden muss
-                var reverseFixups = new Dictionary<EntityInfo, HashSet<object>>();
-
-                // Objekte aufräumen
-                var result = new List<T>();
-                result.AddRange(itemsList.Select(item => (T)Clean(item, cleaned, cleanupTuples, fixups, reverseFixups, mergeStrategy)));
-
-                // Fixups parallel ausführen
-                Parallel.ForEach(fixups, p => FixupNavigationProperty(p.Item1, p.Item2));
-
-                // Reverse-Fixup parallel ausführen
-                Parallel.ForEach(reverseFixups, p => ReverseNavigationPropertyFixup(p.Key, p.Value));
-
-                return result;
+                return DoClean(items, mergeStrategy, out var totalCleaned);
             }
         }
 
@@ -260,37 +236,21 @@ namespace Lucile.Data
 
             using (BeginAttach<T>())
             {
-                // Liste der bereinigten Objekte für Rekursionsvermeidung
-                var cleaned = new Dictionary<object, bool>();
-
-                // Liste der Objekte, die ausgetauscht wurden
-                var cleanupTuples = new Dictionary<object, CleanupTuple>();
-
-                // Liste von Objekten mit Naviagtion-Property, für die ein Fixup gemacht werden muss
-                var fixups = new List<Tuple<object, NavigationPropertyMetadata>>();
-
-                // Liste der Objekte, für die ein reverse Fixup gemacht werden muss
-                var reverseFixups = new Dictionary<EntityInfo, HashSet<object>>();
-
-                // Objekte aufräumen
-                var resultItems = new List<T>();
-                resultItems.AddRange(itemsList.Select(item => (T)Clean(item, cleaned, cleanupTuples, fixups, reverseFixups, mergeStrategy)));
-
-                // Fixups parallel ausführen
-                Parallel.ForEach(fixups, p => FixupNavigationProperty(p.Item1, p.Item2));
-
-                // Reverse-Fixup parallel ausführen
-                Parallel.ForEach(reverseFixups, p => ReverseNavigationPropertyFixup(p.Key, p.Value));
+                var resultItems = DoClean<T>(itemsList, mergeStrategy, out var totalTuples);
 
                 var result = new AttachOperations<T>(resultItems);
-                foreach (var item in cleaned.Where(p => p.Value))
-                {
-                    result.TrackAdded(item.Key);
-                }
 
-                foreach (var item in cleanupTuples.Where(p => p.Value.GetProperties().Any()))
+                foreach (var item in totalTuples)
                 {
-                    result.TrackMerged(item.Value.Target, item.Value.GetProperties());
+                    if (item.Value.Added)
+                    {
+                        result.TrackAdded(item.Value.Target);
+                    }
+
+                    if (item.Value.GetProperties().Any())
+                    {
+                        result.TrackMerged(item.Value.Target, item.Value.GetProperties());
+                    }
                 }
 
                 return result;
@@ -406,25 +366,17 @@ namespace Lucile.Data
             return transaction;
         }
 
-        private object Clean(
+        private bool Clean(
             object source,
-            Dictionary<object, bool> cleaned,
             Dictionary<object, CleanupTuple> cleanedTuples,
             List<Tuple<object, NavigationPropertyMetadata>> fixups,
-            Dictionary<EntityInfo, HashSet<object>> reverseFixups,
-            MergeStrategy mergeStrategy)
+            MergeStrategy mergeStrategy,
+            out CleanupTuple cleanedItem)
         {
-            // Wurde dieses Objekt bereits gecleaned und in die TrackedObjects eingefügt
-            if (cleaned.ContainsKey(source))
+            // already cleaned;
+            if (cleanedTuples.TryGetValue(source, out cleanedItem))
             {
-                return source;
-            }
-
-            // Wurde dieses Objekt bereits gecleaned und als Duplikat erkannt
-            CleanupTuple tupleItem;
-            if (cleanedTuples.TryGetValue(source, out tupleItem))
-            {
-                return tupleItem.Target;
+                return false;
             }
 
             // Metadaten für Source ermitteln
@@ -523,9 +475,11 @@ namespace Lucile.Data
                 throw new InvalidOperationException("no result object!");
             }
 
+            CleanupTuple tuple = null;
+
             if (source != result)
             {
-                var tuple = new CleanupTuple { Source = source, Target = result };
+                tuple = new CleanupTuple(source, result, entityInfo);
 
                 // Objekte nicht Referenzgleich
                 if (_trackingInfoProvider.GetState(source) == TrackingState.Added && _trackingInfoProvider.GetState(result) == TrackingState.Deleted)
@@ -537,108 +491,19 @@ namespace Lucile.Data
                     MergeScalarProperties(tuple, fixups, mergeStrategy);
                 }
 
-                // zu CleanedTuples hinzufügen
+                // add to cleaned Tuples to avoid endless recoursions.
                 cleanedTuples.Add(source, tuple);
             }
             else
             {
-                // zur Rekusrionsvermeidung in Liste eintragen
-                cleaned.Add(result, added);
+                tuple = new CleanupTuple(source, result, entityInfo, added);
+
+                // add to cleaned Tuples to avoid endless recoursions.
+                cleanedTuples.Add(result, tuple);
             }
 
-            // wurde das Objekt bei diesem Durchlauf in die TrackedObjects eingefügt
-            if (added)
-            {
-                // Rekursives Cleanup der Navigation Properties
-                foreach (var navProp in entityInfo.NavigationProperties)
-                {
-                    foreach (var child in navProp.GetItems(result).OfType<object>().ToList())
-                    {
-                        // Clean für child
-                        var cleanedChild = Clean(child, cleaned, cleanedTuples, fixups, reverseFixups, mergeStrategy);
-
-                        if (cleanedChild != child)
-                        {
-                            // child durch cleanedChild ersetzen
-                            ////using (new ChangeTrackingScope(ChangeTracking.Disable, cleanedChild, result))
-                            ////{
-                            navProp.ReplaceItem(result, child, cleanedChild);
-                            ////}
-                        }
-                    }
-                }
-
-                // Navigation Properties über ForeignKey befüllen
-                foreach (var navProp in entityInfo.NavigationProperties.Where(p => p.Multiplicity != NavigationPropertyMultiplicity.Many))
-                {
-                    if (navProp.GetValue(result) == null)
-                    {
-                        FixupNavigationProperty(result, navProp);
-                    }
-                }
-
-                if (entity.IsPrimaryKeySet(result)) ////|| result.ChangeTracker.State != ObjectState.Added
-                {
-                    if (!reverseFixups.ContainsKey(entityInfo))
-                    {
-                        reverseFixups.Add(entityInfo, new HashSet<object>());
-                    }
-
-                    reverseFixups[entityInfo].Add(result);
-                }
-            }
-
-            // Objekte sind nicht Referenzgleich
-            if (source != result && added)
-            {
-                // bei einem neu hinzugefügten Objekt muss source und result Referenzgleich sein
-                throw new InvalidOperationException("added object must be same object!");
-            }
-
-            // Clean aller Navigation Properties
-            if (!added)
-            {
-                ////var sourceUnloaded = source.GetUnloadedNavigationProperties().ToList();
-                foreach (var navProp in entityInfo.NavigationProperties)
-                {
-                    ////var isLoaded = !sourceUnloaded.Contains(navProp.Name);
-                    var sourceItems = navProp.GetItems(source).OfType<object>().ToList();
-
-                    ////if (isLoaded)
-                    ////{
-                    ////    result.MarkNavigationPropertyAsLoaded(navProp.Name);
-                    ////}
-
-                    var tmpInfo = GetEntityInfo(navProp.TargetEntity);
-
-                    foreach (var child in sourceItems)
-                    {
-                        var newChild = Clean(child, cleaned, cleanedTuples, fixups, reverseFixups, mergeStrategy);
-                        if (newChild != child)
-                        {
-                            if (source == result)
-                            {
-                                ReplaceItem(tmpInfo, child, newChild);
-                            }
-                        }
-                    }
-
-                    ////if (isLoaded)
-                    ////{
-                    ////    var missing = tmpInfo.GetMissingSourceObjects(navProp.GetItems(result), sourceItems)
-                    ////        //.Where(p => p.ChangeTracker.State != ObjectState.Added)
-                    ////        .ToList();
-
-                    ////    foreach (var item in missing)
-                    ////    {
-                    ////        this.DetachSingle<object>((object)item);
-                    ////        // what shall wo do... with the drunken sailor
-                    ////    }
-                    ////}
-                }
-            }
-
-            return result;
+            cleanedItem = tuple;
+            return true;
         }
 
         private Func<IEnumerable<object>, IEnumerable<object>, IEnumerable<object>> CreateReverseFixupDelegate(NavigationPropertyMetadata prop)
@@ -737,6 +602,126 @@ namespace Lucile.Data
                     baseQuery, trackedParameter, entitiesParameter);
 
             return lambda.Compile();
+        }
+
+        private IEnumerable<T> DoClean<T>(IEnumerable<T> items, MergeStrategy mergeStrategy, out Dictionary<object, CleanupTuple> totalCleaned)
+            where T : class
+        {
+            // Liste von Objekten mit Naviagtion-Property, für die ein Fixup gemacht werden muss
+            var fixups = new List<Tuple<object, NavigationPropertyMetadata>>();
+
+            // Liste der Objekte, für die ein reverse Fixup gemacht werden muss
+            var reverseFixups = new Dictionary<EntityInfo, HashSet<object>>();
+
+            var toClean = items.Where(p => p != null).Cast<object>().ToList();
+
+            List<T> result = null;
+
+            var parentInfos = new Dictionary<CleanupTuple, List<ParentInfo>>();
+            totalCleaned = new Dictionary<object, CleanupTuple>();
+
+            while (toClean.Any())
+            {
+                var addToResult = result == null;
+                result = result ?? new List<T>();
+
+                // Liste der Objekte, die ausgetauscht wurden
+                var cleanupTuples = new Dictionary<object, CleanupTuple>();
+
+                foreach (var item in toClean)
+                {
+                    if (Clean(item, cleanupTuples, fixups, mergeStrategy, out var cleanedItem))
+                    {
+                        totalCleaned.Add(item, cleanedItem);
+                    }
+
+                    if (addToResult)
+                    {
+                        result.Add((T)cleanedItem.Target);
+                    }
+                }
+
+                foreach (var parent in parentInfos)
+                {
+                    if (parent.Key.Added)
+                    {
+                        foreach (var nav in parent.Value)
+                        {
+                            var childTuple = totalCleaned[nav.Child];
+                            if (!childTuple.Added)
+                            {
+                                nav.Nav.ReplaceItem(parent.Key.Source, childTuple.Source, childTuple.Target);
+                            }
+                        }
+                    }
+
+                    // Objekte sind nicht Referenzgleich
+                    if (parent.Key.Source != parent.Key.Target && parent.Key.Added)
+                    {
+                        // bei einem neu hinzugefügten Objekt muss source und result Referenzgleich sein
+                        throw new InvalidOperationException("added object must be same object!");
+                    }
+
+                    // Clean aller Navigation Properties
+                    if (!parent.Key.Added)
+                    {
+                        foreach (var nav in parent.Value)
+                        {
+                            var tmpInfo = GetEntityInfo(nav.Nav.TargetEntity);
+
+                            var childTuple = totalCleaned[nav.Child];
+
+                            if (!childTuple.Added)
+                            {
+                                if (childTuple.Source == childTuple.Target)
+                                {
+                                    ReplaceItem(tmpInfo, childTuple.Source, childTuple.Target);
+                                }
+                            }
+                        }
+                    }
+                }
+
+                parentInfos = cleanupTuples.ToDictionary(
+                    p => p.Value,
+                    p => p.Value.EntityInfo.NavigationProperties.SelectMany(x => x.GetItems(p.Key).Select(y => new ParentInfo { Child = y, Nav = x })).ToList());
+
+                toClean = parentInfos.SelectMany(p => p.Value).Select(p => p.Child).Distinct().Except(totalCleaned.Keys).ToList();
+            }
+
+            foreach (var item in totalCleaned)
+            {
+                if (item.Value.Added)
+                {
+                    // Navigation Properties über ForeignKey befüllen
+                    foreach (var navProp in item.Value.EntityInfo.NavigationProperties.Where(p => p.Multiplicity != NavigationPropertyMultiplicity.Many))
+                    {
+                        if (navProp.GetValue(item.Value.Target) == null)
+                        {
+                            FixupNavigationProperty(item.Value.Target, navProp);
+                        }
+                    }
+
+                    var entityInfo = item.Value.EntityInfo;
+                    if (entityInfo.EntityMetadata.IsPrimaryKeySet(item.Value.Target)) ////|| result.ChangeTracker.State != ObjectState.Added
+                    {
+                        if (!reverseFixups.ContainsKey(entityInfo))
+                        {
+                            reverseFixups.Add(entityInfo, new HashSet<object>());
+                        }
+
+                        reverseFixups[entityInfo].Add(item.Value.Target);
+                    }
+                }
+            }
+
+            // Fixups parallel ausführen
+            Parallel.ForEach(fixups, p => FixupNavigationProperty(p.Item1, p.Item2));
+
+            // Reverse-Fixup parallel ausführen
+            Parallel.ForEach(reverseFixups, p => ReverseNavigationPropertyFixup(p.Key, p.Value));
+
+            return result;
         }
 
         private void EndAttach(AttachTransaction transaction)
@@ -1082,9 +1067,21 @@ namespace Lucile.Data
         {
             private List<ScalarProperty> _properties;
 
-            public object Source { get; set; }
+            public CleanupTuple(object source, object target, EntityInfo entityInfo, bool added = false)
+            {
+                Added = added;
+                EntityInfo = entityInfo;
+                Target = target;
+                Source = source;
+            }
 
-            public object Target { get; set; }
+            public bool Added { get; }
+
+            public EntityInfo EntityInfo { get; }
+
+            public object Source { get; }
+
+            public object Target { get; }
 
             public IEnumerable<ScalarProperty> GetProperties()
             {
@@ -1096,6 +1093,15 @@ namespace Lucile.Data
                 _properties = _properties ?? new List<ScalarProperty>();
                 _properties.Add(property);
             }
+        }
+
+        private class ParentInfo
+        {
+            public object Child { get; set; }
+
+            public NavigationPropertyMetadata Nav { get; set; }
+
+            public CleanupTuple Tuple { get; set; }
         }
     }
 }
