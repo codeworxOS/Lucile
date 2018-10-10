@@ -648,7 +648,7 @@ namespace Lucile.Data
                         foreach (var nav in parent.Value)
                         {
                             var childTuple = totalCleaned[nav.Child];
-                            if (!childTuple.Added)
+                            if (childTuple.Source != childTuple.Target)
                             {
                                 nav.Nav.ReplaceItem(parent.Key.Source, childTuple.Source, childTuple.Target);
                             }
@@ -671,9 +671,9 @@ namespace Lucile.Data
 
                             var childTuple = totalCleaned[nav.Child];
 
-                            if (!childTuple.Added)
+                            if (childTuple.Source != childTuple.Target)
                             {
-                                if (childTuple.Source == childTuple.Target)
+                                if (parent.Key.Source == parent.Key.Target)
                                 {
                                     ReplaceItem(tmpInfo, childTuple.Source, childTuple.Target);
                                 }
