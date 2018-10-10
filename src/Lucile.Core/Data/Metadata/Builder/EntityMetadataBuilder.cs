@@ -11,20 +11,21 @@ namespace Lucile.Data.Metadata.Builder
     [ProtoBuf.ProtoContract(AsReferenceDefault = true)]
     public class EntityMetadataBuilder
     {
-        private readonly ICollection<NavigationPropertyBuilder> _navigations;
-        private readonly ICollection<ScalarPropertyBuilder> _properties;
-        private readonly object _propertiesLocker = new object();
         private MetadataModelBuilder _modelBuilder;
+        private ICollection<NavigationPropertyBuilder> _navigations;
         private ICollection<string> _primaryKeys;
+        private ICollection<ScalarPropertyBuilder> _properties;
+        private object _propertiesLocker = new object();
 
         public EntityMetadataBuilder()
         {
-            _properties = new HashSet<ScalarPropertyBuilder>();
             _navigations = new HashSet<NavigationPropertyBuilder>();
+            _properties = new HashSet<ScalarPropertyBuilder>();
+            _propertiesLocker = new object();
         }
 
         public EntityMetadataBuilder(MetadataModelBuilder modelBuilder)
-            : this()
+                : this()
         {
             _modelBuilder = modelBuilder;
         }
@@ -64,10 +65,7 @@ namespace Lucile.Data.Metadata.Builder
         {
             get
             {
-                if (_primaryKeys == null)
-                {
-                    _primaryKeys = new HashSet<string>();
-                }
+                _primaryKeys = _primaryKeys ?? new HashSet<string>();
 
                 return _primaryKeys;
             }
@@ -175,6 +173,14 @@ namespace Lucile.Data.Metadata.Builder
 
                 return result;
             }
+        }
+
+        [OnDeserializing]
+        internal void OnDeserializingMethod(StreamingContext context)
+        {
+            _navigations = new HashSet<NavigationPropertyBuilder>();
+            _properties = new HashSet<ScalarPropertyBuilder>();
+            _propertiesLocker = new object();
         }
 
         private NavigationPropertyBuilder CreateNavigationBuilder(string propertyName)
