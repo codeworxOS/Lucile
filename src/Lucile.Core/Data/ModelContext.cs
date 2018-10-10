@@ -620,6 +620,8 @@ namespace Lucile.Data
             var parentInfos = new Dictionary<CleanupTuple, List<ParentInfo>>();
             totalCleaned = new Dictionary<object, CleanupTuple>();
 
+            var replaceItems = new ConcurrentDictionary<EntityInfo, Dictionary<object, object>>();
+
             while (toClean.Any())
             {
                 var addToResult = result == null;
@@ -675,7 +677,7 @@ namespace Lucile.Data
                             {
                                 if (parent.Key.Source == parent.Key.Target)
                                 {
-                                    ReplaceItem(tmpInfo, childTuple.Source, childTuple.Target);
+                                    replaceItems.GetOrAdd(tmpInfo, p => new Dictionary<object, object>()).Add(childTuple.Source, childTuple.Target);
                                 }
                             }
                         }
@@ -687,6 +689,11 @@ namespace Lucile.Data
                     p => p.Value.EntityInfo.NavigationProperties.SelectMany(x => x.GetItems(p.Key).Select(y => new ParentInfo { Child = y, Nav = x })).ToList());
 
                 toClean = parentInfos.SelectMany(p => p.Value).Select(p => p.Child).Distinct().Except(totalCleaned.Keys).ToList();
+            }
+
+            foreach (var item in replaceItems)
+            {
+                ReplaceItems(item.Key, item.Value);
             }
 
             foreach (var item in totalCleaned)
