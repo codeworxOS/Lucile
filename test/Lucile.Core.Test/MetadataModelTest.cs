@@ -280,6 +280,46 @@ namespace Tests
         }
 
         [Fact]
+        public void EntityMetadataBuilderReplacetItemWithNullTest()
+        {
+            var builder = new MetadataModelBuilder();
+
+            var receiptBuilder = builder.Entity<Receipt>();
+
+            receiptBuilder.HasMany(p => p.Details)
+                .WithOne(p => p.Receipt)
+                .HasForeignKey("ReceiptId");
+            receiptBuilder.Property(p => p.Id).Nullable = false;
+            receiptBuilder.PrimaryKey.Add("Id");
+
+            builder.Entity<Invoice>().BaseEntity = receiptBuilder;
+
+            var receiptDetailBuilder = builder.Entity<ReceiptDetail>();
+            receiptDetailBuilder.PrimaryKey.Add("Id");
+            receiptDetailBuilder.Property(p => p.Id).Nullable = false;
+            receiptDetailBuilder.Property(p => p.ReceiptId).Nullable = false;
+
+            var model = builder.ToModel();
+
+            var receipt = new Invoice { Id = Guid.NewGuid() };
+            var rd1 = new ReceiptDetail { Id = Guid.NewGuid(), ReceiptId = receipt.Id };
+            var rd2 = new ReceiptDetail { Id = Guid.NewGuid(), ReceiptId = receipt.Id };
+
+            receipt.Details.AddRange(new[] { rd1, rd2 });
+
+            var entity = model.GetEntityMetadata(receipt);
+            var details = entity.GetNavigations().First(p => p.Name == "Details");
+
+            Assert.Equal(2, receipt.Details.Count);
+            Assert.All(receipt.Details, p => Assert.NotNull(p));
+
+            details.ReplaceItem(receipt, rd1, null);
+
+            Assert.Single(receipt.Details);
+            Assert.All(receipt.Details, p => Assert.NotNull(p));
+        }
+
+        [Fact]
         public void EntityMetadataBuilderTextProperty()
         {
             var builder = new MetadataModelBuilder();

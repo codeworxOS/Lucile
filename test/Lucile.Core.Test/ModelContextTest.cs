@@ -39,6 +39,21 @@ namespace Tests
         }
 
         [Fact]
+        public void AttachWithNullEntryInNavigationProperty()
+        {
+            var model = GetModel();
+            var ctx = new ModelContext(model);
+
+            var receipt = new Invoice { Id = Guid.NewGuid() };
+            var rd1 = new ReceiptDetail { Id = Guid.NewGuid(), ReceiptId = receipt.Id };
+            var rd2 = new ReceiptDetail { Id = Guid.NewGuid(), ReceiptId = receipt.Id };
+
+            receipt.Details.AddRange(new[] { rd1, null, rd2 });
+
+            receipt = ctx.AttachSingle(receipt);
+        }
+
+        [Fact]
         public void AutomaticFixupTest()
         {
             var metadataModelBuilder = new MetadataModelBuilder();

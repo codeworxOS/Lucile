@@ -686,7 +686,7 @@ namespace Lucile.Data
 
                 parentInfos = cleanupTuples.ToDictionary(
                     p => p.Value,
-                    p => p.Value.EntityInfo.NavigationProperties.SelectMany(x => x.GetItems(p.Key).Select(y => new ParentInfo { Child = y, Nav = x })).ToList());
+                    p => p.Value.EntityInfo.NavigationProperties.SelectMany(x => x.GetItems(p.Key).Where(y => y != null).Select(y => new ParentInfo { Child = y, Nav = x })).ToList());
 
                 toClean = parentInfos.SelectMany(p => p.Value).Select(p => p.Child).Distinct().Except(totalCleaned.Keys).ToList();
             }

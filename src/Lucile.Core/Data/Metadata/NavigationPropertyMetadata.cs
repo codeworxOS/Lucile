@@ -190,7 +190,11 @@ namespace Lucile.Data.Metadata
                 if (((IEnumerable<object>)current).Contains(source))
                 {
                     RemoveItem(entity, source);
-                    AddItem(entity, target);
+                    if (target != null)
+                    {
+                        AddItem(entity, target);
+                    }
+
                     return true;
                 }
             }
