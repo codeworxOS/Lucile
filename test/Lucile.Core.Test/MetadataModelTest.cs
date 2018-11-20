@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics;
 using System.Linq;
 using Lucile.Data.Metadata;
 using Lucile.Data.Metadata.Builder;
@@ -347,6 +348,42 @@ namespace Tests
             entity = model.GetEntityMetadata<Order>();
 
             Assert.Equal("Order", entity.Name);
+        }
+
+        [Fact]
+        public void GetMetadataPerformanceTest()
+        {
+            var builder = new MetadataModelBuilder();
+            var receipt = builder.Entity<Receipt>();
+            var invoice = builder.Entity<Invoice>();
+            var order = builder.Entity<Order>();
+
+            invoice.Property(p => p.Id);
+            invoice.PrimaryKey.Add("Id");
+
+            var model = builder.ToModel();
+
+            var inv = new Invoice { Id = Guid.NewGuid() };
+            var ord = new Order { Id = Guid.NewGuid() };
+
+            var sw = new Stopwatch();
+            sw.Start();
+
+            for (int i = 0; i < 2000000; i++)
+            {
+                if (i % 2 == 0)
+                {
+                    var entity = model.GetEntityMetadata(inv);
+                }
+                else
+                {
+                    var entity = model.GetEntityMetadata(ord);
+                }
+            }
+
+            sw.Stop();
+
+            Assert.True(sw.Elapsed.TotalSeconds < 1, "too slow");
         }
 
         [Fact]
