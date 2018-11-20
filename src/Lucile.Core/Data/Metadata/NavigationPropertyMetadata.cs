@@ -14,8 +14,10 @@ namespace Lucile.Data.Metadata
         private Func<object, object, bool> _matchForeignKeyDelegate;
         private Action<object, object> _removeItemDelegate;
 
+        private NavigationPropertyMetadata _targetNavigationProperty;
+
         internal NavigationPropertyMetadata(ModelCreationScope scope, EntityMetadata entity, NavigationPropertyBuilder builder)
-            : base(entity, builder)
+                    : base(entity, builder)
         {
             scope.AddNavigationProperty(entity, builder.Name, this);
 
@@ -54,7 +56,12 @@ namespace Lucile.Data.Metadata
             {
                 if (TargetNavigationPropertyName != null)
                 {
-                    return (NavigationPropertyMetadata)TargetEntity[TargetNavigationPropertyName];
+                    if (_targetNavigationProperty == null)
+                    {
+                        _targetNavigationProperty = _targetNavigationProperty ?? (NavigationPropertyMetadata)TargetEntity[TargetNavigationPropertyName];
+                    }
+
+                    return _targetNavigationProperty;
                 }
 
                 return null;
@@ -86,12 +93,12 @@ namespace Lucile.Data.Metadata
                 return Entity.GetPrimaryKeyObject(result);
             }
 
-            if (!ForeignKeyProperties.Any() || ForeignKeyProperties.Count > 1)
+            if (ForeignKeyProperties.IsEmpty || ForeignKeyProperties.Count > 1)
             {
                 throw new NotImplementedException("Currently only single Primary Key objects are supported!");
             }
 
-            return ForeignKeyProperties.First().Dependant.GetValue(result);
+            return ForeignKeyProperties[0].Dependant.GetValue(result);
         }
 
         public IEnumerable<object> GetItems(object entity)

@@ -13,6 +13,7 @@ namespace Lucile.Data.Metadata
         private readonly Func<object, bool> _checkTypeDelegate;
         private readonly Func<EntityMetadata, EntityKey> _createEntityKeyDelegate;
         private readonly Func<object, object, bool> _keyEqualsDelegate;
+        private readonly ImmutableList<ScalarProperty> _primaryKeys;
 
         internal EntityMetadata(ModelCreationScope scope, EntityMetadataBuilder builder)
             : base(builder.Name)
@@ -50,21 +51,22 @@ namespace Lucile.Data.Metadata
 
             this._checkTypeDelegate = GetCheckTypeDelegate(ClrType);
             var primaryKeys = this.GetProperties().Where(p => p.IsPrimaryKey);
-            PrimaryKeyCount = primaryKeys.Count();
+            _primaryKeys = primaryKeys.ToImmutableList();
+            PrimaryKeyCount = _primaryKeys.Count;
             if (PrimaryKeyCount == 1)
             {
-                PrimaryKeyType = primaryKeys.First().PropertyType;
+                PrimaryKeyType = _primaryKeys[0].PropertyType;
             }
             else if (PrimaryKeyCount > 1)
             {
-                var keyTypes = primaryKeys.Select(p => p.PropertyType).ToArray();
+                var keyTypes = _primaryKeys.Select(p => p.PropertyType).ToArray();
                 PrimaryKeyType = EntityKey.Get(keyTypes);
                 this._createEntityKeyDelegate = GetCreateEntityKeyDelegate(PrimaryKeyType);
             }
 
             if (PrimaryKeyCount > 0)
             {
-                this._keyEqualsDelegate = GetKeyEqualsDelegate(ClrType, primaryKeys);
+                this._keyEqualsDelegate = GetKeyEqualsDelegate(ClrType, _primaryKeys);
             }
         }
 
@@ -168,19 +170,14 @@ namespace Lucile.Data.Metadata
         {
             if (PrimaryKeyCount == 1)
             {
-                return this.GetProperties().First(p => p.IsPrimaryKey).GetValue(entity);
+                return _primaryKeys[0].GetValue(entity);
             }
             else if (PrimaryKeyCount > 1)
             {
                 var key = _createEntityKeyDelegate(this);
                 int i = 0;
-                foreach (var item in GetProperties())
+                foreach (var item in _primaryKeys)
                 {
-                    if (!item.IsPrimaryKey)
-                    {
-                        break;
-                    }
-
                     key.SetValue(i, item.GetValue(entity));
                     i++;
                 }
@@ -214,7 +211,7 @@ namespace Lucile.Data.Metadata
 
         public bool IsPrimaryKeySet(object source)
         {
-            foreach (var item in GetProperties().Where(p => p.IsPrimaryKey))
+            foreach (var item in _primaryKeys)
             {
                 if (!object.Equals(item.GetValue(source), item.Default))
                 {

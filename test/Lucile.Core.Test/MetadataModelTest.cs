@@ -387,6 +387,42 @@ namespace Tests
         }
 
         [Fact]
+        public void GetTargetNavigationPropertyPerformance()
+        {
+            var builder = new MetadataModelBuilder();
+
+            var receiptBuilder = builder.Entity<Receipt>();
+
+            receiptBuilder.HasMany(p => p.Details)
+                    .WithOne(p => p.Receipt)
+                    .HasForeignKey("ReceiptId");
+            receiptBuilder.Property(p => p.Id).Nullable = false;
+            receiptBuilder.PrimaryKey.Add("Id");
+
+            builder.Entity<Invoice>().BaseEntity = receiptBuilder;
+
+            var receiptDetailBuilder = builder.Entity<ReceiptDetail>();
+            receiptDetailBuilder.PrimaryKey.Add("Id");
+            receiptDetailBuilder.Property(p => p.Id).Nullable = false;
+            receiptDetailBuilder.Property(p => p.ReceiptId).Nullable = false;
+
+            var model = builder.ToModel();
+
+            var receipt = model.GetEntityMetadata<Receipt>();
+            var details = receipt.GetNavigations().First(p => p.Name == "Details");
+
+            var sw = new Stopwatch();
+            sw.Start();
+            for (int i = 0; i < 2000000; i++)
+            {
+                var targetProp = details.TargetNavigationProperty;
+            }
+            sw.Stop();
+
+            Assert.True(sw.Elapsed.TotalSeconds < 1);
+        }
+
+        [Fact]
         public void MetadataModelBuilderEntityTest()
         {
             var builder = new MetadataModelBuilder();
