@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Linq.Expressions;
 using System.Reflection;
+using Lucile.Extensions.DependencyInjection;
 using Lucile.Service;
 
 namespace Microsoft.Extensions.DependencyInjection
@@ -57,8 +58,22 @@ namespace Microsoft.Extensions.DependencyInjection
                 .AddScoped<ILocal<TService>, LocalServiceImplementation<TService, TImplementation>>();
         }
 
+        public static IServiceScope CreateScope(this IServiceProvider serviceProvider, bool runInterceptors)
+        {
+            var scope = serviceProvider.CreateScope();
+            if (runInterceptors)
+            {
+                foreach (var item in serviceProvider.GetServices<IServiceScopeInterceptor>())
+                {
+                    item.ScopeCreated(serviceProvider, scope);
+                }
+            }
+
+            return scope;
+        }
+
         public static TService GetConnectedService<TService>(this IServiceProvider serviceProvider)
-            where TService : class
+                    where TService : class
         {
             var connected = serviceProvider.GetService<IConnected<TService>>();
 
