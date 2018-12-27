@@ -17,7 +17,13 @@ namespace Lucile.EntityFrameworkCore
 
         public static void UseDbModel(this MetadataModelBuilder builder, IModel model)
         {
-            foreach (var entity in model.GetEntityTypes())
+            var entities = model.GetEntityTypes().ToList();
+
+#if NETSTANDARD2_0
+            entities = entities.Where(p => !p.IsQueryType).ToList();
+#endif
+
+            foreach (var entity in entities)
             {
                 var entityBuilder = builder.FromEntityType(entity);
             }
