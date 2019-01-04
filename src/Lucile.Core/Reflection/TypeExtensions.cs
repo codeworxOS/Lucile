@@ -14,6 +14,24 @@ namespace System
             return dict;
         }
 
+        public static string GetFriendlyName(this Type type)
+        {
+            if (type.GetTypeInfo().IsGenericType)
+            {
+                var friendlyName = type.Name;
+
+                int indexBacktick = friendlyName.IndexOf('`');
+                if (indexBacktick > 0)
+                {
+                    friendlyName = friendlyName.Remove(indexBacktick);
+                }
+
+                return $"{friendlyName}<{string.Join(",", type.GetGenericArguments().Select(p => p.GetFriendlyName()))}>";
+            }
+
+            return type.Name;
+        }
+
         public static bool IsCollectionType(this Type type)
         {
             Type elementType;

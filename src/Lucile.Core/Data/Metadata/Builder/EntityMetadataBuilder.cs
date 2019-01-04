@@ -47,7 +47,7 @@ namespace Lucile.Data.Metadata.Builder
         {
             get
             {
-                return TypeInfo?.ClrType?.Name;
+                return TypeInfo?.ClrType?.GetFriendlyName();
             }
         }
 

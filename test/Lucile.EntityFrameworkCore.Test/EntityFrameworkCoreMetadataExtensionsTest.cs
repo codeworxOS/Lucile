@@ -19,6 +19,23 @@ namespace Tests
 #endif
     {
         [Fact]
+        public void CheckUniqueNameForGenericEntitiesTest()
+        {
+            var builder = new MetadataModelBuilder();
+            using (var ctx = new TestContext())
+            {
+                builder.UseDbContext(ctx);
+            }
+
+            var model = builder.ToModel();
+
+            foreach (var entity in model.Entities)
+            {
+                Assert.All(model.Entities.Except(new[] { entity }), p => Assert.NotEqual(entity.Name, p.Name));
+            }
+        }
+
+        [Fact]
         public void FromDbAbstractBaseClassRelationTest()
         {
             var builder = new MetadataModelBuilder();
