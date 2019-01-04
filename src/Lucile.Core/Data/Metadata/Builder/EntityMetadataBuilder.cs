@@ -181,11 +181,11 @@ namespace Lucile.Data.Metadata.Builder
 
             var propertyInfo = type.GetProperty(propertyName);
 
-            if (propertyInfo != null && propertyInfo.DeclaringType != this.TypeInfo.ClrType)
-            {
-                var entity = this.ModelBuilder.Entity(propertyInfo.DeclaringType);
-                return entity.Navigation(propertyName);
-            }
+            ////if (propertyInfo != null && propertyInfo.DeclaringType != this.TypeInfo.ClrType)
+            ////{
+            ////    var entity = this.ModelBuilder.Entity(propertyInfo.DeclaringType);
+            ////    return entity.Navigation(propertyName);
+            ////}
 
             if (propertyInfo == null)
             {

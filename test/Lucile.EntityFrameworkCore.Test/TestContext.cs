@@ -12,6 +12,14 @@ namespace Lucile.EntityFrameworkCore.Test
 
         public DbSet<Article> Articles { get; set; }
 
+        public DbSet<ChangeEntry<Guid, Guid>> ChangeEntryGuidGuids { get; set; }
+
+        public DbSet<ChangeEntry<Guid>> ChangeEntryGuids { get; set; }
+
+        public DbSet<ChangeEntry<string>> ChangeEntryStrings { get; set; }
+
+        public DbSet<ChangeVersion> ChangeVersions { get; set; }
+
         public DbSet<Contact> Contacts { get; set; }
 
         public DbSet<Country> Countries { get; set; }
@@ -47,6 +55,30 @@ namespace Lucile.EntityFrameworkCore.Test
                 .Where(p => p.ClrType == typeof(Guid))
                 .ToList()
                 .ForEach(p => p.ValueGenerated = Microsoft.EntityFrameworkCore.Metadata.ValueGenerated.Never);
+
+            var entry = modelBuilder.Entity(typeof(ChangeEntry<Guid>));
+            entry.HasBaseType((Type)null);
+            entry.HasKey("Version", "Key1");
+
+            entry.HasOne(typeof(ChangeVersion), "ChangeVersion")
+                .WithMany()
+                .HasForeignKey("Version");
+
+            entry = modelBuilder.Entity(typeof(ChangeEntry<string>));
+            entry.HasBaseType((Type)null);
+            entry.HasKey("Version", "Key1");
+
+            entry.HasOne(typeof(ChangeVersion), "ChangeVersion")
+                .WithMany()
+                .HasForeignKey("Version");
+
+            entry = modelBuilder.Entity(typeof(ChangeEntry<Guid, Guid>));
+            entry.HasBaseType((Type)null);
+            entry.HasKey("Version", "Key1", "Key2");
+
+            entry.HasOne(typeof(ChangeVersion), "ChangeVersion")
+                .WithMany()
+                .HasForeignKey("Version");
         }
     }
 }

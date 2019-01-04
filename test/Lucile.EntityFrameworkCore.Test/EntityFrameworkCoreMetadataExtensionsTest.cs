@@ -19,6 +19,20 @@ namespace Tests
 #endif
     {
         [Fact]
+        public void FromDbAbstractBaseClassRelationTest()
+        {
+            var builder = new MetadataModelBuilder();
+            using (var ctx = new TestContext())
+            {
+                builder.UseDbContext(ctx);
+            }
+
+            var model = builder.ToModel();
+
+            model.GetEntityMetadata<ChangeVersion>();
+        }
+
+        [Fact]
         public void FromDbIdentityAnPrimaryKeyTest()
         {
             var builder = new MetadataModelBuilder();
