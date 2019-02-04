@@ -18,7 +18,7 @@ namespace Lucile.Dynamic.DependencyInjection
         [MethodInterceptor(InterceptionMode.InsteadOfBody)]
         public void Intercept(InterceptionContext context)
         {
-            using (var scope = ServiceProvider.CreateScope())
+            using (var scope = ServiceProvider.CreateScope(true))
             {
                 var target = scope.ServiceProvider.GetConnectedService<TService>();
                 var result = context.ExecuteBodyOn<TService>(target);
@@ -29,7 +29,7 @@ namespace Lucile.Dynamic.DependencyInjection
         [MethodInterceptor(InterceptionMode.InsteadOfBody)]
         public async Task InterceptAsync(AsyncInterceptionContext context)
         {
-            using (var scope = ServiceProvider.CreateScope())
+            using (var scope = ServiceProvider.CreateScope(true))
             {
                 var target = scope.ServiceProvider.GetConnectedService<TService>();
                 var result = await context.ExecuteBodyOnAsync<TService>(target);
