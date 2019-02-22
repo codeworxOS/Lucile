@@ -56,6 +56,7 @@ namespace Lucile.Data.Metadata.Builder
         {
             get
             {
+                _navigations = _navigations ?? new HashSet<NavigationPropertyBuilder>();
                 return _navigations;
             }
         }
@@ -76,6 +77,7 @@ namespace Lucile.Data.Metadata.Builder
         {
             get
             {
+                _properties = _properties ?? new HashSet<ScalarPropertyBuilder>();
                 return _properties;
             }
         }
@@ -142,8 +144,12 @@ namespace Lucile.Data.Metadata.Builder
                 throw new InvalidOperationException($"The {nameof(TypeInfo)} property is not set.");
             }
 
+            _propertiesLocker = _propertiesLocker ?? new object();
+
             lock (_propertiesLocker)
             {
+                _navigations = _navigations ?? new HashSet<NavigationPropertyBuilder>();
+
                 var result = _navigations.FirstOrDefault(p => p.Name == propertyName);
                 if (result == null)
                 {
@@ -162,8 +168,12 @@ namespace Lucile.Data.Metadata.Builder
                 throw new InvalidOperationException($"The {nameof(TypeInfo)} property is not set.");
             }
 
+            _propertiesLocker = _propertiesLocker ?? new object();
+
             lock (_propertiesLocker)
             {
+                _properties = _properties ?? new HashSet<ScalarPropertyBuilder>();
+
                 var result = _properties.FirstOrDefault(p => p.Name == name);
                 if (result == null)
                 {
@@ -224,16 +234,6 @@ namespace Lucile.Data.Metadata.Builder
             }
 
             return ScalarPropertyBuilder.CreateScalar(propertyInfo);
-        }
-
-        [OnDeserializing]
-#pragma warning disable RECS0154 // Parameter is never used
-        private void OnDeserializing(StreamingContext context)
-#pragma warning restore RECS0154 // Parameter is never used
-        {
-            _navigations = new HashSet<NavigationPropertyBuilder>();
-            _properties = new HashSet<ScalarPropertyBuilder>();
-            _propertiesLocker = new object();
         }
     }
 }

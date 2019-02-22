@@ -37,60 +37,7 @@ namespace Tests
             builder.Entity<Invoice>();
             builder.Entity<Article>().HasOne(p => p.ArticleSettings).WithPrincipal();
             builder.ApplyConventions();
-
-            Assert.Equal(8, builder.Entities.Count());
-
-            Assert.Contains(builder.Entities, p => p.Name == "Invoice");
-            Assert.Contains(builder.Entities, p => p.Name == "Receipt");
-            Assert.Contains(builder.Entities, p => p.Name == "ReceiptDetail");
-            Assert.Contains(builder.Entities, p => p.Name == "Article");
-            Assert.Contains(builder.Entities, p => p.Name == "ArticleName");
-            Assert.Contains(builder.Entities, p => p.Name == "ArticleSettings");
-            Assert.Contains(builder.Entities, p => p.Name == "Contact");
-            Assert.Contains(builder.Entities, p => p.Name == "Country");
-
-            Assert.Equal(5, builder.Entity<Article>().Properties.Count());
-
-            Assert.Contains(builder.Entity<Article>().Properties, p => p.Name == "Id");
-            Assert.Contains(builder.Entity<Article>().Properties, p => p.Name == "ArticleDescription");
-            Assert.Contains(builder.Entity<Article>().Properties, p => p.Name == "ArticleNumber");
-            Assert.Contains(builder.Entity<Article>().Properties, p => p.Name == "Price");
-            Assert.Contains(builder.Entity<Article>().Properties, p => p.Name == "SupplierId");
-
-            Assert.Equal(3, builder.Entity<Article>().Navigations.Count());
-            Assert.Contains(builder.Entity<Article>().Navigations, p => p.Name == "ArticleSettings");
-            Assert.Contains(builder.Entity<Article>().Navigations, p => p.Name == "Names");
-            Assert.Contains(builder.Entity<Article>().Navigations, p => p.Name == "Supplier");
-
-            var settings = builder.Entity<Article>().Navigation("ArticleSettings");
-            var names = builder.Entity<Article>().Navigation("Names");
-            var supplier = builder.Entity<Article>().Navigation("Supplier");
-
-            Assert.Equal(NavigationPropertyMultiplicity.ZeroOrOne, settings.Multiplicity);
-            Assert.Equal(NavigationPropertyMultiplicity.One, settings.TargetMultiplicity);
-
-            Assert.Equal(NavigationPropertyMultiplicity.Many, names.Multiplicity);
-            Assert.Equal(NavigationPropertyMultiplicity.One, names.TargetMultiplicity);
-            Assert.Equal("Article", names.TargetProperty);
-
-            Assert.Equal(NavigationPropertyMultiplicity.One, supplier.Multiplicity);
-            Assert.Equal(NavigationPropertyMultiplicity.Many, supplier.TargetMultiplicity);
-            Assert.Equal("Articles", supplier.TargetProperty);
-
-            var contact = builder.Entity<Contact>();
-            var country = contact.Navigation("Country");
-
-            Assert.Equal(NavigationPropertyMultiplicity.One, country.Multiplicity);
-            Assert.Equal(NavigationPropertyMultiplicity.Many, country.TargetMultiplicity);
-            Assert.Null(country.TargetProperty);
-
-            var receiptDetail = builder.Entity<ReceiptDetail>();
-            var article = receiptDetail.Navigation("Article");
-
-            Assert.Equal(NavigationPropertyMultiplicity.ZeroOrOne, article.Multiplicity);
-            Assert.Equal(NavigationPropertyMultiplicity.Many, article.TargetMultiplicity);
-
-            Assert.Null(article.TargetProperty);
+            TestModelValidations.ValidateInvoiceArticleDefaultModel(builder);
         }
 
         [Fact]
