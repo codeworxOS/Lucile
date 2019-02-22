@@ -18,7 +18,7 @@ namespace Lucile.ServiceModel
 
         public long MaxMessageSize { get; set; }
 
-        public Action<ChannelFactory> OnChannelFactoryAction { get; set; }
+        public Action<IServiceProvider, ChannelFactory> OnChannelFactoryAction { get; set; }
 
         public RemoteServiceOptionsBuilder Addressing(Func<string, Type, string> convention)
         {
@@ -40,6 +40,12 @@ namespace Lucile.ServiceModel
         }
 
         public RemoteServiceOptionsBuilder OnChannelFactory(Action<ChannelFactory> action)
+        {
+            OnChannelFactoryAction = (p, q) => action(q);
+            return this;
+        }
+
+        public RemoteServiceOptionsBuilder OnChannelFactory(Action<IServiceProvider, ChannelFactory> action)
         {
             OnChannelFactoryAction = action;
             return this;

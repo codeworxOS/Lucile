@@ -14,7 +14,7 @@ namespace Lucile.ServiceModel
 
         public IConnected<TService> GetConnectedService<TService>(IServiceProvider provider)
         {
-            return new ConnectedServiceModel<TService>(this._remoteServiceOptions);
+            return new ConnectedServiceModel<TService>(provider, this._remoteServiceOptions);
         }
     }
 }

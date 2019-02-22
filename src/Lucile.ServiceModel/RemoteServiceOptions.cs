@@ -7,7 +7,7 @@ namespace Lucile.ServiceModel
 {
     public class RemoteServiceOptions
     {
-        internal RemoteServiceOptions(string baseAddress, long maxMessageSize, ServiceAuthentication authentication, Action<ChannelFactory> onChannelFactoryAction, Func<string, Type, string> addressConvention)
+        internal RemoteServiceOptions(string baseAddress, long maxMessageSize, ServiceAuthentication authentication, Action<IServiceProvider, ChannelFactory> onChannelFactoryAction, Func<string, Type, string> addressConvention)
         {
             OnChannelFactoryAction = onChannelFactoryAction;
             Authentication = authentication;
@@ -24,7 +24,7 @@ namespace Lucile.ServiceModel
 
         public long MaxMessageSize { get; }
 
-        public Action<ChannelFactory> OnChannelFactoryAction { get; }
+        public Action<IServiceProvider, ChannelFactory> OnChannelFactoryAction { get; }
 
         internal Binding GetBinding<T>()
         {
