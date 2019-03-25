@@ -8,11 +8,13 @@ namespace Lucile.Dynamic.Test.DependencyInjection
 {
     public class AsyncService : IAsyncService
     {
+        private readonly Guid _id;
         private readonly ScopedDependency _scopedDependency;
 
         public AsyncService(ScopedDependency scopedDependency)
         {
             this._scopedDependency = scopedDependency;
+            _id = Guid.NewGuid();
         }
 
         public async Task<string> AsyncMethodWithResult(string param1, int param2)
@@ -24,6 +26,11 @@ namespace Lucile.Dynamic.Test.DependencyInjection
         public Task AsyncVoidMethod(string param1, int param2)
         {
             throw new AsyncServiceException(_scopedDependency);
+        }
+
+        public Task<Guid> GetIdAsync()
+        {
+            return Task.FromResult(_id);
         }
 
         public Task<bool> IsAliveAsync()

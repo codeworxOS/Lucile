@@ -42,20 +42,18 @@ namespace Microsoft.Extensions.DependencyInjection
             return serviceCollection.AddScoped(serviceType, func);
         }
 
+        public static IServiceCollection AddConnectedService<TService>(this IServiceCollection serviceCollection, ConnectedServiceLifetime lifetime)
+            where TService : class
+        {
+            return serviceCollection
+                .AddConnectedService<TService>()
+                .AddSingleton<IServiceOptions<TService>>(new ServiceOptions<TService>(lifetime));
+        }
+
         public static IServiceCollection AddConnectedService<TService>(this IServiceCollection serviceCollection)
             where TService : class
         {
             return serviceCollection.AddScoped<TService>(GetServiceImplementation<TService>);
-        }
-
-        [Obsolete("Not needed any more.")]
-        public static IServiceCollection AddLocalService<TService, TImplementation>(this IServiceCollection serviceCollection)
-            where TService : class
-            where TImplementation : class, TService
-        {
-            return serviceCollection
-                .AddScoped<TImplementation>()
-                .AddScoped<ILocal<TService>, LocalServiceImplementation<TService, TImplementation>>();
         }
 
         public static IServiceScope CreateScope(this IServiceProvider serviceProvider, bool runInterceptors)
@@ -79,23 +77,17 @@ namespace Microsoft.Extensions.DependencyInjection
 
             if (connected == null)
             {
-                var factory = serviceProvider.GetService<IConnectionFactory>();
+                var defaultConnected = serviceProvider.GetService<IDefaultConnected<TService>>();
 
-                if (factory == null)
+                if (defaultConnected == null)
                 {
-                    throw new MissingConnectionFactoryException();
+                    throw new MissingDefaultConnectedException();
                 }
 
-                connected = factory.GetConnectedService<TService>(serviceProvider);
+                connected = defaultConnected;
             }
 
             return connected?.GetService();
-        }
-
-        [Obsolete("No longer needed")]
-        public static IServiceCollection UseLocalServices(this IServiceCollection serviceCollection)
-        {
-            return serviceCollection.AddSingleton<IConnectionFactory, LocalConnectionFactory>();
         }
 
         private static TService GetServiceImplementation<TService>(IServiceProvider serviceProvider)

@@ -90,6 +90,41 @@ namespace Lucile.Dynamic.Test
         }
 
         [Fact]
+        public async Task TestConnectedServiceLifetime()
+        {
+            var serviceCollection = new ServiceCollection();
+
+            serviceCollection.AddScoped<ScopedDependency>();
+            serviceCollection.AddConnectedService<IAsyncService>();
+            serviceCollection.AddConnectedLocal<IAsyncService, AsyncService>();
+            serviceCollection.AddScopeProxy();
+
+            var prov = serviceCollection.BuildServiceProvider(true);
+            using (var scope = prov.CreateScope(true))
+            {
+                var service = scope.ServiceProvider.GetRequiredService<IAsyncService>();
+                var id1 = await service.GetIdAsync();
+                var id2 = await service.GetIdAsync();
+                Assert.NotEqual(id1, id2);
+            }
+
+            serviceCollection = new ServiceCollection();
+            serviceCollection.AddScoped<ScopedDependency>();
+            serviceCollection.AddConnectedService<IAsyncService>(Service.ConnectedServiceLifetime.Parent);
+            serviceCollection.AddConnectedLocal<IAsyncService, AsyncService>();
+            serviceCollection.AddScopeProxy();
+
+            prov = serviceCollection.BuildServiceProvider(true);
+            using (var scope = prov.CreateScope(true))
+            {
+                var service = scope.ServiceProvider.GetRequiredService<IAsyncService>();
+                var id1 = await service.GetIdAsync();
+                var id2 = await service.GetIdAsync();
+                Assert.Equal(id1, id2);
+            }
+        }
+
+        [Fact]
         public void TestSyncMethodsProxy()
         {
             var serviceCollection = new ServiceCollection();

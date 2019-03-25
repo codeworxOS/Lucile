@@ -1,8 +1,7 @@
 ﻿namespace Lucile.Service
 {
-    public interface IConnected<TService>
+    public interface IDefaultConnected<TService> : IConnected<TService>
         where TService : class
     {
-        TService GetService();
     }
 }

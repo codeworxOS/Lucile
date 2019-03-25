@@ -18,5 +18,7 @@ namespace Lucile.Dynamic.DependencyInjection.Service
         public IServiceProvider RootServiceProvider { get; }
 
         public IServiceScope Scope { get; }
+
+        public IServiceProvider ServiceProvider => Scope?.ServiceProvider ?? RootServiceProvider;
     }
 }

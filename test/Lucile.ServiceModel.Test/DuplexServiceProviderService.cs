@@ -17,7 +17,7 @@ namespace Lucile.ServiceModel.Test
         {
             var t = new Thread(new ThreadStart(() =>
             {
-                Thread.Sleep(10000);
+                Thread.Sleep(10);
                 _callback.OnProgress(0.1m);
                 _callback.OnProgress(0.2m);
                 _callback.OnProgress(0.3m);

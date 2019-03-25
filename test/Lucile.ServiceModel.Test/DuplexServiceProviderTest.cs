@@ -40,7 +40,7 @@ namespace Lucile.ServiceModel.Test
             var tcs = new TaskCompletionSource<bool>();
 
             var services = new ServiceCollection();
-            services.AddConnectedService<IDuplexServiceProviderService>();
+            services.AddConnectedService<IDuplexServiceProviderService>(Service.ConnectedServiceLifetime.Parent);
             services.AddScoped<IDuplexCallback>(sp =>
             {
                 var result = new TestDuplexCallback();
@@ -65,8 +65,8 @@ namespace Lucile.ServiceModel.Test
                 var client = scope.ServiceProvider.GetService<IDuplexServiceProviderService>();
                 await client.StartImportAsync();
 
-                var called = await tcs.Task;
-                Assert.True(called);
+                await Task.WhenAny(tcs.Task, Task.Delay(1000));
+
                 Assert.Equal(10, progressCalled);
                 Assert.Equal(1, finishedCalled);
             }

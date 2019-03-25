@@ -51,6 +51,27 @@ namespace Lucile.ServiceModel.Test
         }
 
         [Fact]
+        public async Task MixedRemoteAndLocalServiceSetup()
+        {
+            var services = new ServiceCollection();
+            services.AddConnectedService<IServiceProviderService>();
+            services.AddConnectedService<ILocalService>();
+            services.UseRemoteServices(options =>
+                options.Base("net.tcp://localhost:4567")
+                .Credentials(ServiceAuthentication.None));
+            services.AddConnectedLocal<ILocalService, LocalService>();
+
+            var provider = services.BuildServiceProvider(true);
+            using (var scope = provider.CreateScope(true))
+            {
+                var remote = scope.ServiceProvider.GetService<IServiceProviderService>();
+                var local = scope.ServiceProvider.GetService<ILocalService>();
+                Assert.True(remote is ICommunicationObject);
+                Assert.True(local is LocalService);
+            }
+        }
+
+        [Fact]
         public async Task OnChannelFactoryAction()
         {
             var services = new ServiceCollection();

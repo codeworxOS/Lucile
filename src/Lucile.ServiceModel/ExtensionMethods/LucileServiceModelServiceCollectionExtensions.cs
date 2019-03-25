@@ -15,7 +15,7 @@ namespace Microsoft.Extensions.DependencyInjection
                 return builder.ToOptions();
             });
 
-            return serviceCollection.AddSingleton<IConnectionFactory, RemoteConnectionFactory>();
+            return serviceCollection.AddScoped(typeof(IDefaultConnected<>), typeof(ConnectedServiceModel<>));
         }
     }
 }

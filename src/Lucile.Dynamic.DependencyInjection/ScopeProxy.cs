@@ -4,6 +4,7 @@ using System.Collections.Immutable;
 using System.Threading.Tasks;
 using Lucile.Dynamic.DependencyInjection.Service;
 using Lucile.Dynamic.Interceptor;
+using Lucile.Service;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Lucile.Dynamic.DependencyInjection
@@ -23,11 +24,24 @@ namespace Lucile.Dynamic.DependencyInjection
         {
             var stackItems = ServiceProvider.GetServices<ISyncProxyMiddleware>();
             var stack = new SyncProxyDelegateStack(stackItems);
+            var options = ServiceProvider.GetService<IServiceOptions<TService>>();
 
-            using (var scope = ServiceProvider.CreateScope(true))
+            IServiceScope scope = null;
+            try
             {
+                var lifetime = options?.Lifetime ?? ConnectedServiceLifetime.PerCall;
+
+                if (lifetime == ConnectedServiceLifetime.PerCall)
+                {
+                    scope = ServiceProvider.CreateScope(true);
+                }
+
                 var ctx = new SyncMiddlewareContext(ServiceProvider, scope, context);
                 stack.Invoke(ctx);
+            }
+            finally
+            {
+                scope?.Dispose();
             }
         }
 
@@ -35,13 +49,26 @@ namespace Lucile.Dynamic.DependencyInjection
         public async Task InterceptAsync(AsyncInterceptionContext context)
         {
             var stackItems = ServiceProvider.GetServices<IAsyncProxyMiddleware>();
+            var options = ServiceProvider.GetService<IServiceOptions<TService>>();
 
             var stack = new AsyncProxyDelegateStack(stackItems);
 
-            using (var scope = ServiceProvider.CreateScope(true))
+            IServiceScope scope = null;
+            try
             {
+                var lifetime = options?.Lifetime ?? ConnectedServiceLifetime.PerCall;
+
+                if (lifetime == ConnectedServiceLifetime.PerCall)
+                {
+                    scope = ServiceProvider.CreateScope(true);
+                }
+
                 var ctx = new AsyncMiddlewareContext(ServiceProvider, scope, context);
                 await stack.Invoke(ctx);
+            }
+            finally
+            {
+                scope?.Dispose();
             }
         }
 
@@ -67,7 +94,7 @@ namespace Lucile.Dynamic.DependencyInjection
                     return;
                 }
 
-                var target = context.Scope.ServiceProvider.GetConnectedService<TService>();
+                var target = context.ServiceProvider.GetConnectedService<TService>();
                 var result = await context.InterceptionContext.ExecuteBodyOnAsync<TService>(target);
                 context.InterceptionContext.SetResult(result);
             }
@@ -95,7 +122,7 @@ namespace Lucile.Dynamic.DependencyInjection
                     return;
                 }
 
-                var target = context.Scope.ServiceProvider.GetConnectedService<TService>();
+                var target = context.ServiceProvider.GetConnectedService<TService>();
                 var result = context.InterceptionContext.ExecuteBodyOn<TService>(target);
                 context.InterceptionContext.SetResult(result);
             }
