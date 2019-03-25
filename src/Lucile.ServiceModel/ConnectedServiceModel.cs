@@ -1,6 +1,7 @@
 ﻿using System;
 using System.ServiceModel;
 using Lucile.Service;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace Lucile.ServiceModel
 {
@@ -17,9 +18,23 @@ namespace Lucile.ServiceModel
 
         public TService GetService()
         {
-            var binding = _remoteServiceOptions.GetBinding<TService>();
+            var binding = _remoteServiceOptions.GetBinding<TService>(out var callback);
             var endpointAddress = _remoteServiceOptions.GetEndpointAddress<TService>();
-            var cf = new ChannelFactory<TService>(binding, endpointAddress);
+            ChannelFactory<TService> cf = null;
+            if (callback == null)
+            {
+                cf = new ChannelFactory<TService>(binding, endpointAddress);
+            }
+            else
+            {
+#if NETSTANDARD1_3
+                throw new NotSupportedException($"Duplex Services are not supported on net standard");
+#else
+                var instance = _serviceProvider.GetRequiredService(callback);
+                cf = new DuplexChannelFactory<TService>(instance, binding, endpointAddress);
+#endif
+            }
+
             _remoteServiceOptions?.OnChannelFactoryAction?.Invoke(_serviceProvider, cf);
             return cf.CreateChannel();
         }

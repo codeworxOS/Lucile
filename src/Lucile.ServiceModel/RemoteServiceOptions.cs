@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Reflection;
 using System.ServiceModel;
 using System.ServiceModel.Channels;
 using System.Xml;
@@ -26,8 +27,10 @@ namespace Lucile.ServiceModel
 
         public Action<IServiceProvider, ChannelFactory> OnChannelFactoryAction { get; }
 
-        internal Binding GetBinding<T>()
+        internal Binding GetBinding<T>(out Type callback)
         {
+            callback = typeof(T).GetTypeInfo().GetCustomAttribute<ServiceContractAttribute>()?.CallbackContract;
+
             Binding binding = null;
             var uri = new Uri(this.BaseAddress);
             if (uri.Scheme == UriScheme.NetTcp)
@@ -58,58 +61,120 @@ namespace Lucile.ServiceModel
             }
             else if (uri.Scheme == UriScheme.Http)
             {
-                BasicHttpBinding basic = null;
-
-                switch (this.Authentication)
+                if (callback == null)
                 {
-                    case ServiceAuthentication.None:
-                        basic = new BasicHttpBinding(BasicHttpSecurityMode.None);
-                        break;
+                    BasicHttpBinding basic = null;
 
-                    case ServiceAuthentication.Windows:
-                        basic = new BasicHttpBinding(BasicHttpSecurityMode.TransportCredentialOnly);
-                        basic.Security.Transport.ClientCredentialType = HttpClientCredentialType.Windows;
-                        break;
+                    switch (this.Authentication)
+                    {
+                        case ServiceAuthentication.None:
+                            basic = new BasicHttpBinding(BasicHttpSecurityMode.None);
 
-                    case ServiceAuthentication.UsernamePassword:
-                        throw new NotSupportedException("UserNamePassword authentication is not supported on http base addresses");
-                    case ServiceAuthentication.Certificate:
-                        basic = new BasicHttpBinding(BasicHttpSecurityMode.TransportCredentialOnly);
-                        basic.Security.Transport.ClientCredentialType = HttpClientCredentialType.Certificate;
-                        break;
+                            break;
+
+                        case ServiceAuthentication.Windows:
+                            basic = new BasicHttpBinding(BasicHttpSecurityMode.TransportCredentialOnly);
+                            basic.Security.Transport.ClientCredentialType = HttpClientCredentialType.Windows;
+
+                            break;
+
+                        case ServiceAuthentication.UsernamePassword:
+                            throw new NotSupportedException("UserNamePassword authentication is not supported on http base addresses");
+                        case ServiceAuthentication.Certificate:
+                            basic = new BasicHttpBinding(BasicHttpSecurityMode.TransportCredentialOnly);
+                            basic.Security.Transport.ClientCredentialType = HttpClientCredentialType.Certificate;
+
+                            break;
+                    }
+
+                    basic.MaxReceivedMessageSize = this.MaxMessageSize;
+                    basic.ReaderQuotas = XmlDictionaryReaderQuotas.Max;
+
+                    binding = basic;
                 }
+                else
+                {
+                    NetHttpBinding netHttp = null;
 
-                basic.MaxReceivedMessageSize = this.MaxMessageSize;
-                basic.ReaderQuotas = XmlDictionaryReaderQuotas.Max;
+                    switch (this.Authentication)
+                    {
+                        case ServiceAuthentication.None:
+                            netHttp = new NetHttpBinding(BasicHttpSecurityMode.None);
+                            break;
 
-                binding = basic;
+                        case ServiceAuthentication.Windows:
+                            netHttp = new NetHttpBinding(BasicHttpSecurityMode.TransportCredentialOnly);
+                            netHttp.Security.Transport.ClientCredentialType = HttpClientCredentialType.Windows;
+                            break;
+
+                        case ServiceAuthentication.UsernamePassword:
+                            throw new NotSupportedException("UserNamePassword authentication is not supported on http base addresses");
+                        case ServiceAuthentication.Certificate:
+                            netHttp = new NetHttpBinding(BasicHttpSecurityMode.TransportCredentialOnly);
+                            netHttp.Security.Transport.ClientCredentialType = HttpClientCredentialType.Certificate;
+                            break;
+                    }
+
+                    netHttp.MaxReceivedMessageSize = this.MaxMessageSize;
+                    netHttp.ReaderQuotas = XmlDictionaryReaderQuotas.Max;
+                }
             }
             else if (uri.Scheme == UriScheme.Https)
             {
-                BasicHttpBinding basic = null;
-
-                switch (this.Authentication)
+                if (callback == null)
                 {
-                    case ServiceAuthentication.None:
-                        basic = new BasicHttpBinding(BasicHttpSecurityMode.Transport);
-                        break;
+                    BasicHttpBinding basic = null;
 
-                    case ServiceAuthentication.Windows:
-                        basic = new BasicHttpBinding(BasicHttpSecurityMode.Transport);
-                        basic.Security.Transport.ClientCredentialType = HttpClientCredentialType.Windows;
-                        break;
+                    switch (this.Authentication)
+                    {
+                        case ServiceAuthentication.None:
+                            basic = new BasicHttpBinding(BasicHttpSecurityMode.Transport);
+                            break;
 
-                    case ServiceAuthentication.UsernamePassword:
-                        throw new NotSupportedException("UserNamePassword authentication is not supported on https base addresses");
-                    case ServiceAuthentication.Certificate:
-                        basic = new BasicHttpBinding(BasicHttpSecurityMode.Transport);
-                        basic.Security.Transport.ClientCredentialType = HttpClientCredentialType.Certificate;
-                        break;
+                        case ServiceAuthentication.Windows:
+                            basic = new BasicHttpBinding(BasicHttpSecurityMode.Transport);
+                            basic.Security.Transport.ClientCredentialType = HttpClientCredentialType.Windows;
+                            break;
+
+                        case ServiceAuthentication.UsernamePassword:
+                            throw new NotSupportedException("UserNamePassword authentication is not supported on https base addresses");
+                        case ServiceAuthentication.Certificate:
+                            basic = new BasicHttpBinding(BasicHttpSecurityMode.Transport);
+                            basic.Security.Transport.ClientCredentialType = HttpClientCredentialType.Certificate;
+                            break;
+                    }
+
+                    basic.MaxReceivedMessageSize = this.MaxMessageSize;
+                    basic.ReaderQuotas = XmlDictionaryReaderQuotas.Max;
+                    binding = basic;
                 }
+                else
+                {
+                    NetHttpBinding netHttp = null;
 
-                basic.MaxReceivedMessageSize = this.MaxMessageSize;
-                basic.ReaderQuotas = XmlDictionaryReaderQuotas.Max;
-                binding = basic;
+                    switch (this.Authentication)
+                    {
+                        case ServiceAuthentication.None:
+                            netHttp = new NetHttpBinding(BasicHttpSecurityMode.Transport);
+                            break;
+
+                        case ServiceAuthentication.Windows:
+                            netHttp = new NetHttpBinding(BasicHttpSecurityMode.Transport);
+                            netHttp.Security.Transport.ClientCredentialType = HttpClientCredentialType.Windows;
+                            break;
+
+                        case ServiceAuthentication.UsernamePassword:
+                            throw new NotSupportedException("UserNamePassword authentication is not supported on https base addresses");
+                        case ServiceAuthentication.Certificate:
+                            netHttp = new NetHttpBinding(BasicHttpSecurityMode.Transport);
+                            netHttp.Security.Transport.ClientCredentialType = HttpClientCredentialType.Certificate;
+                            break;
+                    }
+
+                    netHttp.MaxReceivedMessageSize = this.MaxMessageSize;
+                    netHttp.ReaderQuotas = XmlDictionaryReaderQuotas.Max;
+                    binding = netHttp;
+                }
             }
 
             return binding;
