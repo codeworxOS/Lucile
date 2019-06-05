@@ -5,7 +5,7 @@ using System.Threading.Tasks;
 
 namespace Lucile.ViewModel
 {
-    public class ViewModelBase : NotificationObject, IActivationAware, INavigationAware
+    public class ViewModelBase : DataNotificationObject, IActivationAware, INavigationAware
     {
         private ConcurrentDictionary<object, string> _busyStates;
 
