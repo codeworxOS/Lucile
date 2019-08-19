@@ -45,9 +45,7 @@ namespace Lucile.Threading
         {
             lock (_sourceLocker)
             {
-                DoCancel();
-
-                _source = null;
+                CancelTree();
             }
         }
 
@@ -99,7 +97,7 @@ namespace Lucile.Threading
 
             lock (_sourceLocker)
             {
-                DoCancel();
+                CancelTree();
 
                 _source = new CancellationTokenSource();
                 token = _source.Token;
@@ -108,12 +106,20 @@ namespace Lucile.Threading
             return token;
         }
 
-        private void DoCancel()
+        private static void DoCancel(CancellationTokenSource source)
         {
-            if (_source != null && !_source.IsCancellationRequested)
+            if (source != null && !source.IsCancellationRequested)
             {
-                _source.Cancel();
+                Task.Run(() => source.Cancel());
             }
+        }
+
+        private void CancelTree()
+        {
+            var source = _source;
+            _source = null;
+
+            DoCancel(source);
 
             lock (_childrenLocker)
             {
