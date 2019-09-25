@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations;
 
 namespace Lucile.Test.Model
 {
@@ -21,7 +20,6 @@ namespace Lucile.Test.Model
 
         public DateTime ReceiptDate { get; set; }
 
-        [StringLength(100)]
         public string ReceiptNumber { get; set; }
 
         public ReceiptType ReceiptType { get; set; }
