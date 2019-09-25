@@ -474,6 +474,16 @@ namespace Tests
         }
 
         [Fact]
+        public void MetadataModelBuilderMaxLengthTest()
+        {
+            var builder = new MetadataModelBuilder();
+            var entityBuilder = builder.Entity<Receipt>();
+
+            var maxLength = entityBuilder.Property(c => c.ReceiptNumber).MaxLength;
+            Assert.Equal(100, maxLength);
+        }
+
+        [Fact]
         public void MetadataModelSortByDependencyTest()
         {
             var metadataModelBuilder = new MetadataModelBuilder();
