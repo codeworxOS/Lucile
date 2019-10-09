@@ -34,6 +34,22 @@ namespace Tests
         }
 
         [Fact]
+        public void MaxLengthAnnotation_ExpectsValue()
+        {
+            var builder = new MetadataModelBuilder();
+
+            using (var ctx = CreateContext())
+            {
+                builder.UseDbContext(ctx);
+            }
+
+            var model = builder.ToModel();
+            var entity = model.GetEntityMetadata<ArticleName>();
+
+            Assert.Equal(255, ((TextProperty)entity.GetProperties().First(p => p.Name == nameof(ArticleName.TranlatedText))).MaxLength);
+        }
+
+        [Fact]
         public void FromDbIdentityAnPrimaryKeyTest()
         {
             var builder = new MetadataModelBuilder();

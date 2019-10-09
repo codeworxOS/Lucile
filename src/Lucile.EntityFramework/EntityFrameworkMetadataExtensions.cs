@@ -80,6 +80,15 @@ namespace Lucile.EntityFramework
                 }
 
                 propBuilder.HasDefaultValue = prop.Column.MetadataProperties.Any(p => p.IsAnnotation && p.Name.EndsWith(":" + DefaultValueAnnotation.AnnotationName, StringComparison.Ordinal));
+
+                if (propBuilder is TextPropertyBuilder textBuilder)
+                {
+                    textBuilder.MaxLength = prop.Property.MaxLength;
+                }
+                else if (propBuilder is BlobPropertyBuilder blobPropertyBuilder)
+                {
+                    blobPropertyBuilder.MaxLength = prop.Property.MaxLength;
+                }
             }
 
             if (entityType.BaseType == null)

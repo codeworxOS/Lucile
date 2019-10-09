@@ -56,6 +56,15 @@ namespace Lucile.EntityFrameworkCore
                     propBuilder.ValueGeneration = AutoGenerateValue.Both;
                 }
 #endif
+
+                if (propBuilder is TextPropertyBuilder textBuilder)
+                {
+                    textBuilder.MaxLength = prop.GetMaxLength();
+                }
+                else if (propBuilder is BlobPropertyBuilder blobPropertyBuilder)
+                {
+                    blobPropertyBuilder.MaxLength = prop.GetMaxLength();
+                }
             }
 
             if (entityType.BaseType == null)
