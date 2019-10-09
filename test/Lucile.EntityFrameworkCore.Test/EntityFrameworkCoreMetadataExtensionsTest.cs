@@ -18,6 +18,24 @@ namespace Tests
     public class EntityFrameworkCoreMetadataExtensions20Test
 #endif
     {
+
+        [Fact]
+        public void MaxLengthAnnotation_ExpectsValue()
+        {
+            var builder = new MetadataModelBuilder();
+
+            using (var ctx = new TestContext())
+            {
+                builder.UseDbContext(ctx);
+            }
+
+            var model = builder.ToModel();
+            var entity = model.GetEntityMetadata<ArticleName>();
+
+            Assert.Equal(255, ((TextProperty)entity.GetProperties().First(p => p.Name == nameof(ArticleName.TranlatedText))).MaxLength);
+        }
+
+
         [Fact]
         public void CheckUniqueNameForGenericEntitiesTest()
         {
