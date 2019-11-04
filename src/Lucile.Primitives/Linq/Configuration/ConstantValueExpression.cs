@@ -7,13 +7,27 @@ namespace Lucile.Linq.Configuration
         public ConstantValueExpression(TValue value)
         {
             Value = value;
+            Accessor = new ValueAccessor(value);
         }
 
         public TValue Value { get; }
 
+        public ValueAccessor Accessor { get; }
+
         public override Expression GetExpression(ParameterExpression parameter)
         {
-            return Expression.Constant(Value, typeof(TValue));
+            var constant = Expression.Constant(Accessor, typeof(ValueAccessor));
+            return Expression.Property(constant, "Value");
+        }
+
+        public class ValueAccessor
+        {
+            public ValueAccessor(TValue value)
+            {
+                Value = value;
+            }
+
+            public TValue Value { get; }
         }
     }
 }

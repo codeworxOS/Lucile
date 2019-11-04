@@ -4,7 +4,9 @@ using Lucile.Data.Metadata;
 using Lucile.Data.Metadata.Builder;
 using Lucile.EntityFrameworkCore;
 using Lucile.EntityFrameworkCore.Test;
+using Lucile.Linq;
 using Lucile.Test.Model;
+using Microsoft.EntityFrameworkCore;
 using ProtoBuf.Meta;
 using Xunit;
 
@@ -126,7 +128,7 @@ namespace Tests
 
             Assert.Equal(receiptDetailsProperty.TargetNavigationProperty, receiptDetailReceiptProperty);
             Assert.Equal(receiptDetailReceiptProperty.TargetNavigationProperty, receiptDetailsProperty);
-            Assert.Equal(1, receiptDetailReceiptProperty.ForeignKeyProperties.Count);
+            Assert.Single(receiptDetailReceiptProperty.ForeignKeyProperties);
             Assert.Equal(receiptDetail["ReceiptId"], receiptDetailReceiptProperty.ForeignKeyProperties[0].Dependant);
             Assert.Equal(receipt["Id"], receiptDetailReceiptProperty.ForeignKeyProperties[0].Principal);
         }

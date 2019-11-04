@@ -212,14 +212,14 @@ namespace Tests
             Assert.Equal(nameof(test.ArticleId), articleIdBuilder.PropertyName);
             Assert.Equal(typeof(Guid?), articleIdBuilder.PropertyType);
 
-            Assert.Throws(typeof(ArgumentException), () => new PropertyConfigurationBuilder<ReceiptDetail, string>(p => p.Amount.ToString()));
-            Assert.Throws(typeof(ArgumentException), () => new PropertyConfigurationBuilder<ReceiptDetail, int>(p => p.Amount.ToString().Length));
+            Assert.Throws<ArgumentException>(() => new PropertyConfigurationBuilder<ReceiptDetail, string>(p => p.Amount.ToString()));
+            Assert.Throws<ArgumentException>(() => new PropertyConfigurationBuilder<ReceiptDetail, int>(p => p.Amount.ToString().Length));
         }
 
         [Fact]
         public void PropertyConfigurationDependenciesTest()
         {
-            var builder = QueryModel.Build(
+            var builder = QueryModel.Create(
                             p => new
                             {
                                 ReceiptDetail = p.Get<ReceiptDetail>(),
@@ -252,7 +252,7 @@ namespace Tests
                     ArticleNumber = p.ArticleStatistics.ArticleNumber
                 });
 
-            var model = builder.ToModel();
+            var model = builder.Build();
 
             var idProp = model.PropertyConfigurations.First(p => p.Property.Name == "Id");
             var priceProp = model.PropertyConfigurations.First(p => p.Property.Name == "Price");
@@ -296,7 +296,7 @@ namespace Tests
         [Fact]
         public void QueryModelBuilderAlialsAndRootSourceMethodTest()
         {
-            var builder = QueryModel.Build(p =>
+            var builder = QueryModel.Create(p =>
             new
             {
                 ReceiptDetail = p.Get<ReceiptDetail>()
@@ -316,17 +316,17 @@ namespace Tests
         [Fact]
         public void QueryModelBuilderConstructorTest()
         {
-            var builder1 = QueryModel.Build(p => p.Get<ReceiptDetail>(), p => new { Amount = p.Amount });
+            var builder1 = QueryModel.Create(p => p.Get<ReceiptDetail>(), p => new { Amount = p.Amount });
             Assert.True(builder1.IsSingleSourceQuery);
 
-            Assert.Throws<ArgumentException>(() => QueryModel.Build(p => default(ReceiptDetail), p => new { Amount = p.Amount }));
+            Assert.Throws<ArgumentException>(() => QueryModel.Create(p => default(ReceiptDetail), p => new { Amount = p.Amount }));
 
-            var builder2 = QueryModel.Build(p => new { ReceiptDetail = p.Get<ReceiptDetail>() }, p => new { Amount = p.ReceiptDetail.Amount });
+            var builder2 = QueryModel.Create(p => new { ReceiptDetail = p.Get<ReceiptDetail>() }, p => new { Amount = p.ReceiptDetail.Amount });
             Assert.False(builder2.IsSingleSourceQuery);
 
-            Assert.Throws<ArgumentException>(() => QueryModel.Build(p => new { ReceiptDetail = new ReceiptDetail() }, p => new { Amount = p.ReceiptDetail.Amount }));
+            Assert.Throws<ArgumentException>(() => QueryModel.Create(p => new { ReceiptDetail = new ReceiptDetail() }, p => new { Amount = p.ReceiptDetail.Amount }));
 
-            var builder3 = QueryModel.Build(p => new SourceClass { ReceiptDetail = p.Get<ReceiptDetail>() }, p => new AmountResult { Amount = p.ReceiptDetail.Amount });
+            var builder3 = QueryModel.Create(p => new SourceClass { ReceiptDetail = p.Get<ReceiptDetail>() }, p => new AmountResult { Amount = p.ReceiptDetail.Amount });
             Assert.False(builder3.IsSingleSourceQuery);
         }
 
@@ -337,7 +337,7 @@ namespace Tests
             var source = new DummyQuerySource();
             source.RegisterData(receipt.Details);
 
-            var builder = QueryModel.Build(
+            var builder = QueryModel.Create(
                 p => p.Get<ReceiptDetail>(),
                 p => new
                 {
@@ -348,7 +348,7 @@ namespace Tests
                         Name = p.Article.ArticleNumber
                     }
                 });
-            var model = builder.ToModel();
+            var model = builder.Build();
 
             var targetFilterItems = new[] {
                 new StringBinaryFilterItem(new PathValueExpression("Article.Name"), new ConstantValueExpression<string>("123"), StringOperator.Contains)
@@ -372,7 +372,7 @@ namespace Tests
             var source = new DummyQuerySource();
             source.RegisterData(receipt.Details);
 
-            var builder = QueryModel.Build(
+            var builder = QueryModel.Create(
                 p => p.Get<ReceiptDetail>(),
                 p => new
                 {
@@ -383,7 +383,7 @@ namespace Tests
                         Number = p.Article.ArticleNumber
                     }
                 });
-            var model = builder.ToModel();
+            var model = builder.Build();
 
             var targetFilterItems = new[] {
                 new StringBinaryFilterItem(new PathValueExpression("Article.Number"), new ConstantValueExpression<string>("123"), StringOperator.Contains)
@@ -403,7 +403,7 @@ namespace Tests
         [Fact]
         public void QueryModelBuilderNonGenericSourceMethodTest()
         {
-            var builder = QueryModel.Build(p =>
+            var builder = QueryModel.Create(p =>
             new
             {
                 ReceiptDetail = p.Get<ReceiptDetail>()
@@ -425,7 +425,7 @@ namespace Tests
         [Fact]
         public void QueryModelBuilderRootAndAliasSourceMethodTest()
         {
-            var builder = QueryModel.Build(p => p.Get<ReceiptDetail>(),
+            var builder = QueryModel.Create(p => p.Get<ReceiptDetail>(),
             p => new
             {
                 Amount = p.Amount
@@ -441,7 +441,7 @@ namespace Tests
         [Fact]
         public void QueryModelBuildHasKeyMemberExpressionTest()
         {
-            var builder = QueryModel.Build(
+            var builder = QueryModel.Create(
                             p => p.Get<ReceiptDetail>(),
                             p => new
                             {
@@ -459,7 +459,7 @@ namespace Tests
         [Fact]
         public void QueryModelBuildHasNewExpressionTest()
         {
-            var builder = QueryModel.Build(
+            var builder = QueryModel.Create(
                             p => p.Get<ReceiptDetail>(),
                             p => new
                             {
@@ -483,7 +483,7 @@ namespace Tests
         [Fact]
         public void QueryModelBuildHasNewInitExpressionTest()
         {
-            var builder = QueryModel.Build(
+            var builder = QueryModel.Create(
                             p => p.Get<ReceiptDetail>(),
                             p => new
                             {
@@ -687,7 +687,7 @@ namespace Tests
             var dummyReceipt = CreateDummyReceipt();
             dataSource.RegisterData(new[] { dummyReceipt.Customer });
 
-            var builder = QueryModel.Build(
+            var builder = QueryModel.Create(
                 p => p.Get<Contact>(),
                 p => new ContactInfo
                 {
@@ -697,7 +697,7 @@ namespace Tests
                     Street = p.Street
                 });
 
-            var model = builder.ToModel();
+            var model = builder.Build();
 
             var queryConfig = new QueryConfiguration(
                 new[] {
@@ -724,7 +724,7 @@ namespace Tests
             var dummyReceipt = CreateDummyReceipt();
             dataSource.RegisterData(dummyReceipt.Details);
 
-            var builder = QueryModel.Build(
+            var builder = QueryModel.Create(
                 p => p.Get<ReceiptDetail>(),
                 p => new
                 {
@@ -736,7 +736,7 @@ namespace Tests
 
             builder.Source().Query(p => p.Query<ReceiptDetail>().Where(x => x.Enabled));
 
-            var model = builder.ToModel();
+            var model = builder.Build();
 
             var queryConfig = new QueryConfiguration(
                 new[] {
@@ -749,7 +749,7 @@ namespace Tests
 
             Assert.NotEmpty(query);
 
-            Assert.Equal(1, query.Count);
+            Assert.Single(query);
 
             Assert.All(query, p =>
             {
@@ -761,7 +761,7 @@ namespace Tests
         [Fact]
         public void QueryModelSourceDependenciesTest()
         {
-            var builder = QueryModel.Build(
+            var builder = QueryModel.Create(
                             p => new
                             {
                                 ReceiptDetail = p.Get<ReceiptDetail>(),
@@ -794,7 +794,7 @@ namespace Tests
                     ArticleNumber = p.ArticleStatistics.ArticleNumber
                 });
 
-            var model = builder.ToModel();
+            var model = builder.Build();
             var receiptDetail = model.SourceEntityConfigurations.First(p => p.Name == "ReceiptDetail");
             var articleStatistics = model.SourceEntityConfigurations.First(p => p.Name == "ArticleStatistics");
             var customerStatistics = model.SourceEntityConfigurations.First(p => p.Name == "CustomerStatistics");
@@ -865,6 +865,85 @@ namespace Tests
         }
 
         [Fact]
+        public void GeneratedQueryWithSimpleModelEqualityTest()
+        {
+            var expectedQueryModel = QueryModel.Create(
+                builder => builder.Get<ReceiptDetail>(),
+                builder => new ReceiptDetail
+                {
+                    ReceiptId = builder.ReceiptId,
+                    ArticleId = builder.ArticleId,
+                })
+                .HasKey(receipt => receipt.ReceiptId)
+                .Build();
+            var expectedString = expectedQueryModel.GetQuery(new DummyQuerySource(), new QueryConfiguration()).Expression.ToString();
+
+            for (int i = 0; i < 10; i++)
+            {
+                var actualQueryModel = QueryModel.Create(
+                    builder => builder.Get<ReceiptDetail>(),
+                    builder => new ReceiptDetail
+                    {
+                        ReceiptId = builder.ReceiptId,
+                        ArticleId = builder.ArticleId,
+                    })
+                    .HasKey(receipt => receipt.ReceiptId)
+                    .Build();
+
+                var actualString = actualQueryModel.GetQuery(new DummyQuerySource(), new QueryConfiguration()).Expression.ToString();
+                Assert.Equal(expectedString, actualString);
+            }
+        }
+
+        [Fact]
+        public void GeneratedQueryWithComplexModelEqualityTest()
+        {
+            var expectedQueryModel = GetSampleModel();
+
+            var expectedString = expectedQueryModel.GetQuery(new DummyQuerySource(), new QueryConfiguration()).Expression.ToString();
+            for (int i = 0; i < 10; i++)
+            {
+                var actualQueryModel = GetSampleModel();
+                var actualString = actualQueryModel.GetQuery(new DummyQuerySource(), new QueryConfiguration()).Expression.ToString();
+
+                Assert.Equal(expectedString, actualString);
+            }
+        }
+
+        [Fact]
+        public void GeneratedQueryWithFiltersEqualityTest()
+        {
+            var queryModel = QueryModel.Create(
+                builder => builder.Get<ReceiptDetail>(),
+                builder => new ReceiptDetail
+                {
+                    ReceiptId = builder.ReceiptId,
+                    ArticleId = builder.ArticleId,
+                })
+                .HasKey(receipt => receipt.ReceiptId)
+                .Build();
+
+            FilterItem[] filterItems = {
+                new GuidBinaryFilterItem(new PathValueExpression(nameof(ReceiptDetail.ReceiptId)), new ConstantValueExpression<Guid>(Guid.NewGuid()), RelationalCompareOperator.Equal)
+            };
+            var queryConfiguration = new QueryConfiguration(filterItems);
+            var query1 = queryModel.GetQuery(new DummyQuerySource(), queryConfiguration);
+            var query1String = query1.Expression.ToString();
+
+
+            filterItems = new FilterItem[] {
+                new GuidBinaryFilterItem(new PathValueExpression(nameof(ReceiptDetail.ReceiptId)), new ConstantValueExpression<Guid>(Guid.NewGuid()), RelationalCompareOperator.Equal)
+            };
+            queryConfiguration = new QueryConfiguration(filterItems);
+            var query2 = queryModel.GetQuery(new DummyQuerySource(), queryConfiguration);
+            var query2String = query2.Expression.ToString();
+
+            var areEqual = query1String == query2String;
+            Assert.True(areEqual);
+        }
+
+
+        [Fact]
         public void QueryModelWithSourceAndTragetFilterAsync()
         {
             var model = GetSampleModel();
@@ -904,7 +983,7 @@ namespace Tests
         [Fact]
         public void SourceEntityConfigurationConstructorTest()
         {
-            var builder = QueryModel.Build(
+            var builder = QueryModel.Create(
                p => new
                {
                    ReceiptDetail = p.Get<ReceiptDetail>(),
@@ -948,16 +1027,16 @@ namespace Tests
 
             Assert.False(toTest2.IsRootQuery);
             Assert.Contains(toTest2.DependsOn, p => p == "ReceiptDetail");
-            Assert.Equal(1, toTest2.DependsOn.Count);
+            Assert.Single(toTest2.DependsOn);
 
             Assert.False(toTest3.IsRootQuery);
             Assert.Contains(toTest3.DependsOn, p => p == "ReceiptDetail");
-            Assert.Equal(1, toTest3.DependsOn.Count);
+            Assert.Single(toTest3.DependsOn);
         }
 
         private static QueryModel GetSampleModel()
         {
-            var builder = QueryModel.Build(
+            var builder = QueryModel.Create(
                             p => new
                             {
                                 ReceiptDetail = p.Get<ReceiptDetail>(),
@@ -1025,7 +1104,7 @@ namespace Tests
                       )
                       .Join(p => p.ArticleId, p => p.ReceiptDetail.ArticleId);
 
-            QueryModel model = builder.ToModel();
+            QueryModel model = builder.Build();
             return model;
         }
 

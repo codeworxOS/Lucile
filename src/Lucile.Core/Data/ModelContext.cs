@@ -1046,7 +1046,7 @@ namespace Lucile.Data
             }
 
             /// <summary>
-            /// Dispose
+            /// Dispose.
             /// </summary>
             public void Dispose()
             {
