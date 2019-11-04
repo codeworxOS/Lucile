@@ -21,6 +21,7 @@ namespace Lucile.Data.Metadata.Builder.Convention
             var collection = new ConventionCollection();
             collection.Add(new DefaultStructureConvention());
             collection.Add(new DefaultPrimaryKeyConvention());
+            collection.Add(new DefaultMaxLengthAnnotationConvention());
             return collection;
         }
     }

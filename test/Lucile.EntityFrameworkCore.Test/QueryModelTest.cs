@@ -2,6 +2,7 @@
 using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
+using Lucile.EntityFrameworkCore.Linq;
 using Lucile.Linq;
 using Lucile.Linq.Configuration;
 using Lucile.Test.Model;
@@ -15,20 +16,6 @@ namespace Lucile.EntityFrameworkCore.Test
 {
     public class QueryModelTest
     {
-        private class DummyQuerySource : QuerySource
-        {
-            private readonly TestContext _context;
-
-            public DummyQuerySource(TestContext context)
-            {
-                _context = context;
-            }
-
-            public override IQueryable<TEntity> Query<TEntity>()
-            {
-                return _context.Set<TEntity>();
-            }
-        }
 
         [Fact]
         public async Task GeneratedQueryWithSimpleModelEqualityTest()
@@ -51,7 +38,7 @@ namespace Lucile.EntityFrameworkCore.Test
                         .HasKey(receipt => receipt.ReceiptId)
                         .Build();
 
-                    var query = queryModel.GetQuery(new DummyQuerySource(context), new QueryConfiguration());
+                    var query = queryModel.GetQuery(new DbContextQuerySource(context), new QueryConfiguration());
                     var result = await query.ToListAsync();
 
                     var currentNumberOfCacheEntries = GetNumberOfCacheEntries(compiledQueryCache);
@@ -68,7 +55,7 @@ namespace Lucile.EntityFrameworkCore.Test
                 var compiledQueryCache = GetCompiledQueryCache(context);
                 var previousNumberOfCacheEntries = GetNumberOfCacheEntries(compiledQueryCache);
 
-                var querySource = new DummyQuerySource(context);
+                var querySource = new DbContextQuerySource(context);
 
                 var queryModel = QueryModel.Create(
                 builder => builder.Get<ReceiptDetail>(),

@@ -80,7 +80,7 @@ namespace Lucile.Linq
 
             while (dict.Any())
             {
-                var items = dict.Where(p => !p.Value.Any()).Select(p => p.Key).ToList();
+                var items = dict.Where(p => !p.Value.Any()).OrderBy(p => p.Key).Select(p => p.Key).ToList();
                 if (!items.Any())
                 {
                     throw new InvalidOperationException("Circular dependency found!");
@@ -222,43 +222,41 @@ namespace Lucile.Linq
         private Expression GetInitExpression(Type sourceType, IDictionary<MemberInfo, Expression> memberInitis)
         {
             var localInits = memberInitis.ToDictionary(p => p.Key, p => p.Value);
-
             var ctr = sourceType.GetConstructors().OrderBy(p => p.GetParameters().Count()).First();
+            var constructorParameters = ctr.GetParameters();
 
-            var expressions = new List<Expression>();
-            var members = new List<MemberInfo>();
-
-            foreach (var item in ctr.GetParameters())
+            if (constructorParameters.Any())
             {
-                var foundMembers = localInits.Where(p => p.Key.Name == item.Name);
-                if (foundMembers.Any())
-                {
-                    var member = foundMembers.First();
-                    expressions.Add(member.Value);
-                    members.Add(member.Key);
-                    localInits.Remove(member.Key);
-                }
-                else
-                {
-                    expressions.Add(Expression.Constant(null, item.ParameterType));
-                    members.Add(sourceType.GetProperty(item.Name));
-                }
-            }
+                var members = new List<MemberInfo>();
+                var expressions = new List<Expression>();
 
-            foreach (var item in localInits)
-            {
-                expressions.Add(item.Value);
-                members.Add(item.Key);
-            }
+                var memberBinds = new Dictionary<MemberInfo, Expression>();
 
-            if (!ctr.GetParameters().Any())
+                foreach (var item in constructorParameters)
+                {
+                    var foundMembers = localInits.Where(p => p.Key.Name == item.Name);
+                    if (foundMembers.Any())
+                    {
+                        var member = foundMembers.First();
+                        expressions.Add(member.Value);
+                        members.Add(member.Key);
+                        localInits.Remove(member.Key);
+                    }
+                    else
+                    {
+                        expressions.Add(Expression.Constant(null, item.ParameterType));
+                        members.Add(sourceType.GetProperty(item.Name));
+                    }
+                }
+
+                return Expression.New(ctr, expressions, members);
+            }
+            else
             {
                 return Expression.MemberInit(
                     Expression.New(ctr),
-                    members.Select((p, i) => Expression.Bind(p, expressions[i])));
+                    localInits.OrderBy(p => p.Key.Name).Select(p => Expression.Bind(p.Key, p.Value)));
             }
-
-            return Expression.New(ctr, expressions, members);
         }
 
         private void ResolveDependencies(IEnumerable<string> columnDependencies, Dictionary<string, List<string>> dict)

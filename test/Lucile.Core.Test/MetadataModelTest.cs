@@ -478,6 +478,7 @@ namespace Tests
         {
             var builder = new MetadataModelBuilder();
             var entityBuilder = builder.Entity<Receipt>();
+            builder.ApplyConventions();
 
             Assert.Equal(100, entityBuilder.Property(c => c.ReceiptNumber).MaxLength);
         }
