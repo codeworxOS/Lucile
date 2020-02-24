@@ -1,10 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
 using System.Linq.Expressions;
-using System.Reflection;
-using System.Threading.Tasks;
 using Lucile.Linq;
 using Lucile.Linq.Configuration;
 using Lucile.Linq.Configuration.Builder;
@@ -64,6 +61,83 @@ namespace Tests
             Assert.Equal(1, query.Count());
 
             Assert.Equal(id2, query.First().Id);
+        }
+
+        [Fact]
+        public void GeneratedQueryWithComplexModelEqualityTest()
+        {
+            var expectedQueryModel = GetSampleModel();
+
+            var expectedString = expectedQueryModel.GetQuery(new DummyQuerySource(), new QueryConfiguration()).Expression.ToString();
+            for (int i = 0; i < 10; i++)
+            {
+                var actualQueryModel = GetSampleModel();
+                var actualString = actualQueryModel.GetQuery(new DummyQuerySource(), new QueryConfiguration()).Expression.ToString();
+
+                Assert.Equal(expectedString, actualString);
+            }
+        }
+
+        [Fact]
+        public void GeneratedQueryWithFiltersEqualityTest()
+        {
+            var queryModel = QueryModel.Create(
+                builder => builder.Get<ReceiptDetail>(),
+                builder => new ReceiptDetail
+                {
+                    ReceiptId = builder.ReceiptId,
+                    ArticleId = builder.ArticleId,
+                })
+                .HasKey(receipt => receipt.ReceiptId)
+                .Build();
+
+            FilterItem[] filterItems = {
+                new GuidBinaryFilterItem(new PathValueExpression(nameof(ReceiptDetail.ReceiptId)), new ConstantValueExpression<Guid>(Guid.NewGuid()), RelationalCompareOperator.Equal)
+            };
+            var queryConfiguration = new QueryConfiguration(filterItems);
+            var query1 = queryModel.GetQuery(new DummyQuerySource(), queryConfiguration);
+            var query1String = query1.Expression.ToString();
+
+            filterItems = new FilterItem[] {
+                new GuidBinaryFilterItem(new PathValueExpression(nameof(ReceiptDetail.ReceiptId)), new ConstantValueExpression<Guid>(Guid.NewGuid()), RelationalCompareOperator.Equal)
+            };
+            queryConfiguration = new QueryConfiguration(filterItems);
+            var query2 = queryModel.GetQuery(new DummyQuerySource(), queryConfiguration);
+            var query2String = query2.Expression.ToString();
+
+            var areEqual = query1String == query2String;
+            Assert.True(areEqual);
+        }
+
+        [Fact]
+        public void GeneratedQueryWithSimpleModelEqualityTest()
+        {
+            var expectedQueryModel = QueryModel.Create(
+                builder => builder.Get<ReceiptDetail>(),
+                builder => new ReceiptDetail
+                {
+                    ReceiptId = builder.ReceiptId,
+                    ArticleId = builder.ArticleId,
+                })
+                .HasKey(receipt => receipt.ReceiptId)
+                .Build();
+            var expectedString = expectedQueryModel.GetQuery(new DummyQuerySource(), new QueryConfiguration()).Expression.ToString();
+
+            for (int i = 0; i < 10; i++)
+            {
+                var actualQueryModel = QueryModel.Create(
+                    builder => builder.Get<ReceiptDetail>(),
+                    builder => new ReceiptDetail
+                    {
+                        ReceiptId = builder.ReceiptId,
+                        ArticleId = builder.ArticleId,
+                    })
+                    .HasKey(receipt => receipt.ReceiptId)
+                    .Build();
+
+                var actualString = actualQueryModel.GetQuery(new DummyQuerySource(), new QueryConfiguration()).Expression.ToString();
+                Assert.Equal(expectedString, actualString);
+            }
         }
 
         [Fact]
@@ -277,7 +351,7 @@ namespace Tests
             source.RegisterData(receipt.Details);
 
             FilterItem[] filterItems = {
-                new BooleanFilterItem(new PathValueExpression("ReceiptDetail.Enabled"),BooleanOperator.IsTrue)
+                new BooleanFilterItem(new PathValueExpression("ReceiptDetail.Enabled"), BooleanOperator.IsTrue)
             };
             var config = new QueryConfiguration(filterItems);
 
@@ -285,7 +359,7 @@ namespace Tests
             Assert.Equal(1, query.Cast<object>().Count());
 
             filterItems = new[] {
-                new BooleanFilterItem(new PathValueExpression("ReceiptDetail.Enabled"),BooleanOperator.IsFalse)
+                new BooleanFilterItem(new PathValueExpression("ReceiptDetail.Enabled"), BooleanOperator.IsFalse)
             };
             config = new QueryConfiguration(filterItems);
 
@@ -536,7 +610,7 @@ namespace Tests
             source.RegisterData(receipt.Details);
 
             FilterItem[] filterItems = {
-                new DateTimeBinaryFilterItem(new PathValueExpression("ReceiptDetail.DeliveryTime"),new ConstantValueExpression<DateTime>(DateTime.Today.AddDays(-150)),RelationalCompareOperator.Equal)
+                new DateTimeBinaryFilterItem(new PathValueExpression("ReceiptDetail.DeliveryTime"), new ConstantValueExpression<DateTime>(DateTime.Today.AddDays(-150)), RelationalCompareOperator.Equal)
             };
             var config = new QueryConfiguration(filterItems);
 
@@ -544,7 +618,7 @@ namespace Tests
             Assert.Equal(1, query.Cast<object>().Count());
 
             filterItems = new[] {
-                new DateTimeBinaryFilterItem(new PathValueExpression("ReceiptDetail.DeliveryTime"),new ConstantValueExpression<DateTime>(DateTime.Today.AddDays(-150)),RelationalCompareOperator.NotEqual)
+                new DateTimeBinaryFilterItem(new PathValueExpression("ReceiptDetail.DeliveryTime"), new ConstantValueExpression<DateTime>(DateTime.Today.AddDays(-150)), RelationalCompareOperator.NotEqual)
             };
             config = new QueryConfiguration(filterItems);
 
@@ -552,7 +626,7 @@ namespace Tests
             Assert.Equal(2, query.Cast<object>().Count());
 
             filterItems = new[] {
-                new DateTimeBinaryFilterItem(new PathValueExpression("ReceiptDetail.DeliveryTime"),new ConstantValueExpression<DateTime>(DateTime.Today.AddDays(-110)),RelationalCompareOperator.NotEqual)
+                new DateTimeBinaryFilterItem(new PathValueExpression("ReceiptDetail.DeliveryTime"), new ConstantValueExpression<DateTime>(DateTime.Today.AddDays(-110)), RelationalCompareOperator.NotEqual)
             };
             config = new QueryConfiguration(filterItems);
 
@@ -560,7 +634,7 @@ namespace Tests
             Assert.Equal(3, query.Cast<object>().Count());
 
             filterItems = new[] {
-                new DateTimeBinaryFilterItem(new PathValueExpression("ReceiptDetail.DeliveryTime"),new ConstantValueExpression<DateTime>(DateTime.Today.AddDays(-160)),RelationalCompareOperator.GreaterThen)
+                new DateTimeBinaryFilterItem(new PathValueExpression("ReceiptDetail.DeliveryTime"), new ConstantValueExpression<DateTime>(DateTime.Today.AddDays(-160)), RelationalCompareOperator.GreaterThen)
             };
             config = new QueryConfiguration(filterItems);
 
@@ -568,7 +642,7 @@ namespace Tests
             Assert.Equal(1, query.Cast<object>().Count());
 
             filterItems = new[] {
-                new DateTimeBinaryFilterItem(new PathValueExpression("ReceiptDetail.DeliveryTime"),new ConstantValueExpression<DateTime>(DateTime.Today.AddDays(-160)),RelationalCompareOperator.GreaterThenOrEqual)
+                new DateTimeBinaryFilterItem(new PathValueExpression("ReceiptDetail.DeliveryTime"), new ConstantValueExpression<DateTime>(DateTime.Today.AddDays(-160)), RelationalCompareOperator.GreaterThenOrEqual)
             };
             config = new QueryConfiguration(filterItems);
 
@@ -576,15 +650,15 @@ namespace Tests
             Assert.Equal(2, query.Cast<object>().Count());
 
             filterItems = new[] {
-                new DateTimeBinaryFilterItem(new PathValueExpression("ReceiptDetail.DeliveryTime"),new ConstantValueExpression<DateTime>(DateTime.Today.AddDays(-150)),RelationalCompareOperator.LessThen)
+                new DateTimeBinaryFilterItem(new PathValueExpression("ReceiptDetail.DeliveryTime"), new ConstantValueExpression<DateTime>(DateTime.Today.AddDays(-150)), RelationalCompareOperator.LessThen)
             };
-            config = new QueryConfiguration(filterItems);
+            config = new QueryConfiguration(filterItems); 
 
             query = model.GetQuery(source, config);
             Assert.Equal(2, query.Cast<object>().Count());
 
             filterItems = new[] {
-                new DateTimeBinaryFilterItem(new PathValueExpression("ReceiptDetail.DeliveryTime"),new ConstantValueExpression<DateTime>(DateTime.Today.AddDays(-150)),RelationalCompareOperator.LessThenOrEqual)
+                new DateTimeBinaryFilterItem(new PathValueExpression("ReceiptDetail.DeliveryTime"), new ConstantValueExpression<DateTime>(DateTime.Today.AddDays(-150)), RelationalCompareOperator.LessThenOrEqual)
             };
             config = new QueryConfiguration(filterItems);
 
@@ -608,7 +682,7 @@ namespace Tests
             source.RegisterData(receipt.Details);
 
             FilterItem[] filterItems = {
-                new NumericBinaryFilterItem(new PathValueExpression("ReceiptDetail.Amount"),new ConstantValueExpression<int>(120),RelationalCompareOperator.Equal)
+                new NumericBinaryFilterItem(new PathValueExpression("ReceiptDetail.Amount"), new ConstantValueExpression<int>(120), RelationalCompareOperator.Equal)
             };
             var config = new QueryConfiguration(filterItems);
 
@@ -616,7 +690,7 @@ namespace Tests
             Assert.Equal(1, query.Cast<object>().Count());
 
             filterItems = new[] {
-                new NumericBinaryFilterItem(new PathValueExpression("ReceiptDetail.Amount"),new ConstantValueExpression<int>(90),RelationalCompareOperator.NotEqual)
+                new NumericBinaryFilterItem(new PathValueExpression("ReceiptDetail.Amount"), new ConstantValueExpression<int>(90), RelationalCompareOperator.NotEqual)
             };
             config = new QueryConfiguration(filterItems);
 
@@ -624,7 +698,7 @@ namespace Tests
             Assert.Equal(1, query.Cast<object>().Count());
 
             filterItems = new[] {
-                new NumericBinaryFilterItem(new PathValueExpression("ReceiptDetail.Amount"),new ConstantValueExpression<int>(91),RelationalCompareOperator.NotEqual)
+                new NumericBinaryFilterItem(new PathValueExpression("ReceiptDetail.Amount"), new ConstantValueExpression<int>(91), RelationalCompareOperator.NotEqual)
             };
             config = new QueryConfiguration(filterItems);
 
@@ -632,7 +706,7 @@ namespace Tests
             Assert.Equal(3, query.Cast<object>().Count());
 
             filterItems = new[] {
-                new NumericBinaryFilterItem(new PathValueExpression("ReceiptDetail.Amount"),new ConstantValueExpression<decimal>(90),RelationalCompareOperator.GreaterThen)
+                new NumericBinaryFilterItem(new PathValueExpression("ReceiptDetail.Amount"), new ConstantValueExpression<decimal>(90), RelationalCompareOperator.GreaterThen)
             };
             config = new QueryConfiguration(filterItems);
 
@@ -640,7 +714,7 @@ namespace Tests
             Assert.Equal(1, query.Cast<object>().Count());
 
             filterItems = new[] {
-                new NumericBinaryFilterItem(new PathValueExpression("ReceiptDetail.Amount"),new ConstantValueExpression<decimal>(90),RelationalCompareOperator.GreaterThenOrEqual)
+                new NumericBinaryFilterItem(new PathValueExpression("ReceiptDetail.Amount"), new ConstantValueExpression<decimal>(90), RelationalCompareOperator.GreaterThenOrEqual)
             };
             config = new QueryConfiguration(filterItems);
 
@@ -648,7 +722,7 @@ namespace Tests
             Assert.Equal(3, query.Cast<object>().Count());
 
             filterItems = new[] {
-                new NumericBinaryFilterItem(new PathValueExpression("ReceiptDetail.Amount"),new ConstantValueExpression<double>(120),RelationalCompareOperator.LessThen)
+                new NumericBinaryFilterItem(new PathValueExpression("ReceiptDetail.Amount"), new ConstantValueExpression<double>(120), RelationalCompareOperator.LessThen)
             };
             config = new QueryConfiguration(filterItems);
 
@@ -656,7 +730,7 @@ namespace Tests
             Assert.Equal(2, query.Cast<object>().Count());
 
             filterItems = new[] {
-                new NumericBinaryFilterItem(new PathValueExpression("ReceiptDetail.Amount"),new ConstantValueExpression<float>(120),RelationalCompareOperator.LessThenOrEqual)
+                new NumericBinaryFilterItem(new PathValueExpression("ReceiptDetail.Amount"), new ConstantValueExpression<float>(120), RelationalCompareOperator.LessThenOrEqual)
             };
             config = new QueryConfiguration(filterItems);
 
@@ -701,9 +775,9 @@ namespace Tests
 
             var queryConfig = new QueryConfiguration(
                 new[] {
-                    new SelectItem("Id",Aggregate.None),
-                    new SelectItem("FirstName",Aggregate.None),
-                    new SelectItem("LastName",Aggregate.None)
+                    new SelectItem("Id", Aggregate.None),
+                    new SelectItem("FirstName", Aggregate.None),
+                    new SelectItem("LastName", Aggregate.None)
                 });
 
             var query = model.GetQuery(dataSource, queryConfig).ToList();
@@ -740,9 +814,9 @@ namespace Tests
 
             var queryConfig = new QueryConfiguration(
                 new[] {
-                    new SelectItem("Id",Aggregate.None),
-                    new SelectItem("ArticleNumber",Aggregate.None),
-                    new SelectItem("Amount",Aggregate.None)
+                    new SelectItem("Id", Aggregate.None),
+                    new SelectItem("ArticleNumber", Aggregate.None),
+                    new SelectItem("Amount", Aggregate.None)
                 });
 
             var query = model.GetQuery(dataSource, queryConfig).ToList();
@@ -816,7 +890,7 @@ namespace Tests
             source.RegisterData(receipt.Details);
 
             FilterItem[] filterItems = {
-                new StringBinaryFilterItem(new PathValueExpression("ReceiptDetail.Description"),new ConstantValueExpression<string>("Testdescription"),StringOperator.Equal)
+                new StringBinaryFilterItem(new PathValueExpression("ReceiptDetail.Description"), new ConstantValueExpression<string>("Testdescription"), StringOperator.Equal)
             };
             var config = new QueryConfiguration(filterItems);
 
@@ -824,7 +898,7 @@ namespace Tests
             Assert.Equal(1, query.Cast<object>().Count());
 
             filterItems = new[] {
-                new StringBinaryFilterItem(new PathValueExpression("ReceiptDetail.Description"),new ConstantValueExpression<string>("Testdescription"),StringOperator.NotEqual)
+                new StringBinaryFilterItem(new PathValueExpression("ReceiptDetail.Description"), new ConstantValueExpression<string>("Testdescription"), StringOperator.NotEqual)
             };
             config = new QueryConfiguration(filterItems);
 
@@ -832,7 +906,7 @@ namespace Tests
             Assert.Equal(2, query.Cast<object>().Count());
 
             filterItems = new[] {
-                new StringBinaryFilterItem(new PathValueExpression("ReceiptDetail.Description"),new ConstantValueExpression<string>("Testdescription2"),StringOperator.NotEqual)
+                new StringBinaryFilterItem(new PathValueExpression("ReceiptDetail.Description"), new ConstantValueExpression<string>("Testdescription2"), StringOperator.NotEqual)
             };
             config = new QueryConfiguration(filterItems);
 
@@ -840,7 +914,7 @@ namespace Tests
             Assert.Equal(2, query.Cast<object>().Count());
 
             filterItems = new[] {
-                new StringBinaryFilterItem(new PathValueExpression("ReceiptDetail.Description"),new ConstantValueExpression<string>("TEST"),StringOperator.StartsWith)
+                new StringBinaryFilterItem(new PathValueExpression("ReceiptDetail.Description"), new ConstantValueExpression<string>("TEST"), StringOperator.StartsWith)
             };
             config = new QueryConfiguration(filterItems);
 
@@ -848,7 +922,7 @@ namespace Tests
             Assert.Equal(2, query.Cast<object>().Count());
 
             filterItems = new[] {
-                new StringBinaryFilterItem(new PathValueExpression("ReceiptDetail.Description"),new ConstantValueExpression<string>("ION"),StringOperator.EndsWith)
+                new StringBinaryFilterItem(new PathValueExpression("ReceiptDetail.Description"), new ConstantValueExpression<string>("ION"), StringOperator.EndsWith)
             };
             config = new QueryConfiguration(filterItems);
 
@@ -856,92 +930,13 @@ namespace Tests
             Assert.Equal(1, query.Cast<object>().Count());
 
             filterItems = new[] {
-                new StringBinaryFilterItem(new PathValueExpression("ReceiptDetail.Description"),new ConstantValueExpression<string>("descri"),StringOperator.Contains)
+                new StringBinaryFilterItem(new PathValueExpression("ReceiptDetail.Description"), new ConstantValueExpression<string>("descri"), StringOperator.Contains)
             };
             config = new QueryConfiguration(filterItems);
 
             query = model.GetQuery(source, config);
             Assert.Equal(2, query.Cast<object>().Count());
         }
-
-        [Fact]
-        public void GeneratedQueryWithSimpleModelEqualityTest()
-        {
-            var expectedQueryModel = QueryModel.Create(
-                builder => builder.Get<ReceiptDetail>(),
-                builder => new ReceiptDetail
-                {
-                    ReceiptId = builder.ReceiptId,
-                    ArticleId = builder.ArticleId,
-                })
-                .HasKey(receipt => receipt.ReceiptId)
-                .Build();
-            var expectedString = expectedQueryModel.GetQuery(new DummyQuerySource(), new QueryConfiguration()).Expression.ToString();
-
-            for (int i = 0; i < 10; i++)
-            {
-                var actualQueryModel = QueryModel.Create(
-                    builder => builder.Get<ReceiptDetail>(),
-                    builder => new ReceiptDetail
-                    {
-                        ReceiptId = builder.ReceiptId,
-                        ArticleId = builder.ArticleId,
-                    })
-                    .HasKey(receipt => receipt.ReceiptId)
-                    .Build();
-
-                var actualString = actualQueryModel.GetQuery(new DummyQuerySource(), new QueryConfiguration()).Expression.ToString();
-                Assert.Equal(expectedString, actualString);
-            }
-        }
-
-        [Fact]
-        public void GeneratedQueryWithComplexModelEqualityTest()
-        {
-            var expectedQueryModel = GetSampleModel();
-
-            var expectedString = expectedQueryModel.GetQuery(new DummyQuerySource(), new QueryConfiguration()).Expression.ToString();
-            for (int i = 0; i < 10; i++)
-            {
-                var actualQueryModel = GetSampleModel();
-                var actualString = actualQueryModel.GetQuery(new DummyQuerySource(), new QueryConfiguration()).Expression.ToString();
-
-                Assert.Equal(expectedString, actualString);
-            }
-        }
-
-        [Fact]
-        public void GeneratedQueryWithFiltersEqualityTest()
-        {
-            var queryModel = QueryModel.Create(
-                builder => builder.Get<ReceiptDetail>(),
-                builder => new ReceiptDetail
-                {
-                    ReceiptId = builder.ReceiptId,
-                    ArticleId = builder.ArticleId,
-                })
-                .HasKey(receipt => receipt.ReceiptId)
-                .Build();
-
-            FilterItem[] filterItems = {
-                new GuidBinaryFilterItem(new PathValueExpression(nameof(ReceiptDetail.ReceiptId)), new ConstantValueExpression<Guid>(Guid.NewGuid()), RelationalCompareOperator.Equal)
-            };
-            var queryConfiguration = new QueryConfiguration(filterItems);
-            var query1 = queryModel.GetQuery(new DummyQuerySource(), queryConfiguration);
-            var query1String = query1.Expression.ToString();
-
-
-            filterItems = new FilterItem[] {
-                new GuidBinaryFilterItem(new PathValueExpression(nameof(ReceiptDetail.ReceiptId)), new ConstantValueExpression<Guid>(Guid.NewGuid()), RelationalCompareOperator.Equal)
-            };
-            queryConfiguration = new QueryConfiguration(filterItems);
-            var query2 = queryModel.GetQuery(new DummyQuerySource(), queryConfiguration);
-            var query2String = query2.Expression.ToString();
-
-            var areEqual = query1String == query2String;
-            Assert.True(areEqual);
-        }
-
 
         [Fact]
         public void QueryModelWithSourceAndTragetFilterAsync()
@@ -954,14 +949,14 @@ namespace Tests
             source.RegisterData(receipt.Details.Concat(receipt2.Details));
 
             FilterItem[] filterItems = {
-                new BooleanFilterItem(new PathValueExpression("ReceiptDetail.Enabled"),BooleanOperator.IsTrue)
+                new BooleanFilterItem(new PathValueExpression("ReceiptDetail.Enabled"), BooleanOperator.IsTrue)
             };
             FilterItem[] targetFilterItems = {
-                new StringBinaryFilterItem(new PathValueExpression("Customer"),new StringConstantValue("Demo2"),StringOperator.Contains)
+                new StringBinaryFilterItem(new PathValueExpression("Customer"), new StringConstantValue("Demo2"), StringOperator.Contains)
             };
 
             SortItem[] sortItems = {
-                new SortItem("Supplier",SortDirection.Ascending)
+                new SortItem("Supplier", SortDirection.Ascending)
             };
             SelectItem[] selectItems = {
                 new SelectItem("ReceiptDetailId"  ),
@@ -1079,8 +1074,7 @@ namespace Tests
                             ReceiptAmountCurrentYear = year != null ? year.Sum(x => x.Amount) : 0,
                             ReceiptAmountCurrentMonth = currentMonth != null ? currentMonth.Sum(x => x.Amount) : 0,
                             ReceiptAmountLastMonth = lastMonth != null ? lastMonth.Sum(x => x.Amount) : 0
-                        }
-                      )
+                        })
                       .Join(p => p.CustomerId, p => p.ReceiptDetail.Receipt.CustomerId);
 
             builder.Source(p => p.ArticleStatistics)

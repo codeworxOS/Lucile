@@ -109,7 +109,7 @@ namespace Tests
 
             Assert.Equal(receiptDetailsProperty.TargetNavigationProperty, receiptDetailReceiptProperty);
             Assert.Equal(receiptDetailReceiptProperty.TargetNavigationProperty, receiptDetailsProperty);
-            Assert.Equal(1, receiptDetailReceiptProperty.ForeignKeyProperties.Count);
+            Assert.Single(receiptDetailReceiptProperty.ForeignKeyProperties);
             Assert.Equal(receiptDetail["ReceiptId"], receiptDetailReceiptProperty.ForeignKeyProperties[0].Dependant);
             Assert.Equal(receipt["Id"], receiptDetailReceiptProperty.ForeignKeyProperties[0].Principal);
         }

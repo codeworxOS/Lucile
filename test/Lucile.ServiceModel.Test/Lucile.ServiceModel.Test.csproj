@@ -2,8 +2,11 @@
 
   <PropertyGroup>
     <TargetFramework>net461</TargetFramework>
+    <TreatWarningsAsErrors>false</TreatWarningsAsErrors>
   </PropertyGroup>
   <ItemGroup>
+
+    <PackageReference  Remove="StyleCop.Analyzers" />
     <PackageReference Include="Microsoft.NET.Test.Sdk">
       <Version>15.7.0</Version>
     </PackageReference>

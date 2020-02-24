@@ -6,14 +6,6 @@
     <PackageId>Lucile.EntityFramework</PackageId>
   </PropertyGroup>
 
-  <Import Project="..\..\global\GlobalInfo.targets" />
-
-  <ItemGroup>
-    <PackageReference Include="StyleCop.Analyzers" Version="1.1.118">
-      <PrivateAssets>All</PrivateAssets>
-    </PackageReference>
-  </ItemGroup>
-
   <ItemGroup>
     <ProjectReference Include="..\Lucile.Core\Lucile.Core.csproj" />
   </ItemGroup>

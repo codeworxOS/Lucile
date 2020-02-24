@@ -2,22 +2,11 @@
 
   <PropertyGroup>
     <Description>Windows components for the Lucile Framework. For detailed Documentation visit http://www.github.com/codeworxOS/Lucile</Description>
-    <Copyright>copyright © codeworx gmbh 2017</Copyright>
     <AssemblyTitle>Lucile Framework Windows Library</AssemblyTitle>
     <Authors>Raphael Schwarz</Authors>
     <TargetFrameworks>net461;netcoreapp3.0</TargetFrameworks>
     <UseWpf>True</UseWpf>
   </PropertyGroup>
-
-  <Import Project="..\..\global\GlobalInfo.targets" />
-
-  <ItemGroup>
-    <AdditionalFiles Include="..\..\global\stylecop.json" Link="stylecop.json" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <PackageReference Include="StyleCop.Analyzers" Version="1.1.118" PrivateAssets="All" />
-  </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\Lucile.Primitives\Lucile.Primitives.csproj" />

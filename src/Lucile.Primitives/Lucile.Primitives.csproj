@@ -2,22 +2,14 @@
 
   <PropertyGroup>
     <Description>Core primitives for the Lucile Framework. For detailed Documentation visit http://www.github.com/codeworxOS/Lucile</Description>
-    <Copyright>copyright © codeworx gmbh 2017</Copyright>
-    <AssemblyTitle>Lucile Framework Primitives Library</AssemblyTitle>
+     <AssemblyTitle>Lucile Framework Primitives Library</AssemblyTitle>
     <TargetFrameworks>netstandard1.0;netstandard2.0;netstandard2.1</TargetFrameworks>
     <RootNamespace>Lucile</RootNamespace>
   </PropertyGroup>
-  <Import Project="..\..\global\GlobalInfo.targets" />
 
   <PropertyGroup Condition="'$(SignAssembly)'=='True'">
     <DefineConstants>SIGN</DefineConstants>
   </PropertyGroup>
-
-  <ItemGroup>
-    <PackageReference Include="StyleCop.Analyzers" Version="1.1.118">
-      <PrivateAssets>All</PrivateAssets>
-    </PackageReference>
-  </ItemGroup>
 
   <ItemGroup>
     <PackageReference Include="System.Dynamic.Runtime" Version="4.3.0" />

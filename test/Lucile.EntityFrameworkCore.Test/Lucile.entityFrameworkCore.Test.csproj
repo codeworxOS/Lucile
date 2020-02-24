@@ -5,6 +5,7 @@
 		<AssemblyName>Lucile.entityFrameworkCore.Test</AssemblyName>
 		<PackageId>Lucile.entityFrameworkCore.Test</PackageId>
 		<GenerateRuntimeConfigurationFiles>true</GenerateRuntimeConfigurationFiles>
+    <TreatWarningsAsErrors>false</TreatWarningsAsErrors>
 	</PropertyGroup>
 
 	<ItemGroup>
@@ -13,6 +14,8 @@
 	</ItemGroup>
 
 	<ItemGroup>
+
+    <PackageReference  Remove="StyleCop.Analyzers" />
 		<PackageReference Include="Microsoft.NET.Test.Sdk" Version="15.3.0" />
 		<PackageReference Include="protobuf-net" Version="2.4.4" />
 		<PackageReference Include="xunit.runner.visualstudio" Version="2.4.1">

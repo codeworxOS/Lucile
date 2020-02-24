@@ -2,31 +2,18 @@
 
   <PropertyGroup>
     <Description>Core components for the Lucile Framework. For detailed Documentation visit http://www.github.com/codeworxOS/Lucile</Description>
-    <Copyright>copyright © codeworx gmbh 2017</Copyright>
     <AssemblyTitle>Lucile Framework Core Library</AssemblyTitle>
-    <Authors>Raphael Schwarz</Authors>
     <TargetFramework>netstandard1.3</TargetFramework>
   </PropertyGroup>
 
-  <Import Project="..\..\global\GlobalInfo.targets" />
-
   <ItemGroup>
-    <Compile Remove="Temp\**\*" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <AdditionalFiles Include="..\..\global\stylecop.json" Link="stylecop.json" />
+    <Compile Remove="Temp\**" />
+    <EmbeddedResource Remove="Temp\**" />
+    <None Remove="Temp\**" />
   </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\Lucile.Primitives\Lucile.Primitives.csproj" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <PackageReference Include="StyleCop.Analyzers" Version="1.1.118">
-      <PrivateAssets>All</PrivateAssets>
-    </PackageReference>
-    <DotNetCliToolReference Include="dotnet-sourcelink" Version="2.8.0" />
   </ItemGroup>
 
   <ItemGroup>

@@ -1,8 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
-using Lucile.Data.Metadata;
-using Lucile.Data.Metadata.Builder;
 using Lucile.Linq.Builder;
 using Lucile.Linq.Configuration;
 using Lucile.Linq.Configuration.Builder;
@@ -77,8 +74,8 @@ namespace Tests
             var query = items.AsQueryable();
 
             var sort = new[] {
-                new SortItem("LastName",SortDirection.Ascending),
-                new SortItem("FirstName",SortDirection.Ascending)
+                new SortItem("LastName", SortDirection.Ascending),
+                new SortItem("FirstName", SortDirection.Ascending)
             };
 
             var result = query.ApplySort(sort).ToList();
@@ -100,8 +97,8 @@ namespace Tests
             var query = items.AsQueryable();
 
             var sort = new[] {
-                new SortItem("LastName",SortDirection.Ascending),
-                new SortItem("FirstName",SortDirection.Descending)
+                new SortItem("LastName", SortDirection.Ascending),
+                new SortItem("FirstName", SortDirection.Descending)
             };
 
             var result = query.ApplySort(sort).ToList();
@@ -123,8 +120,8 @@ namespace Tests
             var query = items.AsQueryable();
 
             var sort = new[] {
-                new SortItem("LastName",SortDirection.Descending),
-                new SortItem("FirstName",SortDirection.Ascending)
+                new SortItem("LastName", SortDirection.Descending),
+                new SortItem("FirstName", SortDirection.Ascending)
             };
 
             var result = query.ApplySort(sort).ToList();
@@ -146,8 +143,8 @@ namespace Tests
             var query = items.AsQueryable();
 
             var sort = new[] {
-                new SortItem("LastName",SortDirection.Descending),
-                new SortItem("FirstName",SortDirection.Descending)
+                new SortItem("LastName", SortDirection.Descending),
+                new SortItem("FirstName", SortDirection.Descending)
             };
 
             var result = query.ApplySort(sort).ToList();
@@ -169,7 +166,7 @@ namespace Tests
             var query = items.AsQueryable();
 
             var sort = new[] {
-                new SortItem("FirstName.Length",SortDirection.Descending)
+                new SortItem("FirstName.Length", SortDirection.Descending)
             };
 
             var result = query.ApplySort(sort).ToList();
