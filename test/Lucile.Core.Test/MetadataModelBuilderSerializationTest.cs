@@ -1,6 +1,8 @@
-﻿using Lucile.Data.Metadata;
+﻿using Lucile.Core.Test;
+using Lucile.Data.Metadata;
 using Lucile.Data.Metadata.Builder;
 using Lucile.Test.Model;
+using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -52,6 +54,40 @@ namespace Tests
 
                 var newBuilder = ProtoBuf.Serializer.Deserialize<MetadataModelBuilder>(ms);
                 model = newBuilder.ToModel();
+            }
+
+            TestModelValidations.ValidateInvoiceArticleDefaultModel(model);
+        }
+
+        [Fact]
+        public void JsonSerializationDeserializationTest()
+        {
+            var builder = new MetadataModelBuilder();
+            builder.Entity<Invoice>();
+            builder.Entity<Article>().HasOne(p => p.ArticleSettings).WithPrincipal();
+            builder.ApplyConventions();
+
+            MetadataModel model = null;
+
+            using (var ms = new MemoryStream())
+            {
+                var json = new JsonSerializerSettings();
+                json.Converters.Add(new LucileJsonInheritanceConverter());
+
+                var serializer = JsonSerializer.Create(json);
+                using (var streamWriter = new StreamWriter(ms, Encoding.UTF8, 512, true))
+                {
+                    serializer.Serialize(streamWriter, builder);
+                }
+
+                ms.Seek(0, SeekOrigin.Begin);
+
+                using (var streamReader = new StreamReader(ms))
+                using (var jsonReader = new JsonTextReader(streamReader))
+                {
+                    var newBuilder = serializer.Deserialize<MetadataModelBuilder>(jsonReader);
+                    model = newBuilder.ToModel();
+                }
             }
 
             TestModelValidations.ValidateInvoiceArticleDefaultModel(model);

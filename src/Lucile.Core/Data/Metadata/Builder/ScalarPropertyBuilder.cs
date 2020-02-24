@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Reflection;
 using System.Runtime.Serialization;
+using Lucile.Json;
 using ProtoBuf;
 
 namespace Lucile.Data.Metadata.Builder
@@ -24,6 +25,7 @@ namespace Lucile.Data.Metadata.Builder
     [ProtoInclude(107, typeof(GeometryPropertyBuilder))]
     [ProtoInclude(108, typeof(GeographyPropertyBuilder))]
     [ProtoInclude(109, typeof(EnumPropertyBuilder))]
+    [JsonConverter(typeof(JsonInheritanceConverter), "type")]
     public abstract class ScalarPropertyBuilder : IMetadataBuilder
     {
         [DataMember(Order = 5)]
