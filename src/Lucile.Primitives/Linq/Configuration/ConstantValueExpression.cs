@@ -20,7 +20,7 @@ namespace Lucile.Linq.Configuration
             return Expression.Property(constant, "Value");
         }
 
-        public class ValueAccessor
+        public class ValueAccessor : IConstantValueAccessor
         {
             public ValueAccessor(TValue value)
             {
@@ -28,6 +28,8 @@ namespace Lucile.Linq.Configuration
             }
 
             public TValue Value { get; }
+
+            public object GetValue() => Value;
         }
     }
 }

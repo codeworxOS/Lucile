@@ -1,19 +1,10 @@
-﻿using System.Linq.Expressions;
-
-namespace Lucile.Linq.Configuration
+﻿namespace Lucile.Linq.Configuration
 {
-    public class StringConstantValue : ValueExpression
+    public class StringConstantValue : ConstantValueExpression<string>
     {
         public StringConstantValue(string value)
+            : base(value)
         {
-            Value = value;
-        }
-
-        public string Value { get; }
-
-        public override Expression GetExpression(ParameterExpression parameter)
-        {
-            return Expression.Constant(Value, typeof(string));
         }
     }
 }

@@ -1,19 +1,10 @@
-﻿using System.Linq.Expressions;
-
-namespace Lucile.Linq.Configuration
+﻿namespace Lucile.Linq.Configuration
 {
-    public class NumericConstantValue : ValueExpression
+    public class NumericConstantValue : ConstantValueExpression<decimal>
     {
         public NumericConstantValue(decimal value)
+            : base(value)
         {
-            Value = value;
-        }
-
-        public decimal Value { get; }
-
-        public override Expression GetExpression(ParameterExpression parameter)
-        {
-            return Expression.Constant(Value, typeof(decimal));
         }
     }
 }

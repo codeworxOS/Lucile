@@ -2,7 +2,7 @@
 using System.ServiceModel;
 using Lucile.Service;
 
-#if NET45
+#if NET461
 using Microsoft.Extensions.DependencyInjection;
 #endif
 

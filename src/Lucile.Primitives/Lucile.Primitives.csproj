@@ -3,7 +3,7 @@
   <PropertyGroup>
     <Description>Core primitives for the Lucile Framework. For detailed Documentation visit http://www.github.com/codeworxOS/Lucile</Description>
      <AssemblyTitle>Lucile Framework Primitives Library</AssemblyTitle>
-    <TargetFrameworks>netstandard1.0;netstandard2.0;netstandard2.1</TargetFrameworks>
+    <TargetFrameworks>netstandard1.3;netstandard2.0;netstandard2.1</TargetFrameworks>
     <RootNamespace>Lucile</RootNamespace>
     <Configurations>Debug;Release;Debug EF31</Configurations>
   </PropertyGroup>
@@ -19,7 +19,7 @@
     <PackageReference Include="System.Linq.Queryable" Version="4.3.0" />
   </ItemGroup>
 
-  <ItemGroup Condition="'$(TargetFramework)' == 'netstandard1.0'">
+  <ItemGroup Condition="'$(TargetFramework)' == 'netstandard1.3'">
     <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="1.1.0" />
   </ItemGroup>
 

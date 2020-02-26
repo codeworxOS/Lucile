@@ -4,7 +4,7 @@
     <Description>ServiceModel Extensions for the Lucile Framework. For detailed Documentation visit http://www.github.com/codeworxOS/Lucile</Description>
     <AssemblyTitle>Lucile Framework Service Model Library</AssemblyTitle>
     <Authors>codeworx GmbH</Authors>
-    <TargetFrameworks>netstandard1.3;net45</TargetFrameworks>
+    <TargetFrameworks>netstandard1.3;net461</TargetFrameworks>
     <Configurations>Debug;Release;Debug EF31</Configurations>
   </PropertyGroup>
 

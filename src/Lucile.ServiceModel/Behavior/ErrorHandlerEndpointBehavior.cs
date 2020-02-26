@@ -10,7 +10,7 @@ namespace Lucile.ServiceModel.Behavior
         {
         }
 
-#if NET45
+#if NET461
         public ErrorHandlerEndpointBehavior(Func<Exception, string> logDelegate, bool includeDetails = false)
         {
             LogDelegate = logDelegate;
@@ -33,7 +33,7 @@ namespace Lucile.ServiceModel.Behavior
 
         public void ApplyDispatchBehavior(ServiceEndpoint endpoint, System.ServiceModel.Dispatcher.EndpointDispatcher endpointDispatcher)
         {
-#if NET45
+#if NET461
             endpointDispatcher.ChannelDispatcher.ErrorHandlers.Add(new SerializeExceptionErrorHandler(this.LogDelegate, this.IncludeDetails));
 #endif
         }
@@ -46,7 +46,7 @@ namespace Lucile.ServiceModel.Behavior
             }
         }
 
-#if NET45
+#if NET461
         private class SerializeExceptionErrorHandler : System.ServiceModel.Dispatcher.IErrorHandler
         {
             private readonly Func<Exception, string> _logDelegate;
