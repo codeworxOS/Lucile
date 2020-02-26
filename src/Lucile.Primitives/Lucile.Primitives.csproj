@@ -5,6 +5,7 @@
      <AssemblyTitle>Lucile Framework Primitives Library</AssemblyTitle>
     <TargetFrameworks>netstandard1.0;netstandard2.0;netstandard2.1</TargetFrameworks>
     <RootNamespace>Lucile</RootNamespace>
+    <Configurations>Debug;Release;Debug EF31</Configurations>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(SignAssembly)'=='True'">

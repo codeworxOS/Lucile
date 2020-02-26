@@ -3,6 +3,7 @@ using System.Linq;
 using Lucile.Test.Model;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Storage;
+using Tests;
 
 namespace Lucile.EntityFrameworkCore.Test
 {
@@ -41,12 +42,17 @@ namespace Lucile.EntityFrameworkCore.Test
         {
             base.OnModelCreating(modelBuilder);
 
+            modelBuilder.Query<ArticleStatistics>();
+
             modelBuilder.Entity<Order>();
             modelBuilder.Entity<Invoice>();
 
             modelBuilder.Entity<Contact>().HasOne<ContactSettings>().WithOne(p => p.Contact).HasPrincipalKey<Contact>(p => p.Id);
 
-            modelBuilder.Entity<Article>().HasOne(p => p.ArticleSettings).WithOne().HasPrincipalKey<Article>(p => p.Id);
+            var articleEntity = modelBuilder.Entity<Article>();
+
+            articleEntity.HasOne(p => p.ArticleSettings).WithOne().HasPrincipalKey<Article>(p => p.Id);
+            articleEntity.Property<string>("CreatedBy").HasMaxLength(20);
 
             modelBuilder.Entity<ArticleName>().HasKey(p => new { p.ArticleId, p.LanguageId });
 

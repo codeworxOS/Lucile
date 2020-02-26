@@ -4,6 +4,7 @@
     <OutputType>Exe</OutputType>
     <TargetFramework>netcoreapp2.0</TargetFramework>
     <TreatWarningsAsErrors>false</TreatWarningsAsErrors>
+    <Configurations>Debug;Release;Debug EF31</Configurations>
   </PropertyGroup>
 
   <ItemGroup>
@@ -13,7 +14,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference  Remove="StyleCop.Analyzers" />
+    <PackageReference Remove="StyleCop.Analyzers" />
     <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="2.0.0" />
     <PackageReference Include="Microsoft.NET.Test.Sdk">
       <Version>15.3.0</Version>

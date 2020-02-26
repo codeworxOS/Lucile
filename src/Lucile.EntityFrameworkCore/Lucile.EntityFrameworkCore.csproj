@@ -3,14 +3,22 @@
   <PropertyGroup>
     <Description>Entity Framework Core components for the Lucile Framework. For detailed Documentation visit http://www.github.com/codeworxOS/Lucile</Description>
     <AssemblyTitle>Lucile Framework Entity Framework Core Library</AssemblyTitle>
-    <TargetFrameworks>netstandard1.3;netstandard2.0</TargetFrameworks>
+    <TargetFrameworks>netstandard2.0</TargetFrameworks>
+    <Configurations>Debug;Release;Debug EF31</Configurations>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)'=='Debug EF31'">
+    <EfVersion>3</EfVersion>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(EfVersion)' == '3'">
+    <DefineConstants>EF3</DefineConstants>
   </PropertyGroup>
 
 
-  <ItemGroup Condition="'$(TargetFramework)' == 'netstandard1.3'">
-    <PackageReference Include="Microsoft.EntityFrameworkCore" Version="1.0.3" />
+  <ItemGroup Condition="'$(EfVersion)' == '3'">
+    <PackageReference Include="Microsoft.EntityFrameworkCore" Version="3.1.0" />
   </ItemGroup>
-  <ItemGroup Condition="'$(TargetFramework)' == 'netstandard2.0'">
+  <ItemGroup Condition="'$(EfVersion)' != '3'">
     <PackageReference Include="Microsoft.EntityFrameworkCore" Version="2.1.0" />
   </ItemGroup>
   <ItemGroup>

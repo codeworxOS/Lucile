@@ -9,6 +9,7 @@
 		<GenerateAssemblyConfigurationAttribute>false</GenerateAssemblyConfigurationAttribute>
 		<GenerateAssemblyCompanyAttribute>false</GenerateAssemblyCompanyAttribute>
 		<GenerateAssemblyProductAttribute>false</GenerateAssemblyProductAttribute>
+		<Configurations>Debug;Release;Debug EF31</Configurations>
 	</PropertyGroup>
 
 	<ItemGroup>

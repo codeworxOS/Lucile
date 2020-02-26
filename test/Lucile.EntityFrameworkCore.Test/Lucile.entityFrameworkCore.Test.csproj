@@ -1,40 +1,45 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
-	<PropertyGroup>
-		<TargetFrameworks>netcoreapp2.0;netcoreapp1.1</TargetFrameworks>
-		<AssemblyName>Lucile.entityFrameworkCore.Test</AssemblyName>
-		<PackageId>Lucile.entityFrameworkCore.Test</PackageId>
-		<GenerateRuntimeConfigurationFiles>true</GenerateRuntimeConfigurationFiles>
+  <PropertyGroup>
+    <TargetFrameworks>netcoreapp2.0;netcoreapp3.1</TargetFrameworks>
+    <AssemblyName>Lucile.EntityFrameworkCore.Test</AssemblyName>
+    <PackageId>Lucile.EntityFrameworkCore.Test</PackageId>
+    <GenerateRuntimeConfigurationFiles>true</GenerateRuntimeConfigurationFiles>
     <TreatWarningsAsErrors>false</TreatWarningsAsErrors>
-	</PropertyGroup>
+    <Configurations>Debug;Release;Debug EF31</Configurations>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)'=='Debug EF31'">
+    <EfVersion>3</EfVersion>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(EfVersion)' == '3'">
+    <DefineConstants>EF3</DefineConstants>
+  </PropertyGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\src\Lucile.EntityFrameworkCore\Lucile.EntityFrameworkCore.csproj" />
+    <ProjectReference Include="..\Lucile.Test.Model\Lucile.Test.Model.csproj" />
+  </ItemGroup>
 
-	<ItemGroup>
-		<ProjectReference Include="..\..\src\Lucile.EntityFrameworkCore\Lucile.EntityFrameworkCore.csproj" />
-		<ProjectReference Include="..\Lucile.Test.Model\Lucile.Test.Model.csproj" />
-	</ItemGroup>
+  <ItemGroup>
 
-	<ItemGroup>
+    <PackageReference Remove="StyleCop.Analyzers" />
+    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="15.3.0" />
+    <PackageReference Include="protobuf-net" Version="2.4.4" />
+    <PackageReference Include="xunit.runner.visualstudio" Version="2.4.1">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
+    <PackageReference Include="System.Runtime.Serialization.Primitives" Version="4.3.0" />
+    <PackageReference Include="xunit" Version="2.4.1" />
+  </ItemGroup>
 
-    <PackageReference  Remove="StyleCop.Analyzers" />
-		<PackageReference Include="Microsoft.NET.Test.Sdk" Version="15.3.0" />
-		<PackageReference Include="protobuf-net" Version="2.4.4" />
-		<PackageReference Include="xunit.runner.visualstudio" Version="2.4.1">
-		  <PrivateAssets>all</PrivateAssets>
-		  <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
-		</PackageReference>
-		<PackageReference Include="System.Runtime.Serialization.Primitives" Version="4.3.0" />
-		<PackageReference Include="xunit" Version="2.4.1" />
-	</ItemGroup>
+  <ItemGroup Condition="'$(EfVersion)' == '3'">
+    <PackageReference Include="Microsoft.EntityFrameworkCore.InMemory" Version="3.1.0" />
+  </ItemGroup>
+  <ItemGroup Condition="'$(EfVersion)' != '3'">
+    <PackageReference Include="Microsoft.EntityFrameworkCore.InMemory" Version="2.1.0" />
+  </ItemGroup>
 
-	<ItemGroup Condition="'$(TargetFramework)' == 'netcoreapp1.1'">
-		<PackageReference Include="Microsoft.EntityFrameworkCore.InMemory" Version="1.0.3" />
-	</ItemGroup>
-
-	<ItemGroup Condition="'$(TargetFramework)' == 'netcoreapp2.0'">
-		<PackageReference Include="Microsoft.EntityFrameworkCore.InMemory" Version="2.0.0" />
-	</ItemGroup>
-
-	<ItemGroup>
-		<Service Include="{82a7f48d-3b50-4b1e-b82e-3ada8210c358}" />
-	</ItemGroup>
+  <ItemGroup>
+    <Service Include="{82a7f48d-3b50-4b1e-b82e-3ada8210c358}" />
+  </ItemGroup>
 </Project>

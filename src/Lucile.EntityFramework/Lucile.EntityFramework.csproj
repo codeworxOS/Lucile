@@ -4,6 +4,7 @@
     <TargetFramework>net46</TargetFramework>
     <AssemblyName>Lucile.EntityFramework</AssemblyName>
     <PackageId>Lucile.EntityFramework</PackageId>
+    <Configurations>Debug;Release;Debug EF31</Configurations>
   </PropertyGroup>
 
   <ItemGroup>

@@ -3,6 +3,7 @@
     <Description>ServiceModel DependencyInjection Extensions for the Lucile Framework. For detailed Documentation visit http://www.github.com/codeworxOS/Lucile</Description>
     <AssemblyTitle>Lucile Framework Service Model Dependency Injection Library</AssemblyTitle>
     <TargetFrameworks>net461</TargetFrameworks>
+    <Configurations>Debug;Release;Debug EF31</Configurations>
   </PropertyGroup>
 
   <ItemGroup>

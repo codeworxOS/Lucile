@@ -5,6 +5,7 @@
     <AssemblyTitle>Lucile Framework Service Model Library</AssemblyTitle>
     <Authors>codeworx GmbH</Authors>
     <TargetFrameworks>netstandard1.3;net45</TargetFrameworks>
+    <Configurations>Debug;Release;Debug EF31</Configurations>
   </PropertyGroup>
 
   <ItemGroup>

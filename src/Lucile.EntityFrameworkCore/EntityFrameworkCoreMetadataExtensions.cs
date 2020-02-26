@@ -19,9 +19,7 @@ namespace Lucile.EntityFrameworkCore
         {
             var entities = model.GetEntityTypes().ToList();
 
-#if NETSTANDARD2_0
-            entities = entities.Where(p => !p.IsQueryType).ToList();
-#endif
+            entities = entities.Where(p => p.FindPrimaryKey() != null).ToList();
 
             foreach (var entity in entities)
             {
@@ -38,7 +36,15 @@ namespace Lucile.EntityFrameworkCore
                 entityBuilder.BaseEntity = baseEntityBuilder;
             }
 
-            foreach (var prop in entityType.GetProperties().Where(p => p.DeclaringEntityType == entityType && !p.IsShadowProperty))
+            var properties = entityType.GetProperties().Where(p => p.DeclaringEntityType == entityType);
+
+#if EF3
+            properties = properties.Where(p => !p.IsShadowProperty());
+#else
+            properties = properties.Where(p => !p.IsShadowProperty);
+#endif
+
+            foreach (var prop in properties)
             {
                 var propBuilder = entityBuilder.Property(prop.Name);
                 propBuilder.Nullable = prop.IsNullable;

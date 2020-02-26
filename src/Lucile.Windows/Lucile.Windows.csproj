@@ -6,6 +6,7 @@
     <Authors>Raphael Schwarz</Authors>
     <TargetFrameworks>net461;netcoreapp3.0</TargetFrameworks>
     <UseWpf>True</UseWpf>
+    <Configurations>Debug;Release;Debug EF31</Configurations>
   </PropertyGroup>
 
   <ItemGroup>

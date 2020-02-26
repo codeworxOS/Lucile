@@ -2,6 +2,7 @@
 
   <PropertyGroup>
     <TargetFramework>net461</TargetFramework>
+    <Configurations>Debug;Release;Debug EF31</Configurations>
   </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="protobuf-net" Version="2.4.4" />

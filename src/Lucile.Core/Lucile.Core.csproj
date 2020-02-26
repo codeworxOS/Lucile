@@ -4,6 +4,8 @@
     <Description>Core components for the Lucile Framework. For detailed Documentation visit http://www.github.com/codeworxOS/Lucile</Description>
     <AssemblyTitle>Lucile Framework Core Library</AssemblyTitle>
     <TargetFramework>netstandard1.3</TargetFramework>
+    <Configurations>Debug;Release;Debug EF31</Configurations>
+    <PackageVersion Condition="'$(LucileCoreVersion)' != ''">$(LucileCoreVersion)</PackageVersion>
   </PropertyGroup>
 
   <ItemGroup>

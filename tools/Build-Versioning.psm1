@@ -45,6 +45,14 @@ function New-NugetPackages {
     .PARAMETER DoNotCleanOutput
     If set, the output folder is not cleand before build.
 
+    
+    .OUTPUTS
+    Major = The Major Version for the next build.
+    Minor = The Minor Version for the next build.
+    Build = The Build Version for the next build.
+    Release = The Release Version for the next build.
+    NugetVersion = The full NuGet Version String.
+
     #>
     [CmdletBinding()]
     param
@@ -133,6 +141,8 @@ function New-NugetPackages {
                 Write-Error -Message $buildresult.Message
             }
         }
+
+        return $nextVersion
     }
 }
 
@@ -227,7 +237,8 @@ function Get-NugetVersionInfo {
             $lower = "$Major.$($Minor - 1).0"
         }
         
-        $packageResponse = Find-Package $Package -source $NugetServerUrl -MinimumVersion $lower -MaximumVersion $upper -AllowPrereleaseVersion
+
+        $packageResponse = Find-Package $Package -source $NugetServerUrl -MinimumVersion $lower -MaximumVersion $upper -AllowPrereleaseVersion -ErrorAction Ignore
 
         $versions = $packageResponse | Select-Object -Property Version
 

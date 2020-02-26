@@ -4,10 +4,11 @@
     <TargetFramework>netcoreapp2.0</TargetFramework>
     <TreatWarningsAsErrors>false</TreatWarningsAsErrors>
     <IsPackable>false</IsPackable>
+    <Configurations>Debug;Release;Debug EF31</Configurations>
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference  Remove="StyleCop.Analyzers" />
+    <PackageReference Remove="StyleCop.Analyzers" />
     <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="2.0.0" />
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="15.6.0" />
     <PackageReference Include="System.ComponentModel.Annotations" Version="4.6.0" />

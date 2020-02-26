@@ -70,6 +70,48 @@ namespace Tests
         }
 
         [Fact]
+        public void ExcludeQueryTypes_ExpectsOk()
+        {
+            var builder = new MetadataModelBuilder();
+            using (var ctx = new TestContext())
+            {
+                builder.UseDbContext(ctx);
+                var queryType = ctx.Model.FindEntityType(typeof(ArticleStatistics));
+                Assert.NotNull(queryType);
+                Assert.Null(queryType.FindPrimaryKey());
+            }
+
+            var model = builder.ToModel();
+
+            var metadataEntry = model.GetEntityMetadata<ArticleStatistics>();
+            Assert.Null(metadataEntry);
+        }
+
+
+        [Fact]
+        public void ExcludeShadowProperties_ExpectsOk()
+        {
+            var builder = new MetadataModelBuilder();
+            using (var ctx = new TestContext())
+            {
+                builder.UseDbContext(ctx);
+                var entityType = ctx.Model.FindEntityType(typeof(Article));
+                Assert.NotNull(entityType);
+                Assert.NotNull(entityType.FindProperty("CreatedBy"));
+#if EF3
+                Assert.True(entityType.FindProperty("CreatedBy").IsShadowProperty());
+#else 
+                Assert.True(entityType.FindProperty("CreatedBy").IsShadowProperty);
+#endif
+            }
+
+            var model = builder.ToModel();
+
+            var metadataEntry = model.GetEntityMetadata<Article>();
+            Assert.False(metadataEntry.GetProperties().Any(p => p.Name == "CreatedBy"));
+        }
+
+        [Fact]
         public void FromDbIdentityAnPrimaryKeyTest()
         {
             var builder = new MetadataModelBuilder();
