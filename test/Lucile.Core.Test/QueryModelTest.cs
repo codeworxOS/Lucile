@@ -440,6 +440,37 @@ namespace Tests
         }
 
         [Fact]
+        public void QueryModelBuilderSelectAnonymousTypeWithExcludedValueTypesInSelect()
+        {
+            var receipt = CreateDummyReceipt();
+            var source = new DummyQuerySource();
+            source.RegisterData(receipt.Details);
+
+            var builder = QueryModel.Create(
+                p => p.Get<ReceiptDetail>(),
+                p => new
+                {
+                    p.Id,
+                    p.DeliveryTime,
+                    p.Description
+                });
+            var model = builder.Build();
+
+            var queryConfiguration = new QueryConfiguration(
+                new[] {
+                    new SelectItem("Id"),
+                    new SelectItem("Description"),
+                });
+
+            var query = model.GetQuery(source, queryConfiguration);
+            var result = query.ToList();
+            Assert.NotEmpty(result);
+            Assert.Equal(3, result.Count);
+        }
+
+
+
+        [Fact]
         public void QueryModelBuilderCreateDynamicCompoundTypeInSelect()
         {
             var receipt = CreateDummyReceipt();
@@ -652,7 +683,7 @@ namespace Tests
             filterItems = new[] {
                 new DateTimeBinaryFilterItem(new PathValueExpression("ReceiptDetail.DeliveryTime"), new ConstantValueExpression<DateTime>(DateTime.Today.AddDays(-150)), RelationalCompareOperator.LessThen)
             };
-            config = new QueryConfiguration(filterItems); 
+            config = new QueryConfiguration(filterItems);
 
             query = model.GetQuery(source, config);
             Assert.Equal(2, query.Cast<object>().Count());
@@ -1038,7 +1069,7 @@ namespace Tests
                                 CustomerStatistics = p.Get<CustomerStatistics>(),
                                 ArticleStatistics = p.Get<ArticleStatistics>()
                             },
-                            p => new
+                            p => new SampleData
                             {
                                 ReceiptDetailId = p.ReceiptDetail.Id,
                                 ReceiptNumber = p.ReceiptDetail.Receipt.ReceiptNumber,
@@ -1224,6 +1255,25 @@ namespace Tests
             public DateTime LastPurchaseDate { get; internal set; }
 
             public string WhatEverInfo { get; set; }
+        }
+
+        private class SampleData
+        {
+            public Guid ReceiptDetailId { get; set; }
+            public string ReceiptNumber { get; set; }
+            public string ArticleNumber { get; set; }
+            public decimal ArticleSoldYear { get; set; }
+            public decimal ArticleSoldMonth { get; set; }
+            public decimal ArticleSoldLastMonth { get; set; }
+            public decimal ArticleRevenueYear { get; set; }
+            public decimal ArticleRevenueMonth { get; set; }
+            public decimal ArticleRevenueLastMonth { get; set; }
+            public string Supplier { get; set; }
+            public string Customer { get; set; }
+            public decimal CustomerRevenueYear { get; set; }
+            public decimal CustomerRevenueMonth { get; set; }
+            public decimal CustomerRevenueLastMonth { get; set; }
+            public DateTime CustomerLastPurchase { get; set; }
         }
     }
 }

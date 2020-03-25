@@ -16,7 +16,7 @@ namespace Tests
             var provider = collection.BuildServiceProvider();
             var service = provider.GetService<ITestService>();
 
-            Assert.IsType(typeof(TestService), service);
+            Assert.IsType<TestService>(service);
         }
     }
 }

@@ -9,6 +9,17 @@ namespace Lucile.EntityFrameworkCore.Test
 {
     public class TestContext : DbContext
     {
+        public TestContext()
+        {
+
+        }
+
+        public TestContext(DbContextOptions<TestContext> options)
+            : base(options)
+        {
+
+        }
+
         public DbSet<AllTypesEntity> AllTypesEntity { get; set; }
 
         public DbSet<Article> Articles { get; set; }
@@ -85,6 +96,15 @@ namespace Lucile.EntityFrameworkCore.Test
             entry.HasOne(typeof(ChangeVersion), "ChangeVersion")
                 .WithMany()
                 .HasForeignKey("Version");
+
+
+            foreach (var item in modelBuilder.Model.GetEntityTypes())
+            {
+                foreach (var nav in item.GetNavigations())
+                {
+                    nav.ForeignKey.DeleteBehavior = DeleteBehavior.Restrict;
+                }
+            }
         }
     }
 }

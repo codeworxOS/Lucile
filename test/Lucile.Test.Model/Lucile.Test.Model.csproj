@@ -13,11 +13,11 @@
 	</PropertyGroup>
 
 	<ItemGroup>
-		<ProjectReference Include="..\..\src\Lucile.Primitives\Lucile.Primitives.csproj" />
+		<PackageReference Include="System.ComponentModel.Annotations" Version="4.6.0" />
 	</ItemGroup>
 
 	<ItemGroup>
-		<PackageReference Include="System.ComponentModel.Annotations" Version="4.6.0" />
+	  <ProjectReference Include="..\..\src\Lucile.Primitives\Lucile.Primitives.csproj" />
 	</ItemGroup>
 
 </Project>

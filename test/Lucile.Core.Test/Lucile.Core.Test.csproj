@@ -1,15 +1,13 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
-
   <PropertyGroup>
-    <OutputType>Exe</OutputType>
-    <TargetFramework>netcoreapp2.0</TargetFramework>
+    <TargetFramework>net461</TargetFramework>
     <TreatWarningsAsErrors>false</TreatWarningsAsErrors>
     <Configurations>Debug;Release;Debug EF31</Configurations>
   </PropertyGroup>
-
   <ItemGroup>
     <ProjectReference Include="..\Lucile.Core.Test.Module1\Lucile.Core.Test.Module1.csproj" />
     <ProjectReference Include="..\..\src\Lucile.Core\Lucile.Core.csproj" />
+    <ProjectReference Include="..\Lucile.Signed.Test.Model\Lucile.Signed.Test.Model.csproj" />
     <ProjectReference Include="..\Lucile.Test.Model\Lucile.Test.Model.csproj" />
   </ItemGroup>
 

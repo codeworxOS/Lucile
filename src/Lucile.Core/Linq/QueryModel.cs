@@ -105,13 +105,8 @@ namespace Lucile.Linq
 
             var members = propsToQuery.ToDictionary(p => (MemberInfo)p.PropertyInfo, p => p.MappedExpression.Body.Replace(p.MappedExpression.Parameters.First(), param));
 
-            foreach (var item in PropertyConfigurations.Where(p => !members.ContainsKey(p.PropertyInfo)))
-            {
-                members.Add(item.PropertyInfo, Expression.Constant(item.Property.Default, item.PropertyInfo.PropertyType));
-            }
-
-            var getInitExpression = GetInitExpression(ResultType, members);
-            var selectExpresssion = Expression.Lambda(getInitExpression, param);
+            var initExpression = GetResultInitExpression(members);
+            var selectExpresssion = Expression.Lambda(initExpression, param);
             var queryExpression = Expression.Call(
                                         QueryableInfo.Select.MakeGenericMethod(SourceType, ResultType),
                                         baseQuery.Expression,
@@ -219,7 +214,17 @@ namespace Lucile.Linq
             return baseQuery.Provider.CreateQuery(baseExpression);
         }
 
+        private Expression GetResultInitExpression(IDictionary<MemberInfo, Expression> memberInitis)
+        {
+            return GetInitExpression(ResultType, memberInitis, p => PropertyConfigurations.FirstOrDefault(x => x.PropertyInfo == p)?.Property?.Default);
+        }
+
         private Expression GetInitExpression(Type sourceType, IDictionary<MemberInfo, Expression> memberInitis)
+        {
+            return GetInitExpression(sourceType, memberInitis, p => null);
+        }
+
+        private Expression GetInitExpression(Type sourceType, IDictionary<MemberInfo, Expression> memberInitis, Func<MemberInfo, object> defaultValueLokup)
         {
             var localInits = memberInitis.ToDictionary(p => p.Key, p => p.Value);
             var ctr = sourceType.GetConstructors().OrderBy(p => p.GetParameters().Count()).First();
@@ -244,8 +249,9 @@ namespace Lucile.Linq
                     }
                     else
                     {
-                        expressions.Add(Expression.Constant(null, item.ParameterType));
-                        members.Add(sourceType.GetProperty(item.Name));
+                        var property = sourceType.GetProperty(item.Name);
+                        expressions.Add(Expression.Constant(defaultValueLokup(property), item.ParameterType));
+                        members.Add(property);
                     }
                 }
 
