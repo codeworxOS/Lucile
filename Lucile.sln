@@ -51,7 +51,9 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Lucile.Signed.Test.Model", 
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Lucile.AspNetCore", "src\Lucile.AspNetCore\Lucile.AspNetCore.csproj", "{F405BF55-A1D1-409A-85AB-90FE33B2D93D}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Lucile.AspNetCore.Demo", "test\Lucile.AspNetCore.Demo\Lucile.AspNetCore.Demo.csproj", "{EA6E4F90-532B-44A2-B4AB-8A3A777012D6}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Lucile.AspNetCore.Demo", "test\Lucile.AspNetCore.Demo\Lucile.AspNetCore.Demo.csproj", "{EA6E4F90-532B-44A2-B4AB-8A3A777012D6}"
+EndProject
+Project("{9092AA53-FB77-4645-B42D-1CCCA6BD08BD}") = "Lucile.Node", "src\Lucile.Node\Lucile.Node.njsproj", "{62EFBB30-3561-4A14-B046-6F3AEA521F0F}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -174,6 +176,12 @@ Global
 		{EA6E4F90-532B-44A2-B4AB-8A3A777012D6}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{EA6E4F90-532B-44A2-B4AB-8A3A777012D6}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{EA6E4F90-532B-44A2-B4AB-8A3A777012D6}.Release|Any CPU.Build.0 = Release|Any CPU
+		{62EFBB30-3561-4A14-B046-6F3AEA521F0F}.Debug EF31|Any CPU.ActiveCfg = Debug|Any CPU
+		{62EFBB30-3561-4A14-B046-6F3AEA521F0F}.Debug EF31|Any CPU.Build.0 = Debug|Any CPU
+		{62EFBB30-3561-4A14-B046-6F3AEA521F0F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{62EFBB30-3561-4A14-B046-6F3AEA521F0F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{62EFBB30-3561-4A14-B046-6F3AEA521F0F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{62EFBB30-3561-4A14-B046-6F3AEA521F0F}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -199,6 +207,7 @@ Global
 		{637BE3E5-E856-4FF0-AFF1-B44CE09E59E2} = {FB263B3F-F589-4277-8C98-C3C3E0E65D5F}
 		{F405BF55-A1D1-409A-85AB-90FE33B2D93D} = {67FDFE16-B5A1-481C-8375-87EE40610DC2}
 		{EA6E4F90-532B-44A2-B4AB-8A3A777012D6} = {FB263B3F-F589-4277-8C98-C3C3E0E65D5F}
+		{62EFBB30-3561-4A14-B046-6F3AEA521F0F} = {67FDFE16-B5A1-481C-8375-87EE40610DC2}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {E45E49B1-4BB8-4F18-9335-60428857A33F}

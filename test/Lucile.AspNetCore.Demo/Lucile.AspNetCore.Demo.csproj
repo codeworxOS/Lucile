@@ -18,7 +18,6 @@
 
   <ItemGroup>
     <TypeScriptCompile Include="wwwroot\js\Sample.ts" />
-    <TypeScriptCompile Include="wwwroot\typings\app-settings.d.ts" />
   </ItemGroup>
 
 </Project>
