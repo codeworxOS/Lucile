@@ -17,7 +17,7 @@ $coreVersion =  New-NugetPackages `
                     -NugetServerUrl "https://www.myget.org/F/codeworx/api/v2" `
                     -VersionPackage "Lucile.Core" `
                     -OutputPath "..\dist\nuget" `
-                    -MsBuildParams "SignAssembly=true;AssemblyOriginatorKeyFile=..\..\private\signkey.snk"
+                    -MsBuildParams "SignAssembly=true;AssemblyOriginatorKeyFile=..\..\private\lucile_signkey.snk"
 
 $projects = "..\src\Lucile.EntityFrameworkCore\Lucile.EntityFrameworkCore.csproj"
 
@@ -29,7 +29,7 @@ New-NugetPackages `
     -VersionFilePath "..\version_ef2.json" `
     -DoNotCleanOutput `
     -OutputPath "..\dist\nuget" `
-    -MsBuildParams "SignAssembly=true;AssemblyOriginatorKeyFile=..\..\private\signkey.snk;LucileCoreVersion=$($coreVersion.NugetVersion)"
+    -MsBuildParams "SignAssembly=true;AssemblyOriginatorKeyFile=..\..\private\lucile_signkey.snk;LucileCoreVersion=$($coreVersion.NugetVersion)"
 
 New-NugetPackages `
     -Projects $projects `
@@ -38,4 +38,4 @@ New-NugetPackages `
     -VersionFilePath "..\version_ef3.json" `
     -DoNotCleanOutput `
     -OutputPath "..\dist\nuget" `
-    -MsBuildParams "SignAssembly=true;AssemblyOriginatorKeyFile=..\..\private\signkey.snk;EfVersion=3;LucileCoreVersion=$($coreVersion.NugetVersion)"
+    -MsBuildParams "SignAssembly=true;AssemblyOriginatorKeyFile=..\..\private\lucile_signkey.snk;EfVersion=3;LucileCoreVersion=$($coreVersion.NugetVersion)"
