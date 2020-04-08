@@ -8,10 +8,22 @@ pool:
 steps:
 - task: NodeTool@0
   inputs:
-    versionSpec: '10.x'
+    versionSpec: '12.x'
   displayName: 'Install Node.js'
 
 - script: |
-    npm install
-    npm run build
-  displayName: 'npm install and build'
+    mkdir -p ./dist/npm
+    cd ./dist/npm
+    npm pack ../../src/Lucile.Node/pack/client-settings
+  displayName: 'npm pack'
+
+- task: CopyFiles@2
+  inputs:
+    SourceFolder: './dist/npm'
+    Contents: '*'
+    TargetFolder: '$(Build.ArtifactStagingDirectory)'
+- task: PublishBuildArtifacts@1
+  inputs:
+    PathtoPublish: '$(Build.ArtifactStagingDirectory)'
+    ArtifactName: 'drop'
+    publishLocation: 'Container'
