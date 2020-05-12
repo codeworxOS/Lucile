@@ -103,7 +103,7 @@ namespace Lucile.Data.Metadata
         {
             get
             {
-                return (PropertyMetadata)GetProperties().FirstOrDefault(p => p.Name == propertyName) ?? GetNavigations().FirstOrDefault(p => p.Name == propertyName);
+                return (PropertyMetadata)GetProperties(true).FirstOrDefault(p => p.Name == propertyName) ?? GetNavigations().FirstOrDefault(p => p.Name == propertyName);
             }
         }
 
@@ -188,11 +188,11 @@ namespace Lucile.Data.Metadata
             return null;
         }
 
-        public IEnumerable<ScalarProperty> GetProperties()
+        public IEnumerable<ScalarProperty> GetProperties(bool includeNoneClrProperties)
         {
             if (BaseEntity != null)
             {
-                foreach (var item in BaseEntity.GetProperties())
+                foreach (var item in BaseEntity.GetProperties(includeNoneClrProperties))
                 {
                     yield return item;
                 }
@@ -200,8 +200,18 @@ namespace Lucile.Data.Metadata
 
             foreach (var item in Properties)
             {
+                if (!includeNoneClrProperties && !item.HasClrProperty)
+                {
+                    continue;
+                }
+
                 yield return item;
             }
+        }
+
+        public IEnumerable<ScalarProperty> GetProperties()
+        {
+            return GetProperties(false);
         }
 
         public bool IsOfType(object parameter)

@@ -112,6 +112,29 @@ namespace Tests
         }
 
         [Fact]
+        public void IncludeShadowProperties_ExpectsOk()
+        {
+            var builder = new MetadataModelBuilder();
+            using (var ctx = new TestContext())
+            {
+                builder.UseDbContext(ctx);
+                var entityType = ctx.Model.FindEntityType(typeof(Article));
+                Assert.NotNull(entityType);
+                Assert.NotNull(entityType.FindProperty("CreatedBy"));
+#if EF3
+                Assert.True(entityType.FindProperty("CreatedBy").IsShadowProperty());
+#else 
+                Assert.True(entityType.FindProperty("CreatedBy").IsShadowProperty);
+#endif
+            }
+
+            var model = builder.ToModel();
+
+            var metadataEntry = model.GetEntityMetadata<Article>();
+            Assert.True(metadataEntry.GetProperties(true).Any(p => p.Name == "CreatedBy"));
+        }
+
+        [Fact]
         public void FromDbIdentityAnPrimaryKeyTest()
         {
             var builder = new MetadataModelBuilder();

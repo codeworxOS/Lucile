@@ -68,7 +68,7 @@ namespace Lucile.EntityFramework
 
             foreach (var prop in joined)
             {
-                var propBuilder = entityBuilder.Property(prop.Property.Name);
+                var propBuilder = entityBuilder.Property(prop.Property.Name, prop.Property.UnderlyingPrimitiveType.ClrEquivalentType);
                 propBuilder.Nullable = prop.Property.Nullable;
                 if (prop.Column.IsStoreGeneratedComputed)
                 {

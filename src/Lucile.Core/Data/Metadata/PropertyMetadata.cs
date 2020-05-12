@@ -20,6 +20,8 @@ namespace Lucile.Data.Metadata
             this.Nullable = propBuilder.Nullable;
             var propInfo = this.Entity.ClrType.GetProperty(Name);
 
+            HasClrProperty = propInfo != null;
+
             PropertyType = propInfo?.PropertyType ?? propBuilder.PropertyType.ClrType;
             _defaultValueDelegate = GetDefaultValueDelegate(PropertyType);
 
@@ -45,6 +47,8 @@ namespace Lucile.Data.Metadata
         public EntityMetadata Entity { get; }
 
         public bool Nullable { get; }
+
+        public bool HasClrProperty { get; }
 
         public Type PropertyType { get; }
 
