@@ -36,6 +36,8 @@ namespace Lucile.Data.Metadata.Builder
         [DataMember(Order = 8)]
         public string TargetProperty { get; set; }
 
+        public ClrTypeInfo PropertyType => this.Target;
+
         public void CopyFrom(NavigationPropertyMetadata source)
         {
             this.Target = new ClrTypeInfo(source.TargetEntity.ClrType);

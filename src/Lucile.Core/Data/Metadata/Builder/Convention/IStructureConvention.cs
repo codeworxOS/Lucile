@@ -7,6 +7,6 @@ namespace Lucile.Data.Metadata.Builder.Convention
     {
         IDictionary<string, Type> GetNavigations(Type entity);
 
-        IEnumerable<string> GetScalarProperties(Type entity);
+        IDictionary<string, Type> GetScalarProperties(Type entity);
     }
 }

@@ -202,7 +202,7 @@ namespace Lucile.Linq
                 }
                 else
                 {
-                    entityBuilder.Property(item.Value.PropertyName);
+                    entityBuilder.Property(item.Value.PropertyName, item.Value.PropertyType);
                     if (item.Value.IsPrimaryKey)
                     {
                         entityBuilder.PrimaryKey.Add(item.Value.PropertyName);

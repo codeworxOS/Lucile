@@ -20,14 +20,17 @@ namespace Lucile.Data.Metadata
             this.Nullable = propBuilder.Nullable;
             var propInfo = this.Entity.ClrType.GetProperty(Name);
 
-            PropertyType = propInfo.PropertyType;
-            _defaultValueDelegate = GetDefaultValueDelegate(propInfo.PropertyType);
+            PropertyType = propInfo?.PropertyType ?? propBuilder.PropertyType.ClrType;
+            _defaultValueDelegate = GetDefaultValueDelegate(PropertyType);
 
-            this._getValueDelegate = GetGetValueDelegate(propInfo);
-
-            if (propInfo.CanWrite)
+            if (propInfo != null)
             {
-                this._setValueDelegate = GetSetValueDelegate(propInfo);
+                this._getValueDelegate = GetGetValueDelegate(propInfo);
+
+                if (propInfo.CanWrite)
+                {
+                    this._setValueDelegate = GetSetValueDelegate(propInfo);
+                }
             }
         }
 

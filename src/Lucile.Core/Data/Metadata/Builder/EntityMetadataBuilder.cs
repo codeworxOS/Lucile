@@ -94,7 +94,7 @@ namespace Lucile.Data.Metadata.Builder
 
             foreach (var item in source.Properties)
             {
-                var targetProperty = this.Property(item.Name);
+                var targetProperty = this.Property(item.Name, item.PropertyType.ClrType);
                 targetProperty.CopyFrom(item);
             }
 
@@ -161,7 +161,12 @@ namespace Lucile.Data.Metadata.Builder
             }
         }
 
-        public virtual ScalarPropertyBuilder Property(string name)
+        public virtual ScalarPropertyBuilder Property<TValue>(string name)
+        {
+            return Property(name, typeof(TValue));
+        }
+
+        public virtual ScalarPropertyBuilder Property(string name, Type clrType)
         {
             if (TypeInfo?.ClrType == null)
             {
@@ -177,7 +182,7 @@ namespace Lucile.Data.Metadata.Builder
                 var result = _properties.FirstOrDefault(p => p.Name == name);
                 if (result == null)
                 {
-                    result = CreatePropertyMetadata(name);
+                    result = CreatePropertyMetadata(name, clrType);
                     _properties.Add(result);
                 }
 
@@ -214,26 +219,9 @@ namespace Lucile.Data.Metadata.Builder
             };
         }
 
-        private ScalarPropertyBuilder CreatePropertyMetadata(string name)
+        private ScalarPropertyBuilder CreatePropertyMetadata(string name, Type clrType)
         {
-            var type = TypeInfo.ClrType;
-
-            var propertyInfo = type.GetProperty(name);
-
-            ////if (propertyInfo != null && propertyInfo.DeclaringType != this.TypeInfo.ClrType)
-            ////{
-            ////    var entity = this.ModelBuilder.Entity(propertyInfo.DeclaringType);
-            ////    var prop = entity.Property(name);
-            ////    prop.IsExcluded = entity.IsExcluded;
-            ////    return prop;
-            ////}
-
-            if (propertyInfo == null)
-            {
-                throw new ArgumentException($"Propertys {name} does not exist on Type {type}.", nameof(name));
-            }
-
-            return ScalarPropertyBuilder.CreateScalar(propertyInfo);
+            return ScalarPropertyBuilder.CreateScalar(name, clrType);
         }
     }
 }

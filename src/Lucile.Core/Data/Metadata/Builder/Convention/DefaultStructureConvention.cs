@@ -30,12 +30,13 @@ namespace Lucile.Data.Metadata.Builder.Convention
             return result;
         }
 
-        public IEnumerable<string> GetScalarProperties(Type entity)
+        public IDictionary<string, Type> GetScalarProperties(Type entity)
         {
-            return from p in entity.GetProperties().Where(p => p.DeclaringType == entity)
-                   let ti = p.PropertyType.GetTypeInfo()
-                   where p.CanRead && p.CanWrite && (ti.IsValueType || p.PropertyType == typeof(string))
-                   select p.Name;
+            return (from p in entity.GetProperties().Where(p => p.DeclaringType == entity)
+                    let ti = p.PropertyType.GetTypeInfo()
+                    where p.CanRead && p.CanWrite && (ti.IsValueType || p.PropertyType == typeof(string))
+                    select new { p.Name, p.PropertyType })
+                   .ToDictionary(p => p.Name, p => p.PropertyType);
         }
 
         private static Type GetItemType(Type propertyType)

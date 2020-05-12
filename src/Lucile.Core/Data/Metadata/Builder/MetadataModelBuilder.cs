@@ -70,7 +70,7 @@ namespace Lucile.Data.Metadata.Builder
 
                 foreach (var prop in item.GetProperties().Where(p => p.Entity == item))
                 {
-                    var scalar = entity.Property(prop.Name);
+                    var scalar = entity.Property(prop.Name, prop.PropertyType);
                     scalar.CopyFrom(prop);
                     if (prop.IsPrimaryKey)
                     {
