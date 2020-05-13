@@ -39,7 +39,7 @@ namespace Lucile.Data.Metadata
 
         public EntityMetadata GetEntityMetadata(object parameter)
         {
-            for (int i = Entities.Count - 1; i >= 0; i--)
+            for (int i = 0; i < Entities.Count; i++)
             {
                 if (Entities[i].IsOfType(parameter))
                 {

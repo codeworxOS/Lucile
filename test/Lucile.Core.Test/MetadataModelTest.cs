@@ -336,7 +336,9 @@ namespace Tests
             var builder = new MetadataModelBuilder();
             var receipt = builder.Entity<Receipt>();
             var invoice = builder.Entity<Invoice>();
+            invoice.BaseEntity = receipt;
             var order = builder.Entity<Order>();
+            order.BaseEntity = invoice;
 
             var model = builder.ToModel();
 
