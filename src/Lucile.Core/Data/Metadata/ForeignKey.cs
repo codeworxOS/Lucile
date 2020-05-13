@@ -1,6 +1,6 @@
 ﻿namespace Lucile.Data.Metadata
 {
-    public class ForeignKey
+    public class ForeignKey : IForeignKey
     {
         public ForeignKey(ScalarProperty principal, ScalarProperty dependant)
         {
@@ -11,5 +11,9 @@
         public ScalarProperty Dependant { get; }
 
         public ScalarProperty Principal { get; }
+
+        IScalarProperty IForeignKey.Principal => Principal;
+
+        IScalarProperty IForeignKey.Dependant => Dependant;
     }
 }

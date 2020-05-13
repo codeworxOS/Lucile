@@ -18,12 +18,12 @@ namespace Lucile.Data
         {
         }
 
-        public EntityKey(EntityMetadata entity)
+        public EntityKey(IEntityMetadata entity)
         {
             Entity = entity;
         }
 
-        public EntityMetadata Entity { get; }
+        public IEntityMetadata Entity { get; }
 
         public abstract int KeyCount { get; }
 
@@ -182,7 +182,7 @@ namespace Lucile.Data
         {
         }
 
-        public EntityKey(EntityMetadata entity)
+        public EntityKey(IEntityMetadata entity)
             : base(entity)
         {
         }
@@ -224,7 +224,7 @@ namespace Lucile.Data
         {
         }
 
-        public EntityKey(EntityMetadata entity)
+        public EntityKey(IEntityMetadata entity)
             : base(entity)
         {
         }
@@ -266,7 +266,7 @@ namespace Lucile.Data
         {
         }
 
-        public EntityKey(EntityMetadata entity)
+        public EntityKey(IEntityMetadata entity)
             : base(entity)
         {
         }
@@ -308,7 +308,7 @@ namespace Lucile.Data
         {
         }
 
-        public EntityKey(EntityMetadata entity)
+        public EntityKey(IEntityMetadata entity)
             : base(entity)
         {
         }
@@ -350,7 +350,7 @@ namespace Lucile.Data
         {
         }
 
-        public EntityKey(EntityMetadata entity)
+        public EntityKey(IEntityMetadata entity)
             : base(entity)
         {
         }
@@ -392,7 +392,7 @@ namespace Lucile.Data
         {
         }
 
-        public EntityKey(EntityMetadata entity)
+        public EntityKey(IEntityMetadata entity)
             : base(entity)
         {
         }
@@ -434,7 +434,7 @@ namespace Lucile.Data
         {
         }
 
-        public EntityKey(EntityMetadata entity)
+        public EntityKey(IEntityMetadata entity)
             : base(entity)
         {
         }
@@ -476,7 +476,7 @@ namespace Lucile.Data
         {
         }
 
-        public EntityKey(EntityMetadata entity)
+        public EntityKey(IEntityMetadata entity)
             : base(entity)
         {
         }
@@ -518,7 +518,7 @@ namespace Lucile.Data
         {
         }
 
-        public EntityKey(EntityMetadata entity)
+        public EntityKey(IEntityMetadata entity)
             : base(entity)
         {
         }
@@ -560,7 +560,7 @@ namespace Lucile.Data
         {
         }
 
-        public EntityKey(EntityMetadata entity)
+        public EntityKey(IEntityMetadata entity)
             : base(entity)
         {
         }
@@ -602,7 +602,7 @@ namespace Lucile.Data
         {
         }
 
-        public EntityKey(EntityMetadata entity)
+        public EntityKey(IEntityMetadata entity)
             : base(entity)
         {
         }
@@ -644,7 +644,7 @@ namespace Lucile.Data
         {
         }
 
-        public EntityKey(EntityMetadata entity)
+        public EntityKey(IEntityMetadata entity)
             : base(entity)
         {
         }
@@ -686,7 +686,7 @@ namespace Lucile.Data
         {
         }
 
-        public EntityKey(EntityMetadata entity)
+        public EntityKey(IEntityMetadata entity)
             : base(entity)
         {
         }
@@ -728,7 +728,7 @@ namespace Lucile.Data
         {
         }
 
-        public EntityKey(EntityMetadata entity)
+        public EntityKey(IEntityMetadata entity)
             : base(entity)
         {
         }
@@ -770,7 +770,7 @@ namespace Lucile.Data
         {
         }
 
-        public EntityKey(EntityMetadata entity)
+        public EntityKey(IEntityMetadata entity)
             : base(entity)
         {
         }
@@ -812,7 +812,7 @@ namespace Lucile.Data
         {
         }
 
-        public EntityKey(EntityMetadata entity)
+        public EntityKey(IEntityMetadata entity)
             : base(entity)
         {
         }
@@ -854,7 +854,7 @@ namespace Lucile.Data
         {
         }
 
-        public EntityKey(EntityMetadata entity)
+        public EntityKey(IEntityMetadata entity)
             : base(entity)
         {
         }
@@ -896,7 +896,7 @@ namespace Lucile.Data
         {
         }
 
-        public EntityKey(EntityMetadata entity)
+        public EntityKey(IEntityMetadata entity)
             : base(entity)
         {
         }
@@ -938,7 +938,7 @@ namespace Lucile.Data
         {
         }
 
-        public EntityKey(EntityMetadata entity)
+        public EntityKey(IEntityMetadata entity)
             : base(entity)
         {
         }
@@ -980,7 +980,7 @@ namespace Lucile.Data
         {
         }
 
-        public EntityKey(EntityMetadata entity)
+        public EntityKey(IEntityMetadata entity)
             : base(entity)
         {
         }
@@ -1022,7 +1022,7 @@ namespace Lucile.Data
         {
         }
 
-        public EntityKey(EntityMetadata entity)
+        public EntityKey(IEntityMetadata entity)
             : base(entity)
         {
         }
@@ -1064,7 +1064,7 @@ namespace Lucile.Data
         {
         }
 
-        public EntityKey(EntityMetadata entity)
+        public EntityKey(IEntityMetadata entity)
             : base(entity)
         {
         }
@@ -1106,7 +1106,7 @@ namespace Lucile.Data
         {
         }
 
-        public EntityKey(EntityMetadata entity)
+        public EntityKey(IEntityMetadata entity)
             : base(entity)
         {
         }
@@ -1148,7 +1148,7 @@ namespace Lucile.Data
         {
         }
 
-        public EntityKey(EntityMetadata entity)
+        public EntityKey(IEntityMetadata entity)
             : base(entity)
         {
         }
@@ -1190,7 +1190,7 @@ namespace Lucile.Data
         {
         }
 
-        public EntityKey(EntityMetadata entity)
+        public EntityKey(IEntityMetadata entity)
             : base(entity)
         {
         }
@@ -1232,7 +1232,7 @@ namespace Lucile.Data
         {
         }
 
-        public EntityKey(EntityMetadata entity)
+        public EntityKey(IEntityMetadata entity)
             : base(entity)
         {
         }
@@ -1274,7 +1274,7 @@ namespace Lucile.Data
         {
         }
 
-        public EntityKey(EntityMetadata entity)
+        public EntityKey(IEntityMetadata entity)
             : base(entity)
         {
         }
@@ -1316,7 +1316,7 @@ namespace Lucile.Data
         {
         }
 
-        public EntityKey(EntityMetadata entity)
+        public EntityKey(IEntityMetadata entity)
             : base(entity)
         {
         }
@@ -1358,7 +1358,7 @@ namespace Lucile.Data
         {
         }
 
-        public EntityKey(EntityMetadata entity)
+        public EntityKey(IEntityMetadata entity)
             : base(entity)
         {
         }
@@ -1400,7 +1400,7 @@ namespace Lucile.Data
         {
         }
 
-        public EntityKey(EntityMetadata entity)
+        public EntityKey(IEntityMetadata entity)
             : base(entity)
         {
         }
@@ -1442,7 +1442,7 @@ namespace Lucile.Data
         {
         }
 
-        public EntityKey(EntityMetadata entity)
+        public EntityKey(IEntityMetadata entity)
             : base(entity)
         {
         }
@@ -1484,7 +1484,7 @@ namespace Lucile.Data
         {
         }
 
-        public EntityKey(EntityMetadata entity)
+        public EntityKey(IEntityMetadata entity)
             : base(entity)
         {
         }
@@ -1526,7 +1526,7 @@ namespace Lucile.Data
         {
         }
 
-        public EntityKey(EntityMetadata entity)
+        public EntityKey(IEntityMetadata entity)
             : base(entity)
         {
         }
@@ -1568,7 +1568,7 @@ namespace Lucile.Data
         {
         }
 
-        public EntityKey(EntityMetadata entity)
+        public EntityKey(IEntityMetadata entity)
             : base(entity)
         {
         }
@@ -1610,7 +1610,7 @@ namespace Lucile.Data
         {
         }
 
-        public EntityKey(EntityMetadata entity)
+        public EntityKey(IEntityMetadata entity)
             : base(entity)
         {
         }
@@ -1652,7 +1652,7 @@ namespace Lucile.Data
         {
         }
 
-        public EntityKey(EntityMetadata entity)
+        public EntityKey(IEntityMetadata entity)
             : base(entity)
         {
         }
@@ -1694,7 +1694,7 @@ namespace Lucile.Data
         {
         }
 
-        public EntityKey(EntityMetadata entity)
+        public EntityKey(IEntityMetadata entity)
             : base(entity)
         {
         }
@@ -1736,7 +1736,7 @@ namespace Lucile.Data
         {
         }
 
-        public EntityKey(EntityMetadata entity)
+        public EntityKey(IEntityMetadata entity)
             : base(entity)
         {
         }
@@ -1778,7 +1778,7 @@ namespace Lucile.Data
         {
         }
 
-        public EntityKey(EntityMetadata entity)
+        public EntityKey(IEntityMetadata entity)
             : base(entity)
         {
         }
@@ -1820,7 +1820,7 @@ namespace Lucile.Data
         {
         }
 
-        public EntityKey(EntityMetadata entity)
+        public EntityKey(IEntityMetadata entity)
             : base(entity)
         {
         }
@@ -1862,7 +1862,7 @@ namespace Lucile.Data
         {
         }
 
-        public EntityKey(EntityMetadata entity)
+        public EntityKey(IEntityMetadata entity)
             : base(entity)
         {
         }
@@ -1904,7 +1904,7 @@ namespace Lucile.Data
         {
         }
 
-        public EntityKey(EntityMetadata entity)
+        public EntityKey(IEntityMetadata entity)
             : base(entity)
         {
         }
@@ -1946,7 +1946,7 @@ namespace Lucile.Data
         {
         }
 
-        public EntityKey(EntityMetadata entity)
+        public EntityKey(IEntityMetadata entity)
             : base(entity)
         {
         }
@@ -1988,7 +1988,7 @@ namespace Lucile.Data
         {
         }
 
-        public EntityKey(EntityMetadata entity)
+        public EntityKey(IEntityMetadata entity)
             : base(entity)
         {
         }
@@ -2030,7 +2030,7 @@ namespace Lucile.Data
         {
         }
 
-        public EntityKey(EntityMetadata entity)
+        public EntityKey(IEntityMetadata entity)
             : base(entity)
         {
         }
@@ -2072,7 +2072,7 @@ namespace Lucile.Data
         {
         }
 
-        public EntityKey(EntityMetadata entity)
+        public EntityKey(IEntityMetadata entity)
             : base(entity)
         {
         }
@@ -2114,7 +2114,7 @@ namespace Lucile.Data
         {
         }
 
-        public EntityKey(EntityMetadata entity)
+        public EntityKey(IEntityMetadata entity)
             : base(entity)
         {
         }
@@ -2156,7 +2156,7 @@ namespace Lucile.Data
         {
         }
 
-        public EntityKey(EntityMetadata entity)
+        public EntityKey(IEntityMetadata entity)
             : base(entity)
         {
         }
@@ -2198,7 +2198,7 @@ namespace Lucile.Data
         {
         }
 
-        public EntityKey(EntityMetadata entity)
+        public EntityKey(IEntityMetadata entity)
             : base(entity)
         {
         }
@@ -2240,7 +2240,7 @@ namespace Lucile.Data
         {
         }
 
-        public EntityKey(EntityMetadata entity)
+        public EntityKey(IEntityMetadata entity)
             : base(entity)
         {
         }
