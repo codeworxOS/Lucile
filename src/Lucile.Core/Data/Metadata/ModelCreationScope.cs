@@ -9,11 +9,13 @@ namespace Lucile.Data.Metadata
     internal class ModelCreationScope
     {
         private readonly Dictionary<Type, EntityMetadata> _entities;
+        private readonly IValueAccessorFactory _valueAccessorFactory;
         private readonly MetadataModelBuilder _modelBuilder;
         private readonly Dictionary<EntityMetadata, Dictionary<string, NavigationPropertyMetadata>> _navigationProperties;
 
-        public ModelCreationScope(MetadataModelBuilder builder)
+        public ModelCreationScope(MetadataModelBuilder builder, IValueAccessorFactory valueAccessorFactory)
         {
+            _valueAccessorFactory = valueAccessorFactory;
             _modelBuilder = builder;
             _entities = new Dictionary<Type, EntityMetadata>();
             _navigationProperties = new Dictionary<EntityMetadata, Dictionary<string, NavigationPropertyMetadata>>();
@@ -79,6 +81,11 @@ namespace Lucile.Data.Metadata
             }
 
             return new EntityMetadata(this, entityBuilder);
+        }
+
+        public IEntityValueAccessor GetEntityValueAccessor(IEntityMetadata entityMetadata)
+        {
+            return _valueAccessorFactory.GetAccessor(entityMetadata);
         }
     }
 }

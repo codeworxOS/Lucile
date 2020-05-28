@@ -5,6 +5,7 @@ using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
 using System.Runtime.Serialization;
+using Lucile.Core.Data.Metadata.Expressions;
 
 namespace Lucile.Data.Metadata.Builder
 {
@@ -90,7 +91,12 @@ namespace Lucile.Data.Metadata.Builder
 
         public MetadataModel ToModel()
         {
-            return new MetadataModel(this);
+            return ToModel(new ExpressionValueAccessorFactory());
+        }
+
+        public MetadataModel ToModel(IValueAccessorFactory valueAccessorFactory)
+        {
+            return new MetadataModel(this, valueAccessorFactory);
         }
 
         protected EntityMetadataBuilder Entity(EntityKey entityKey)

@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Linq;
-using System.Linq.Expressions;
 using System.Reflection;
 using Lucile.Data.Metadata.Builder;
 
@@ -10,16 +9,14 @@ namespace Lucile.Data.Metadata
 {
     public class MetadataModel
     {
-        private readonly Func<object, EntityMetadata> _getEntityMetadataDelegate;
-
         public MetadataModel(IEnumerable<EntityMetadata> entities)
         {
             Entities = ImmutableList.CreateRange(entities);
         }
 
-        internal MetadataModel(MetadataModelBuilder modelBuilder)
+        internal MetadataModel(MetadataModelBuilder modelBuilder, IValueAccessorFactory valueAccessorFactory)
         {
-            var scope = new ModelCreationScope(modelBuilder);
+            var scope = new ModelCreationScope(modelBuilder, valueAccessorFactory);
             var unordered = GetSorted(modelBuilder.Entities).Where(p => !p.IsExcluded).Select(p => scope.GetEntity(p.TypeInfo.ClrType)).ToList();
             var targetList = unordered.Where(p => p.BaseEntity == null).OrderBy(p => p.Name).ToList();
 
@@ -36,23 +33,21 @@ namespace Lucile.Data.Metadata
             }
 
             Entities = ImmutableList.CreateRange(targetList);
-
-            Expression body = null;
-            var param = Expression.Parameter(typeof(object));
-
-            for (int i = Entities.Count - 1; i >= 0; i--)
-            {
-                body = Expression.Condition(Expression.TypeIs(param, Entities[i].ClrType), Expression.Constant(Entities[i]), body ?? Expression.Constant(null, typeof(EntityMetadata)));
-            }
-
-            _getEntityMetadataDelegate = Expression.Lambda<Func<object, EntityMetadata>>(body, param).Compile();
         }
 
         public ImmutableList<EntityMetadata> Entities { get; }
 
         public EntityMetadata GetEntityMetadata(object parameter)
         {
-            return _getEntityMetadataDelegate(parameter);
+            for (int i = 0; i < Entities.Count; i++)
+            {
+                if (Entities[i].IsOfType(parameter))
+                {
+                    return Entities[i];
+                }
+            }
+
+            return null;
         }
 
         public EntityMetadata GetEntityMetadata<T>()

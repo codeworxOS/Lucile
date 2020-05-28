@@ -2,13 +2,11 @@
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Linq;
-using System.Linq.Expressions;
-using System.Reflection;
 using Lucile.Data.Metadata.Builder;
 
 namespace Lucile.Data.Metadata
 {
-    public class NavigationPropertyMetadata : PropertyMetadata
+    public class NavigationPropertyMetadata : PropertyMetadata, INavigationProperty
     {
         private Action<object, object> _addItemDelegate;
         private Func<object, object, bool> _matchForeignKeyDelegate;
@@ -70,6 +68,12 @@ namespace Lucile.Data.Metadata
 
         public string TargetNavigationPropertyName { get; }
 
+        INavigationProperty INavigationProperty.TargetNavigationProperty => TargetNavigationProperty;
+
+        IEntityMetadata INavigationProperty.TargetEntity => TargetEntity;
+
+        IEnumerable<IForeignKey> INavigationProperty.ForeignKeyProperties => ForeignKeyProperties;
+
         public void AddItem(object parameter, object value)
         {
             if (this.Multiplicity != NavigationPropertyMultiplicity.Many)
@@ -79,8 +83,7 @@ namespace Lucile.Data.Metadata
 
             if (this._addItemDelegate == null)
             {
-                var lambda = GetCollectionOperationExpression("Add");
-                this._addItemDelegate = lambda.Compile();
+                _addItemDelegate = Entity.ValueAccessor.CreateAddItemDelegate(this);
             }
 
             this._addItemDelegate(parameter, value);
@@ -121,53 +124,7 @@ namespace Lucile.Data.Metadata
 
             if (this._matchForeignKeyDelegate == null)
             {
-                Expression body = null;
-
-                var parameterExpression = Expression.Parameter(typeof(object));
-                var valueParameterExpression = Expression.Parameter(typeof(object));
-
-                var paramConvert = Expression.Convert(parameterExpression, this.Entity.ClrType);
-                var valueConvert = Expression.Convert(valueParameterExpression, this.TargetEntity.ClrType);
-
-                IDictionary<ScalarProperty, ScalarProperty> keyProperties = null;
-
-                if (Multiplicity == NavigationPropertyMultiplicity.One || Multiplicity == NavigationPropertyMultiplicity.ZeroOrOne)
-                {
-                    if (this.TargetNavigationProperty != null && (TargetNavigationProperty.Multiplicity == NavigationPropertyMultiplicity.One || TargetNavigationProperty.Multiplicity == NavigationPropertyMultiplicity.ZeroOrOne))
-                    {
-                        keyProperties = this.Entity.GetProperties()
-                                            .Where(p => p.IsPrimaryKey)
-                                            .Select((p, i) => new { Prop = p, Index = i })
-                                            .ToDictionary(
-                                                p => p.Prop,
-                                                p => this.TargetEntity.GetProperties().Where(x => x.IsPrimaryKey).ElementAt(p.Index));
-                    }
-                }
-
-                if (keyProperties == null)
-                {
-                    keyProperties = this.ForeignKeyProperties.ToDictionary(p => p.Dependant, p => p.Principal);
-                }
-
-                foreach (var item in keyProperties)
-                {
-                    var propLeft = Expression.Property(paramConvert, item.Key.Name);
-                    var propRight = Expression.Property(valueConvert, item.Value.Name);
-
-                    Expression expression = EntityMetadata.GetPropertyCompareExpression(propLeft, propRight);
-
-                    if (body == null)
-                    {
-                        body = expression;
-                    }
-                    else
-                    {
-                        body = Expression.And(body, expression);
-                    }
-                }
-
-                var lambda = Expression.Lambda<Func<object, object, bool>>(body, parameterExpression, valueParameterExpression);
-                this._matchForeignKeyDelegate = lambda.Compile();
+                _matchForeignKeyDelegate = Entity.ValueAccessor.CreatMatchForeignKeyDelegate(this);
             }
 
             return this._matchForeignKeyDelegate(parameter, navigationValue);
@@ -182,8 +139,7 @@ namespace Lucile.Data.Metadata
 
             if (this._removeItemDelegate == null)
             {
-                var lambda = GetCollectionOperationExpression("Remove");
-                this._removeItemDelegate = lambda.Compile();
+                _removeItemDelegate = Entity.ValueAccessor.CreateRemoveItemDelegate(this);
             }
 
             this._removeItemDelegate(parameter, value);
@@ -215,34 +171,6 @@ namespace Lucile.Data.Metadata
             }
 
             return false;
-        }
-
-        private Expression<Action<object, object>> GetCollectionOperationExpression(string methodName)
-        {
-            var parameterExpression = Expression.Parameter(typeof(object));
-            var valueParameterExpression = Expression.Parameter(typeof(object));
-
-            var lookupType = TargetEntity.ClrType;
-
-            var addExpression = typeof(ICollection<>)
-                                    .MakeGenericType(lookupType)
-                                    .GetMethod(methodName);
-
-            var propertyExpression = Expression.Property(Expression.Convert(parameterExpression, Entity.ClrType), this.Name);
-
-            Expression body = Expression.Call(propertyExpression, addExpression, Expression.Convert(valueParameterExpression, lookupType));
-
-            if (methodName == "Add")
-            {
-                var contains = typeof(ICollection<>)
-                                    .MakeGenericType(lookupType)
-                                    .GetMethod("Contains");
-
-                body = Expression.Condition(Expression.Call(propertyExpression, contains, Expression.Convert(valueParameterExpression, lookupType)), Expression.Empty(), body);
-            }
-
-            var lambda = Expression.Lambda<Action<object, object>>(body, parameterExpression, valueParameterExpression);
-            return lambda;
         }
     }
 }

@@ -39,3 +39,5 @@ New-NugetPackages `
     -DoNotCleanOutput `
     -OutputPath "..\dist\nuget" `
     -MsBuildParams "SignAssembly=true;AssemblyOriginatorKeyFile=..\..\private\lucile_signkey.snk;EfVersion=3;LucileCoreVersion=$($coreVersion.NugetVersion)"
+
+Write-Host "##vso[build.updatebuildnumber]$($coreVersion.NugetVersion)"
