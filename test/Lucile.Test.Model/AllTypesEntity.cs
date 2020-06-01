@@ -16,6 +16,8 @@ namespace Lucile.Test.Model
 
         public double DoubleProperty { get; set; }
 
+        public ReceiptType EnumProperty { get; set; }
+
         public float FloatProperty { get; set; }
 
         public int Id { get; set; }
@@ -33,6 +35,8 @@ namespace Lucile.Test.Model
         public decimal? NullableDecimalProperty { get; set; }
 
         public double? NullableDoubleProperty { get; set; }
+
+        public ReceiptType? NullableEnumProperty { get; set; }
 
         public float? NullableFloatProperty { get; set; }
 
