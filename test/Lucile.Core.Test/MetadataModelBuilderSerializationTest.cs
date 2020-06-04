@@ -15,6 +15,62 @@ namespace Tests
     public class MetadataModelBuilderSerializationTest
     {
         [Fact]
+        public void DataContractSerializationPreviousVersionDeserializationTest()
+        {
+            MetadataModelBuilder builder = null;
+            
+            using (var ms = typeof(MetadataModelBuilderSerializationTest).Assembly.GetManifestResourceStream("Lucile.Core.Test.Serialization.previous-model.xml"))
+            {
+                var ser = new DataContractSerializer(typeof(MetadataModelBuilder));
+                builder = ser.ReadObject(ms) as MetadataModelBuilder;
+            }
+
+            var model = builder.ToModel();
+
+            TestModelValidations.ValidateInvoiceArticleDefaultModel(model);
+        }
+
+        [Fact]
+        public void ProtoBufSerializationPreviousVersionDeserializationTest()
+        {
+            MetadataModelBuilder builder = null;
+
+            using (var ms = typeof(MetadataModelBuilderSerializationTest).Assembly.GetManifestResourceStream("Lucile.Core.Test.Serialization.previous-model.proto"))
+            {
+                builder = ProtoBuf.Serializer.Deserialize<MetadataModelBuilder>(ms);
+            }
+
+            var model = builder.ToModel();
+
+            TestModelValidations.ValidateInvoiceArticleDefaultModel(model);
+        }
+
+        [Fact]
+        public void JsonSerializationPreviousVersionDeserializationTest()
+        {
+            MetadataModelBuilder builder = null;
+
+            using (var ms = typeof(MetadataModelBuilderSerializationTest).Assembly.GetManifestResourceStream("Lucile.Core.Test.Serialization.previous-model.json"))
+            {
+                var json = new JsonSerializerSettings();
+                json.Converters.Add(new LucileJsonInheritanceConverter());
+
+                var serializer = JsonSerializer.Create(json);
+              
+                using (var streamReader = new StreamReader(ms))
+                using (var jsonReader = new JsonTextReader(streamReader))
+                {
+                    builder = serializer.Deserialize<MetadataModelBuilder>(jsonReader);
+                }
+            }
+
+            var model = builder.ToModel();
+
+            TestModelValidations.ValidateInvoiceArticleDefaultModel(model);
+        }
+
+
+        [Fact]
         public void DataContractSerializationDeserializationTest()
         {
             var builder = new MetadataModelBuilder();
