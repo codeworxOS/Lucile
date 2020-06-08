@@ -22,12 +22,14 @@ namespace Lucile.Data.Metadata
         internal PropertyMetadata(EntityMetadata entity, IMetadataBuilder propBuilder)
             : base(propBuilder.Name)
         {
+            var clrProperty = entity.ClrType.GetProperty(propBuilder.Name);
+
             Entity = entity;
             Nullable = propBuilder.Nullable;
-            PropertyType = propBuilder.PropertyType.ClrType;
+            PropertyType = propBuilder.PropertyType?.ClrType ?? clrProperty?.PropertyType;
             Default = _defaultValueCache.GetOrAdd(PropertyType, p => CreateDefaultValue(p));
 
-            HasClrProperty = entity.ClrType.GetProperty(propBuilder.Name) != null;
+            HasClrProperty = clrProperty != null;
         }
 
         public object Default { get; }

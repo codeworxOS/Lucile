@@ -68,7 +68,9 @@ namespace Lucile.EntityFramework
 
             foreach (var prop in joined)
             {
-                var propBuilder = entityBuilder.Property(prop.Property.Name, prop.Property.UnderlyingPrimitiveType.ClrEquivalentType);
+                var propertyClrType = metadata.GetClrTypeFromCSpaceType(prop.Property);
+
+                var propBuilder = entityBuilder.Property(prop.Property.Name, propertyClrType);
                 propBuilder.Nullable = prop.Property.Nullable;
                 if (prop.Column.IsStoreGeneratedComputed)
                 {
@@ -141,6 +143,47 @@ namespace Lucile.EntityFramework
             }
 
             return entityBuilder;
+        }
+
+        private static Type GetClrTypeFromCSpaceType(this MetadataWorkspace workspace, EdmProperty edmProperty)
+        {
+            EdmType edmType = null;
+
+            if (edmProperty.IsEnumType)
+            {
+                edmType = edmProperty.EnumType;
+            }
+            else if (edmProperty.IsPrimitiveType)
+            {
+                edmType = edmProperty.PrimitiveType;
+            }
+            else if (edmProperty.IsUnderlyingPrimitiveType)
+            {
+                edmType = edmProperty.UnderlyingPrimitiveType;
+            }
+            else if (edmProperty.IsComplexType)
+            {
+                edmType = edmProperty.ComplexType;
+            }
+
+            var itemCollection = (ObjectItemCollection)workspace.GetItemCollection(DataSpace.OSpace);
+
+            if (edmType is StructuralType)
+            {
+                var objectSpaceType = workspace.GetObjectSpaceType((StructuralType)edmType);
+                return itemCollection.GetClrType(objectSpaceType);
+            }
+            else if (edmType is EnumType)
+            {
+                var objectSpaceType = workspace.GetObjectSpaceType((EnumType)edmType);
+                return itemCollection.GetClrType(objectSpaceType);
+            }
+            else if (edmType is PrimitiveType)
+            {
+                return ((PrimitiveType)edmType).ClrEquivalentType;
+            }
+
+            return null;
         }
 
         private static NavigationPropertyMultiplicity GetMultiplicity(RelationshipMultiplicity relationshipMultiplicity)
