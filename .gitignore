@@ -260,3 +260,4 @@ __pycache__/
 *.pyc
 /private
 /tools/publish-local.cmd
+/dist

@@ -23,7 +23,7 @@ namespace Lucile.Data.Metadata
             {
                 foreach (var item in structureConventions.SelectMany(p => p.GetScalarProperties(entity.TypeInfo.ClrType)).Distinct())
                 {
-                    entity.Property(item);
+                    entity.Property(item.Key, item.Value);
                 }
             }
 

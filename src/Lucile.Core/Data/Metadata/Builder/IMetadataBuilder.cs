@@ -2,10 +2,12 @@
 {
     public interface IMetadataBuilder
     {
-        bool IsExcluded { get; set; }
+        ClrTypeInfo PropertyType { get; }
 
-        string Name { get; set; }
+        bool IsExcluded { get; }
 
-        bool Nullable { get; set; }
+        string Name { get; }
+
+        bool Nullable { get; }
     }
 }

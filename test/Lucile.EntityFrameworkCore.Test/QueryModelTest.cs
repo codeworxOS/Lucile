@@ -25,7 +25,7 @@ namespace Lucile.EntityFrameworkCore.Test
                 var compiledQueryCache = GetCompiledQueryCache(context);
                 var previousNumberOfCacheEntries = GetNumberOfCacheEntries(compiledQueryCache);
                 var expectedNumberOfCacheEntries = previousNumberOfCacheEntries + 1;
-                
+
                 for (int i = 0; i < 10; i++)
                 {
                     var queryModel = QueryModel.Create(
@@ -86,7 +86,7 @@ namespace Lucile.EntityFrameworkCore.Test
                 var currentNumberOfCacheEntries = GetNumberOfCacheEntries(compiledQueryCache);
                 Assert.Equal(expectedNumberOfCacheEntries, currentNumberOfCacheEntries);
             }
-       }
+        }
 
         [Fact]
         public async Task GeneratedQueryWithStringFilterEqualityTest()
@@ -170,6 +170,47 @@ namespace Lucile.EntityFrameworkCore.Test
             }
         }
 
+        [Fact]
+        public async Task ExcludeDateTimePropertiesWithSelectItemsOnCustomType()
+        {
+
+            var optionsBuilder = new DbContextOptionsBuilder<TestContext>();
+            optionsBuilder.UseSqlServer("Data Source=(localdb)\\mssqllocaldb;Initial Catalog=LucileTestContext;Integrated Security=true;");
+
+            using (var context = new TestContext(optionsBuilder.Options))
+            {
+                await context.Database.EnsureDeletedAsync();
+                await context.Database.EnsureCreatedAsync();
+
+                await FillDatabaseAsync(context);
+
+                var querySource = new DbContextQuerySource(context);
+
+                var queryModel = QueryModel.Create(
+                builder => builder.Get<ReceiptDetail>(),
+                builder => new ReceiptDetailInfo
+                {
+                    ReceiptId = builder.ReceiptId,
+                    Description = builder.Description,
+                    DeliveryTime = builder.DeliveryTime
+
+                })
+                .HasKey(receipt => receipt.ReceiptId)
+                .Build();
+
+                var selectItems = new[] {
+                    new SelectItem("ReceiptId"),
+                    new SelectItem("Description")
+                };
+
+                var queryConfiguration = new QueryConfiguration(selectItems);
+                var query1 = queryModel.GetQuery(querySource, queryConfiguration);
+                var result1 = await query1.ToListAsync();
+
+                Assert.All(result1, p => Assembly.Equals(DateTime.MinValue, p.DeliveryTime));
+            }
+        }
+
 
         [Fact]
         public async Task GeneratedQueryWithNumericFilterEqualityTest()
@@ -212,6 +253,61 @@ namespace Lucile.EntityFrameworkCore.Test
             }
         }
 
+        private async Task FillDatabaseAsync(TestContext context)
+        {
+            var country = new Country
+            {
+                CountryName = "Austria"
+            };
+
+            var customer = new Contact
+            {
+                Id = Guid.NewGuid(),
+                ContactType = ContactType.Customer,
+                Country = country,
+                FirstName = "Test",
+                LastName = "Customer",
+                Identity = "test@customer.com",
+                Street = "Teststreet"
+
+            };
+
+            var receipt = new Invoice
+            {
+                Id = Guid.NewGuid(),
+                ReceiptType = ReceiptType.Invoice,
+                ReceiptNumber = "1234",
+                ReceiptDate = DateTime.Today,
+                Customer = customer
+            };
+
+            var detail1 = new ReceiptDetail
+            {
+                Id = Guid.NewGuid(),
+                Amount = 1,
+                DeliveryTime = DateTime.Now.AddDays(2),
+                Description = "desc1",
+                Receipt = receipt,
+                Enabled = true,
+                Price = 123.5m,
+            };
+
+            var detail2 = new ReceiptDetail
+            {
+                Id = Guid.NewGuid(),
+                Amount = 1,
+                DeliveryTime = DateTime.Now.AddDays(2),
+                Description = "desc1",
+                Receipt = receipt,
+                Enabled = true,
+                Price = 123.5m,
+            };
+
+            await context.AddRangeAsync(country, customer, receipt, detail1, detail2);
+
+            await context.SaveChangesAsync();
+        }
+
         private ICompiledQueryCache GetCompiledQueryCache(DbContext context)
         {
             var compiledQueryCache = context.GetService<ICompiledQueryCache>();
@@ -226,6 +322,14 @@ namespace Lucile.EntityFrameworkCore.Test
             var memoryCache = (MemoryCache)memoryCacheField.GetValue(compiledQueryCache);
             var numberOfCacheEntries = memoryCache.Count;
             return numberOfCacheEntries;
+        }
+
+        private class ReceiptDetailInfo
+        {
+            public Guid ReceiptId { get; set; }
+            public string Description { get; set; }
+            public DateTime DeliveryTime { get; set; }
+            public DateTime CreationTime { get; internal set; }
         }
     }
 }

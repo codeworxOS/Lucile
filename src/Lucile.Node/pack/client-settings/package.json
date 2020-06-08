@@ -1,0 +1,21 @@
+{
+    "name": "@types/lucile",
+    "version": "1.0.0",
+    "description": "TypeScript definitions for lucile clientsettings",
+    "license": "MIT",
+    "contributors": [
+        {
+            "name": "Raphael Schwarz",
+            "url": "https://github.com/schwarzr",
+            "githubUsername": "schwarzr"
+        }
+    ],
+    "main": "",
+    "types": "index.d.ts",
+    "repository": {
+      "type": "git",
+      "url": "https://github.com/codeworxOS/Lucile.git",
+      "directory": "types/jquery"
+    },
+    "scripts": {}
+}

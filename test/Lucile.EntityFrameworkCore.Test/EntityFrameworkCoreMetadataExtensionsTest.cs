@@ -20,6 +20,32 @@ namespace Tests
     public class EntityFrameworkCoreMetadataExtensions20Test
 #endif
     {
+        [Fact]
+        public void CheckEnumProperties()
+        {
+            var builder = new MetadataModelBuilder();
+
+            using (var ctx = new TestContext())
+            {
+                builder.UseDbContext(ctx);
+            }
+
+            var model = builder.ToModel();
+
+            var enumProperty = model.GetEntityMetadata<AllTypesEntity>().GetProperties().First(p => p.Name == nameof(AllTypesEntity.EnumProperty));
+            var nullableEnumProperty = model.GetEntityMetadata<AllTypesEntity>().GetProperties().First(p => p.Name == nameof(AllTypesEntity.NullableEnumProperty));
+
+            Assert.IsType<EnumProperty>(enumProperty);
+            Assert.IsType<EnumProperty>(nullableEnumProperty);
+
+            Assert.False(enumProperty.Nullable);
+            Assert.True(nullableEnumProperty.Nullable);
+
+            Assert.Equal(NumericPropertyType.Byte, ((EnumProperty)enumProperty).UnderlyingNumericType);
+            Assert.Equal(NumericPropertyType.Byte, ((EnumProperty)nullableEnumProperty).UnderlyingNumericType);
+        }
+
+
 
         [Fact]
         public void MaxLengthAnnotation_ExpectsValue()
@@ -109,6 +135,29 @@ namespace Tests
 
             var metadataEntry = model.GetEntityMetadata<Article>();
             Assert.False(metadataEntry.GetProperties().Any(p => p.Name == "CreatedBy"));
+        }
+
+        [Fact]
+        public void IncludeShadowProperties_ExpectsOk()
+        {
+            var builder = new MetadataModelBuilder();
+            using (var ctx = new TestContext())
+            {
+                builder.UseDbContext(ctx);
+                var entityType = ctx.Model.FindEntityType(typeof(Article));
+                Assert.NotNull(entityType);
+                Assert.NotNull(entityType.FindProperty("CreatedBy"));
+#if EF3
+                Assert.True(entityType.FindProperty("CreatedBy").IsShadowProperty());
+#else 
+                Assert.True(entityType.FindProperty("CreatedBy").IsShadowProperty);
+#endif
+            }
+
+            var model = builder.ToModel();
+
+            var metadataEntry = model.GetEntityMetadata<Article>();
+            Assert.True(metadataEntry.GetProperties(true).Any(p => p.Name == "CreatedBy"));
         }
 
         [Fact]

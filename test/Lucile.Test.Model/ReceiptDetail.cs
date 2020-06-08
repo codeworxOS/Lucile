@@ -1,19 +1,14 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 
 namespace Lucile.Test.Model
 {
-    public class ReceiptDetail : EntityBase
+    public class ReceiptDetail : EntityWithDeliveryTime
     {
         public decimal Amount { get; set; }
 
         public Article Article { get; set; }
 
         public Guid? ArticleId { get; set; }
-
-        public DateTime DeliveryTime { get; set; }
 
         public string Description { get; set; }
 

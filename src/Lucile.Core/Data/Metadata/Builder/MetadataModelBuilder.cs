@@ -5,6 +5,7 @@ using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
 using System.Runtime.Serialization;
+using Lucile.Core.Data.Metadata.Expressions;
 
 namespace Lucile.Data.Metadata.Builder
 {
@@ -70,7 +71,7 @@ namespace Lucile.Data.Metadata.Builder
 
                 foreach (var prop in item.GetProperties().Where(p => p.Entity == item))
                 {
-                    var scalar = entity.Property(prop.Name);
+                    var scalar = entity.Property(prop.Name, prop.PropertyType);
                     scalar.CopyFrom(prop);
                     if (prop.IsPrimaryKey)
                     {
@@ -90,7 +91,12 @@ namespace Lucile.Data.Metadata.Builder
 
         public MetadataModel ToModel()
         {
-            return new MetadataModel(this);
+            return ToModel(new ExpressionValueAccessorFactory());
+        }
+
+        public MetadataModel ToModel(IValueAccessorFactory valueAccessorFactory)
+        {
+            return new MetadataModel(this, valueAccessorFactory);
         }
 
         protected EntityMetadataBuilder Entity(EntityKey entityKey)

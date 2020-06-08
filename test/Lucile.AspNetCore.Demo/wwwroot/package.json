@@ -1,0 +1,9 @@
+{
+  "version": "1.0.0",
+  "name": "asp.net",
+  "private": true,
+  "dependencies": {
+    "@types/lucile": "file:../../../src/Lucile.Node/pack/client-settings"
+  },
+  "devDependencies": {}
+}

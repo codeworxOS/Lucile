@@ -34,11 +34,11 @@ namespace Lucile.Data.Metadata.Builder
                 {
                     _clrType = value;
                     var assemblyName = _clrType?.GetTypeInfo()?.Assembly?.GetName();
-                    assemblyName.Version = null;
 
                     if (assemblyName != null)
                     {
-                        _clrTypeName = $"{_clrType?.FullName}, {assemblyName}";
+                        assemblyName.Version = null;
+                        _clrTypeName = $"{_clrType.FullName}, {assemblyName.Name}";
                     }
                     else
                     {
@@ -60,13 +60,19 @@ namespace Lucile.Data.Metadata.Builder
             {
                 if (_clrTypeName != value)
                 {
-                    _clrTypeName = value;
-                    if (_clrTypeName == null)
+                    if (value == null)
                     {
                         _clrType = null;
+                        _clrTypeName = null;
                     }
                     else
                     {
+                        var index = GetSeparatorIndex(value);
+
+                        var typeNameToken = value.Substring(0, index);
+                        var assemblyNameToken = value.Substring(index + 1);
+                        var assemblyName = new AssemblyName(assemblyNameToken);
+                        _clrTypeName = $"{typeNameToken}, {assemblyName.Name}";
                         _clrType = Type.GetType(_clrTypeName);
                     }
                 }
@@ -89,6 +95,32 @@ namespace Lucile.Data.Metadata.Builder
 #pragma warning disable RECS0025 // Non-readonly field referenced in 'GetHashCode()'
             return _clrType?.GetHashCode() ?? 0;
 #pragma warning restore RECS0025 // Non-readonly field referenced in 'GetHashCode()'
+        }
+
+        private int GetSeparatorIndex(string value)
+        {
+            int genericBracetCount = 0;
+            for (int i = 0; i < value.Length; i++)
+            {
+                switch (value[i])
+                {
+                    case '[':
+                        genericBracetCount++;
+                        break;
+                    case ']':
+                        genericBracetCount--;
+                        break;
+                    case ',':
+                        if (genericBracetCount == 0)
+                        {
+                            return i;
+                        }
+
+                        break;
+                }
+            }
+
+            return value.Length - 1;
         }
     }
 }

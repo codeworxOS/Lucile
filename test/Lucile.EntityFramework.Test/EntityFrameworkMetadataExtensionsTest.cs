@@ -15,6 +15,31 @@ namespace Tests
     public class EntityFrameworkMetadataExtensionsTest
     {
         [Fact]
+        public void CheckEnumProperties()
+        {
+            var builder = new MetadataModelBuilder();
+
+            using (var ctx = CreateContext())
+            {
+                builder.UseDbContext(ctx);
+            }
+
+            var model = builder.ToModel();
+
+            var enumProperty = model.GetEntityMetadata<AllTypesEntity>().GetProperties().First(p => p.Name == nameof(AllTypesEntity.EnumProperty));
+            var nullableEnumProperty = model.GetEntityMetadata<AllTypesEntity>().GetProperties().First(p => p.Name == nameof(AllTypesEntity.NullableEnumProperty));
+
+            Assert.IsType<EnumProperty>(enumProperty);
+            Assert.IsType<EnumProperty>(nullableEnumProperty);
+
+            Assert.False(enumProperty.Nullable);
+            Assert.True(nullableEnumProperty.Nullable);
+
+            Assert.Equal(NumericPropertyType.Byte, ((EnumProperty)enumProperty).UnderlyingNumericType);
+            Assert.Equal(NumericPropertyType.Byte, ((EnumProperty)nullableEnumProperty).UnderlyingNumericType);
+        }
+
+        [Fact]
         public void DefaultValueAnnotationTest()
         {
             var builder = new MetadataModelBuilder();

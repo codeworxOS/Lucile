@@ -43,46 +43,57 @@ namespace Lucile.Data.Metadata.Builder
         [DataMember(Order = 4)]
         public AutoGenerateValue ValueGeneration { get; set; }
 
+        [DataMember(Order = 6)]
+        public ClrTypeInfo PropertyType { get; set; }
+
         public static ScalarPropertyBuilder CreateScalar(PropertyInfo propertyInfo)
         {
-            var nullable = System.Nullable.GetUnderlyingType(propertyInfo.PropertyType);
+            return CreateScalar(propertyInfo.Name, propertyInfo.PropertyType);
+        }
 
-            var type = nullable ?? propertyInfo.PropertyType;
+        public static ScalarPropertyBuilder CreateScalar(string propertyName, Type propertyType)
+        {
+            var nullable = System.Nullable.GetUnderlyingType(propertyType);
+
+            var typeInfo = new ClrTypeInfo(propertyType);
+
+            var type = nullable ?? propertyType;
             var numeric = NumericProperty.GetNumericTypeFromClrType(type);
 
             if (type == typeof(string))
             {
-                return new TextPropertyBuilder { Name = propertyInfo.Name, Nullable = true, Unicode = true };
+                return new TextPropertyBuilder { PropertyType = typeInfo, Name = propertyName, Nullable = true, Unicode = true };
             }
             else if (numeric.HasValue)
             {
-                return new NumericPropertyBuilder { Name = propertyInfo.Name, Nullable = nullable != null, NumericType = numeric.Value };
+                return new NumericPropertyBuilder { PropertyType = typeInfo, Name = propertyName, Nullable = nullable != null, NumericType = numeric.Value };
             }
             else if (type == typeof(bool))
             {
-                return new BooleanPropertyBuilder { Name = propertyInfo.Name, Nullable = nullable != null };
+                return new BooleanPropertyBuilder { PropertyType = typeInfo, Name = propertyName, Nullable = nullable != null };
             }
             else if (type == typeof(byte[]))
             {
-                return new BlobPropertyBuilder { Name = propertyInfo.Name, Nullable = true };
+                return new BlobPropertyBuilder { PropertyType = typeInfo, Name = propertyName, Nullable = true };
             }
             else if (type == typeof(DateTime))
             {
-                return new DateTimePropertyBuilder { Name = propertyInfo.Name, Nullable = nullable != null, DateTimeType = DateTimePropertyType.DateTime };
+                return new DateTimePropertyBuilder { PropertyType = typeInfo, Name = propertyName, Nullable = nullable != null, DateTimeType = DateTimePropertyType.DateTime };
             }
             else if (type == typeof(DateTimeOffset))
             {
-                return new DateTimePropertyBuilder { Name = propertyInfo.Name, Nullable = nullable != null, DateTimeType = DateTimePropertyType.DateTimeOffset };
+                return new DateTimePropertyBuilder { PropertyType = typeInfo, Name = propertyName, Nullable = nullable != null, DateTimeType = DateTimePropertyType.DateTimeOffset };
             }
             else if (type == typeof(Guid))
             {
-                return new GuidPropertyBuilder { Name = propertyInfo.Name, Nullable = nullable != null };
+                return new GuidPropertyBuilder { PropertyType = typeInfo, Name = propertyName, Nullable = nullable != null };
             }
             else if (type.GetTypeInfo().IsEnum)
             {
                 return new EnumPropertyBuilder
                 {
-                    Name = propertyInfo.Name,
+                    Name = propertyName,
+                    PropertyType = typeInfo,
                     Nullable = nullable != null,
                     EnumTypeInfo = new ClrTypeInfo(type),
                     UnderlyingNumericType = NumericProperty.GetNumericTypeFromClrType(Enum.GetUnderlyingType(type)).GetValueOrDefault()
@@ -97,6 +108,7 @@ namespace Lucile.Data.Metadata.Builder
             this.IsExcluded = source.IsExcluded;
             this.ValueGeneration = source.ValueGeneration;
             this.Nullable = source.Nullable;
+            this.PropertyType = source.PropertyType;
 
             CopyValues(source);
 
@@ -107,6 +119,7 @@ namespace Lucile.Data.Metadata.Builder
         {
             this.ValueGeneration = source.ValueGeneration;
             this.Nullable = source.Nullable;
+            this.PropertyType = new ClrTypeInfo(source.PropertyType);
 
             CopyValues(source);
 

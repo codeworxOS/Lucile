@@ -15,7 +15,7 @@ namespace Tests
         {
             var builder = new MetadataModelBuilder();
             var prop = builder.Entity<AllTypesEntity>()
-                        .Property("BlobProperty");
+                        .Property(p => p.BlobProperty);
 
             Assert.IsType<BlobPropertyBuilder>(prop);
             Assert.Equal("BlobProperty", prop.Name);
@@ -26,19 +26,17 @@ namespace Tests
         public void EntityMetadataBuilderEnumProperty()
         {
             var builder = new MetadataModelBuilder();
-            var prop = builder.Entity(typeof(Receipt))
-                        .Property("ReceiptType") as EnumPropertyBuilder;
+            var prop = builder.Entity<Receipt>()
+                        .Property(p => p.ReceiptType);
 
-            Assert.IsType<EnumPropertyBuilder>(prop);
             Assert.Equal("ReceiptType", prop.Name);
             Assert.Equal(NumericPropertyType.Byte, prop.UnderlyingNumericType);
             Assert.Equal(typeof(ReceiptType), prop.EnumTypeInfo.ClrType);
             Assert.False(prop.Nullable);
 
-            prop = builder.Entity(typeof(Contact))
-                .Property("ContactType") as EnumPropertyBuilder;
+            prop = builder.Entity<Contact>()
+                .Property(p => p.ContactType);
 
-            Assert.IsType<EnumPropertyBuilder>(prop);
             Assert.Equal("ContactType", prop.Name);
             Assert.Equal(NumericPropertyType.Int32, prop.UnderlyingNumericType);
             Assert.Equal(typeof(ContactType), prop.EnumTypeInfo.ClrType);
@@ -191,91 +189,91 @@ namespace Tests
         {
             var builder = new MetadataModelBuilder().Entity<AllTypesEntity>();
 
-            var prop = builder.Property("NullableByteProperty") as NumericPropertyBuilder;
+            var prop = builder.Property(p => p.NullableByteProperty);
             Assert.Equal(NumericPropertyType.Byte, prop.NumericType);
             Assert.True(prop.Nullable);
 
-            prop = builder.Property("ByteProperty") as NumericPropertyBuilder;
+            prop = builder.Property(p => p.ByteProperty);
             Assert.Equal(NumericPropertyType.Byte, prop.NumericType);
             Assert.False(prop.Nullable);
 
-            prop = builder.Property("NullableSByteProperty") as NumericPropertyBuilder;
+            prop = builder.Property(p => p.NullableSByteProperty);
             Assert.Equal(NumericPropertyType.SByte, prop.NumericType);
             Assert.True(prop.Nullable);
 
-            prop = builder.Property("SByteProperty") as NumericPropertyBuilder;
+            prop = builder.Property(p => p.SByteProperty);
             Assert.Equal(NumericPropertyType.SByte, prop.NumericType);
             Assert.False(prop.Nullable);
 
-            prop = builder.Property("NullableShortProperty") as NumericPropertyBuilder;
+            prop = builder.Property(p => p.NullableShortProperty);
             Assert.Equal(NumericPropertyType.Int16, prop.NumericType);
             Assert.True(prop.Nullable);
 
-            prop = builder.Property("ShortProperty") as NumericPropertyBuilder;
+            prop = builder.Property(p => p.ShortProperty);
             Assert.Equal(NumericPropertyType.Int16, prop.NumericType);
             Assert.False(prop.Nullable);
 
-            prop = builder.Property("NullableUShortProperty") as NumericPropertyBuilder;
+            prop = builder.Property(p => p.NullableUShortProperty);
             Assert.Equal(NumericPropertyType.UInt16, prop.NumericType);
             Assert.True(prop.Nullable);
 
-            prop = builder.Property("UShortProperty") as NumericPropertyBuilder;
+            prop = builder.Property(p => p.UShortProperty);
             Assert.Equal(NumericPropertyType.UInt16, prop.NumericType);
             Assert.False(prop.Nullable);
 
-            prop = builder.Property("NullableIntProperty") as NumericPropertyBuilder;
+            prop = builder.Property(p => p.NullableIntProperty);
             Assert.Equal(NumericPropertyType.Int32, prop.NumericType);
             Assert.True(prop.Nullable);
 
-            prop = builder.Property("IntProperty") as NumericPropertyBuilder;
+            prop = builder.Property(p => p.IntProperty);
             Assert.Equal(NumericPropertyType.Int32, prop.NumericType);
             Assert.False(prop.Nullable);
 
-            prop = builder.Property("NullableUIntProperty") as NumericPropertyBuilder;
+            prop = builder.Property(p => p.NullableUIntProperty);
             Assert.Equal(NumericPropertyType.UInt32, prop.NumericType);
             Assert.True(prop.Nullable);
 
-            prop = builder.Property("UIntProperty") as NumericPropertyBuilder;
+            prop = builder.Property(p => p.UIntProperty);
             Assert.Equal(NumericPropertyType.UInt32, prop.NumericType);
             Assert.False(prop.Nullable);
 
-            prop = builder.Property("NullableLongProperty") as NumericPropertyBuilder;
+            prop = builder.Property(p => p.NullableLongProperty);
             Assert.Equal(NumericPropertyType.Int64, prop.NumericType);
             Assert.True(prop.Nullable);
 
-            prop = builder.Property("LongProperty") as NumericPropertyBuilder;
+            prop = builder.Property(p => p.LongProperty);
             Assert.Equal(NumericPropertyType.Int64, prop.NumericType);
             Assert.False(prop.Nullable);
 
-            prop = builder.Property("NullableULongProperty") as NumericPropertyBuilder;
+            prop = builder.Property(p => p.NullableULongProperty);
             Assert.Equal(NumericPropertyType.UInt64, prop.NumericType);
             Assert.True(prop.Nullable);
 
-            prop = builder.Property("ULongProperty") as NumericPropertyBuilder;
+            prop = builder.Property(p => p.ULongProperty);
             Assert.Equal(NumericPropertyType.UInt64, prop.NumericType);
             Assert.False(prop.Nullable);
 
-            prop = builder.Property("NullableFloatProperty") as NumericPropertyBuilder;
+            prop = builder.Property(p => p.NullableFloatProperty);
             Assert.Equal(NumericPropertyType.Single, prop.NumericType);
             Assert.True(prop.Nullable);
 
-            prop = builder.Property("FloatProperty") as NumericPropertyBuilder;
+            prop = builder.Property(p => p.FloatProperty);
             Assert.Equal(NumericPropertyType.Single, prop.NumericType);
             Assert.False(prop.Nullable);
 
-            prop = builder.Property("NullableDoubleProperty") as NumericPropertyBuilder;
+            prop = builder.Property(p => p.NullableDoubleProperty);
             Assert.Equal(NumericPropertyType.Double, prop.NumericType);
             Assert.True(prop.Nullable);
 
-            prop = builder.Property("DoubleProperty") as NumericPropertyBuilder;
+            prop = builder.Property(p => p.DoubleProperty);
             Assert.Equal(NumericPropertyType.Double, prop.NumericType);
             Assert.False(prop.Nullable);
 
-            prop = builder.Property("NullableDecimalProperty") as NumericPropertyBuilder;
+            prop = builder.Property(p => p.NullableDecimalProperty);
             Assert.Equal(NumericPropertyType.Decimal, prop.NumericType);
             Assert.True(prop.Nullable);
 
-            prop = builder.Property("DecimalProperty") as NumericPropertyBuilder;
+            prop = builder.Property(p => p.DecimalProperty);
             Assert.Equal(NumericPropertyType.Decimal, prop.NumericType);
             Assert.False(prop.Nullable);
         }
@@ -325,7 +323,7 @@ namespace Tests
         {
             var builder = new MetadataModelBuilder();
             var prop = builder.Entity<Receipt>()
-                        .Property("ReceiptNumber");
+                        .Property("ReceiptNumber", typeof(string));
 
             Assert.IsType<TextPropertyBuilder>(prop);
             Assert.Equal("ReceiptNumber", prop.Name);
@@ -338,7 +336,9 @@ namespace Tests
             var builder = new MetadataModelBuilder();
             var receipt = builder.Entity<Receipt>();
             var invoice = builder.Entity<Invoice>();
+            invoice.BaseEntity = receipt;
             var order = builder.Entity<Order>();
+            order.BaseEntity = invoice;
 
             var model = builder.ToModel();
 

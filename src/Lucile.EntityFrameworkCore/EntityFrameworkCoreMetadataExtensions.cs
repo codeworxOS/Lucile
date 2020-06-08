@@ -38,15 +38,9 @@ namespace Lucile.EntityFrameworkCore
 
             var properties = entityType.GetProperties().Where(p => p.DeclaringEntityType == entityType);
 
-#if EF3
-            properties = properties.Where(p => !p.IsShadowProperty());
-#else
-            properties = properties.Where(p => !p.IsShadowProperty);
-#endif
-
             foreach (var prop in properties)
             {
-                var propBuilder = entityBuilder.Property(prop.Name);
+                var propBuilder = entityBuilder.Property(prop.Name, prop.ClrType);
                 propBuilder.Nullable = prop.IsNullable;
                 if (prop.ValueGenerated == ValueGenerated.OnAdd)
                 {

@@ -1,20 +1,32 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
-
   <PropertyGroup>
-    <OutputType>Exe</OutputType>
-    <TargetFramework>netcoreapp2.0</TargetFramework>
+    <TargetFramework>net461</TargetFramework>
     <TreatWarningsAsErrors>false</TreatWarningsAsErrors>
     <Configurations>Debug;Release;Debug EF31</Configurations>
   </PropertyGroup>
-
+  <ItemGroup>
+    <None Remove="Serialization\previous-model.json" />
+    <None Remove="Serialization\previous-model.proto" />
+    <None Remove="Serialization\previous-model.xml" />
+  </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Lucile.Core.Test.Module1\Lucile.Core.Test.Module1.csproj" />
     <ProjectReference Include="..\..\src\Lucile.Core\Lucile.Core.csproj" />
+    <ProjectReference Include="..\Lucile.Signed.Test.Model\Lucile.Signed.Test.Model.csproj" />
     <ProjectReference Include="..\Lucile.Test.Model\Lucile.Test.Model.csproj" />
   </ItemGroup>
 
   <ItemGroup>
     <PackageReference Remove="StyleCop.Analyzers" />
+    <EmbeddedResource Include="Serialization\previous-model.json">
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Serialization\previous-model.proto">
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Serialization\previous-model.xml">
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+    </EmbeddedResource>
     <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="2.0.0" />
     <PackageReference Include="Microsoft.NET.Test.Sdk">
       <Version>15.3.0</Version>
