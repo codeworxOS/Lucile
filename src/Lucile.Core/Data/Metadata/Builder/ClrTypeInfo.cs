@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Linq;
 using System.Reflection;
 using System.Runtime.Serialization;
 
@@ -7,9 +8,14 @@ namespace Lucile.Data.Metadata.Builder
     [DataContract(IsReference = true)]
     public class ClrTypeInfo
     {
+        private static readonly object _systemAssembly;
         private Type _clrType;
-
         private string _clrTypeName;
+
+        static ClrTypeInfo()
+        {
+            _systemAssembly = typeof(object).GetTypeInfo().Assembly;
+        }
 
         public ClrTypeInfo(Type type)
         {
@@ -33,12 +39,9 @@ namespace Lucile.Data.Metadata.Builder
                 if (value != _clrType)
                 {
                     _clrType = value;
-                    var assemblyName = _clrType?.GetTypeInfo()?.Assembly?.GetName();
-
-                    if (assemblyName != null)
+                    if (_clrType != null)
                     {
-                        assemblyName.Version = null;
-                        _clrTypeName = $"{_clrType.FullName}, {assemblyName.Name}";
+                        _clrTypeName = GetTypeName(_clrType);
                     }
                     else
                     {
@@ -69,10 +72,18 @@ namespace Lucile.Data.Metadata.Builder
                     {
                         var index = GetSeparatorIndex(value);
 
-                        var typeNameToken = value.Substring(0, index);
-                        var assemblyNameToken = value.Substring(index + 1);
-                        var assemblyName = new AssemblyName(assemblyNameToken);
-                        _clrTypeName = $"{typeNameToken}, {assemblyName.Name}";
+                        if (index > 0)
+                        {
+                            var typeNameToken = value.Substring(0, index);
+                            var assemblyNameToken = value.Substring(index + 1);
+                            var assemblyName = new AssemblyName(assemblyNameToken);
+                            _clrTypeName = $"{typeNameToken}, {assemblyName.Name}";
+                        }
+                        else
+                        {
+                            _clrTypeName = value;
+                        }
+
                         _clrType = Type.GetType(_clrTypeName);
                     }
                 }
@@ -97,7 +108,7 @@ namespace Lucile.Data.Metadata.Builder
 #pragma warning restore RECS0025 // Non-readonly field referenced in 'GetHashCode()'
         }
 
-        private int GetSeparatorIndex(string value)
+        private static int GetSeparatorIndex(string value)
         {
             int genericBracetCount = 0;
             for (int i = 0; i < value.Length; i++)
@@ -120,7 +131,29 @@ namespace Lucile.Data.Metadata.Builder
                 }
             }
 
-            return value.Length - 1;
+            return -1;
+        }
+
+        private static string GetTypeName(Type clrType)
+        {
+            var result = $"{clrType.Namespace}.{clrType.Name}";
+
+            if (clrType.GetTypeInfo().IsGenericType)
+            {
+                result += $"[{string.Join(", ", clrType.GetGenericArguments().Select(p => $"[{GetTypeName(p)}]"))}]";
+            }
+
+#pragma warning disable CS0253 // totally intentional
+            if (clrType.GetTypeInfo().Assembly == _systemAssembly)
+#pragma warning restore CS0253 // totally intentional
+            {
+                return result;
+            }
+
+            var assemblyName = clrType.GetTypeInfo().Assembly.GetName();
+            result += $", {assemblyName.Name}";
+
+            return result;
         }
     }
 }

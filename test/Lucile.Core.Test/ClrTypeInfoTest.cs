@@ -35,8 +35,31 @@ namespace Lucile.Core.Test
         void SerializeName()
         {
             var info = new ClrTypeInfo(typeof(ClrTypeSample));
-            
+
             Assert.Equal("Lucile.Signed.Test.Model.ClrTypeSample, Lucile.Signed.Test.Model", info.ClrTypeName);
+        }
+
+        [Fact]
+        void DoNotSerializeSystemAssemblyName_SimpleType()
+        {
+            var info = new ClrTypeInfo(typeof(int));
+            Assert.Equal("System.Int32", info.ClrTypeName);
+
+        }
+
+        [Fact]
+        void DoNotSerializeSystemAssemblyName_GenericType()
+        {
+            var name = "Lucile.Data.EntityKey`1[[System.Nullable`1[[System.Guid]]]], Lucile.Core";
+            var type = typeof(Lucile.Data.EntityKey<Guid?>);
+
+            var info = new ClrTypeInfo(type);
+            Assert.Equal(name, info.ClrTypeName);
+
+            info = new ClrTypeInfo();
+            info.ClrTypeName = name;
+
+            Assert.Equal(type, info.ClrType);
         }
     }
 }
