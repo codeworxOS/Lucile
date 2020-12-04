@@ -57,6 +57,8 @@ namespace Lucile.EntityFrameworkCore
                 }
 #endif
 
+                propBuilder.HasDefaultValue = (prop.FindAnnotation("Relational:DefaultValue") ?? prop.FindAnnotation("Relational:DefaultValueSql")) != null;
+
                 if (propBuilder is TextPropertyBuilder textBuilder)
                 {
                     textBuilder.MaxLength = prop.GetMaxLength();

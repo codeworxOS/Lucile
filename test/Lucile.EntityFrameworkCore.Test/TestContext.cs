@@ -60,11 +60,14 @@ namespace Lucile.EntityFrameworkCore.Test
 
             modelBuilder.Entity<Contact>().HasOne<ContactSettings>().WithOne(p => p.Contact).HasPrincipalKey<Contact>(p => p.Id);
 
+            modelBuilder.Entity<Receipt>().Property(p => p.ReceiptDate).HasDefaultValueSql("getdate()");
+            modelBuilder.Entity<Receipt>().Property(p => p.ReceiptType).HasDefaultValue(ReceiptType.Offer);
+
             var articleEntity = modelBuilder.Entity<Article>();
 
             articleEntity.HasOne(p => p.ArticleSettings).WithOne().HasPrincipalKey<Article>(p => p.Id);
             articleEntity.Property<string>("CreatedBy").HasMaxLength(20);
-
+            
             modelBuilder.Entity<ArticleName>().HasKey(p => new { p.ArticleId, p.LanguageId });
 
             modelBuilder.Model.GetEntityTypes()

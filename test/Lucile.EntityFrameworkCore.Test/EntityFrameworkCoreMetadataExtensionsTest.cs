@@ -46,6 +46,25 @@ namespace Tests
         }
 
 
+        [Fact]
+        public void CheckHasDefautlValue_ExpectsOk()
+        {
+            var builder = new MetadataModelBuilder();
+
+            using (var ctx = new TestContext())
+            {
+                builder.UseDbContext(ctx);
+            }
+
+            var model = builder.ToModel();
+            var entity = model.GetEntityMetadata<Receipt>();
+            var dateProperty = entity.GetProperties().First(p => p.Name == nameof(Receipt.ReceiptDate));
+            var typeProperty = entity.GetProperties().First(p => p.Name == nameof(Receipt.ReceiptType));
+
+            Assert.True(dateProperty.HasDefaultValue);
+            Assert.True(typeProperty.HasDefaultValue);
+        }
+
 
         [Fact]
         public void MaxLengthAnnotation_ExpectsValue()
