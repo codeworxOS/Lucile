@@ -438,6 +438,11 @@ namespace Tests
             builder.Entities = current;
 
             var model = builder.ToModel();
+
+            Assert.Contains(model.Entities, p => p.Name == "SampleEntity");
+            var entity = model.Entities.Find(p => p.Name == "SampleEntity");
+            Assert.Null(entity.ClrType);
+
         }
 
         [Fact]

@@ -17,7 +17,7 @@ namespace Lucile.Data.Metadata
         internal MetadataModel(MetadataModelBuilder modelBuilder, IValueAccessorFactory valueAccessorFactory)
         {
             var scope = new ModelCreationScope(modelBuilder, valueAccessorFactory);
-            var unordered = GetSorted(modelBuilder.Entities).Where(p => !p.IsExcluded).Select(p => scope.GetEntity(p.TypeInfo.ClrType)).ToList();
+            var unordered = GetSorted(modelBuilder.Entities).Where(p => !p.IsExcluded).Select(p => scope.GetEntity(p.TypeInfo)).ToList();
             var targetList = unordered.Where(p => p.BaseEntity == null).OrderBy(p => p.Name).ToList();
 
             targetList.ForEach(p => unordered.Remove(p));

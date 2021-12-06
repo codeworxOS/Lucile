@@ -44,6 +44,11 @@ namespace Lucile.Data.Metadata.Builder
             return Entity(EntityKey.Get(new ClrTypeInfo(clrType)));
         }
 
+        public EntityMetadataBuilder Entity(ClrTypeInfo typeInfo)
+        {
+            return Entity(EntityKey.Get(typeInfo));
+        }
+
         public MetadataModelBuilder Exclude<TEntity>()
             where TEntity : class
         {
@@ -129,7 +134,7 @@ namespace Lucile.Data.Metadata.Builder
 
             public EntityMetadataBuilder GetBuilder(MetadataModelBuilder modelBuilder)
             {
-                return new EntityMetadataBuilder { TypeInfo = _typeInfo.Clone() };
+                return new EntityMetadataBuilder(modelBuilder) { TypeInfo = _typeInfo.Clone() };
             }
         }
     }

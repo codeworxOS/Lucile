@@ -21,8 +21,7 @@ namespace Lucile.Data.Metadata
 
             this.Multiplicity = builder.Multiplicity;
             this.TargetMultiplicity = builder.TargetMultiplicity;
-            this.TargetEntity = scope.GetEntity(builder.Target.ClrType);
-            this.TargetEntity = scope.GetEntity(builder.Target.ClrType);
+            this.TargetEntity = scope.GetEntity(builder.Target);
             if (builder.TargetProperty != null)
             {
                 this.TargetNavigationPropertyName = builder.TargetProperty;
