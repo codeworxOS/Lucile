@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using System.Runtime.Serialization;
@@ -6,7 +7,7 @@ using System.Runtime.Serialization;
 namespace Lucile.Data.Metadata.Builder
 {
     [DataContract(IsReference = true)]
-    public class ClrTypeInfo
+    public class ClrTypeInfo : IEquatable<ClrTypeInfo>
     {
         private static readonly object _systemAssembly;
         private Type _clrType;
@@ -90,21 +91,65 @@ namespace Lucile.Data.Metadata.Builder
             }
         }
 
+        // this is second one '!='
+        public static bool operator !=(ClrTypeInfo obj1, ClrTypeInfo obj2)
+        {
+            return !(obj1 == obj2);
+        }
+
+        public static bool operator ==(ClrTypeInfo obj1, ClrTypeInfo obj2)
+        {
+            if (object.ReferenceEquals(obj1, null) && object.ReferenceEquals(obj2, null))
+            {
+                return true;
+            }
+            else if (object.ReferenceEquals(obj1, null) || object.ReferenceEquals(obj2, null))
+            {
+                return false;
+            }
+
+            return obj1.Equals(obj2);
+        }
+
+        public ClrTypeInfo Clone()
+        {
+            return new ClrTypeInfo
+            {
+                _clrType = _clrType,
+                _clrTypeName = _clrTypeName
+            };
+        }
+
         public override bool Equals(object obj)
         {
             var typedObj = obj as ClrTypeInfo;
             if (typedObj != null)
             {
-                return typedObj.ClrType.Equals(_clrType);
+                return Equals(typedObj);
             }
 
             return object.ReferenceEquals(this, obj);
         }
 
+        public bool Equals(ClrTypeInfo other)
+        {
+            return other._clrType?.Equals(_clrType) ?? other._clrTypeName.Equals(_clrTypeName);
+        }
+
+        public string GetFriendlyName()
+        {
+            if (_clrType != null)
+            {
+                return _clrType.GetFriendlyName();
+            }
+
+            return ParseTypeName(_clrTypeName);
+        }
+
         public override int GetHashCode()
         {
 #pragma warning disable RECS0025 // Non-readonly field referenced in 'GetHashCode()'
-            return _clrType?.GetHashCode() ?? 0;
+            return _clrType?.GetHashCode() ?? _clrTypeName?.GetHashCode() ?? 0;
 #pragma warning restore RECS0025 // Non-readonly field referenced in 'GetHashCode()'
         }
 
@@ -154,6 +199,61 @@ namespace Lucile.Data.Metadata.Builder
             result += $", {assemblyName.Name}";
 
             return result;
+        }
+
+        private string ParseTypeName(string clrTypeName)
+        {
+            var index = GetSeparatorIndex(clrTypeName);
+            var type = clrTypeName;
+
+            if (index > 0)
+            {
+                type = clrTypeName.Substring(0, index);
+            }
+
+            var genericIndex = type.IndexOf("[");
+
+            if (genericIndex >= 0)
+            {
+                var name = type.Substring(0, type.IndexOf('`'));
+                name = name.Split('.').Last();
+
+                List<string> generics = new List<string>();
+                string currentGeneric = null;
+                int bracetCount = 0;
+                for (int i = genericIndex + 1; i < type.Length; i++)
+                {
+                    if (bracetCount > 0)
+                    {
+                        if (type[i] == '[')
+                        {
+                            bracetCount++;
+                        }
+                        else if (type[i] == ']')
+                        {
+                            bracetCount--;
+                        }
+
+                        if (bracetCount > 0)
+                        {
+                            currentGeneric += type[i];
+                        }
+                        else
+                        {
+                            generics.Add(ParseTypeName(currentGeneric));
+                        }
+                    }
+                    else if (type[i] == '[')
+                    {
+                        bracetCount++;
+                        currentGeneric = string.Empty;
+                    }
+                }
+
+                return $"{name}<{string.Join(",", generics)}>";
+            }
+
+            return type.Split('.').Last();
         }
     }
 }

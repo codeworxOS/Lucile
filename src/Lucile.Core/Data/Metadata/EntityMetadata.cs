@@ -14,7 +14,7 @@ namespace Lucile.Data.Metadata
         internal EntityMetadata(ModelCreationScope scope, EntityMetadataBuilder builder)
             : base(builder.Name)
         {
-            scope.AddEntity(builder.TypeInfo.ClrType, this);
+            scope.AddEntity(builder.TypeInfo, this);
             this.ClrType = builder.TypeInfo.ClrType;
 
             var childListBuilder = ImmutableList.CreateBuilder<EntityMetadata>();
@@ -32,10 +32,10 @@ namespace Lucile.Data.Metadata
 
             if (builder.BaseEntity != null)
             {
-                BaseEntity = scope.GetEntity(builder.BaseEntity.TypeInfo.ClrType);
+                BaseEntity = scope.GetEntity(builder.BaseEntity.TypeInfo);
             }
 
-            childListBuilder.AddRange(scope.GetChildEntities(builder.TypeInfo.ClrType));
+            childListBuilder.AddRange(scope.GetChildEntities(builder.TypeInfo));
             ChildEntities = childListBuilder.ToImmutable();
 
             foreach (var item in builder.Navigations.Where(p => !p.IsExcluded))
@@ -49,9 +49,12 @@ namespace Lucile.Data.Metadata
             _primaryKeys = primaryKeys.ToImmutableList();
             PrimaryKeyCount = _primaryKeys.Count;
 
-            _entityValueAccesssor = scope.GetEntityValueAccessor(this);
+            if (ClrType != null)
+            {
+                _entityValueAccesssor = scope.GetEntityValueAccessor(this);
 
-            PrimaryKeyType = _entityValueAccesssor.GetPrimaryKeyType();
+                PrimaryKeyType = _entityValueAccesssor.GetPrimaryKeyType();
+            }
         }
 
         public EntityMetadata BaseEntity
