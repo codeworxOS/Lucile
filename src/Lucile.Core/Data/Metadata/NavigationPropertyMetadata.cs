@@ -22,6 +22,7 @@ namespace Lucile.Data.Metadata
             this.Multiplicity = builder.Multiplicity;
             this.TargetMultiplicity = builder.TargetMultiplicity;
             this.TargetEntity = scope.GetEntity(builder.Target.ClrType);
+            this.TargetEntity = scope.GetEntity(builder.Target.ClrType);
             if (builder.TargetProperty != null)
             {
                 this.TargetNavigationPropertyName = builder.TargetProperty;
@@ -34,7 +35,7 @@ namespace Lucile.Data.Metadata
             for (int i = 0; i < builder.ForeignKey.Count; i++)
             {
                 var fk = builder.ForeignKey[i];
-                foreignKeyBuilder.Add(new ForeignKey(principalKeys[i], entity.GetProperties().First(p => p.Name == fk)));
+                foreignKeyBuilder.Add(new ForeignKey(principalKeys[i], entity.GetProperties(true).First(p => p.Name == fk)));
             }
 
             ForeignKeyProperties = foreignKeyBuilder.ToImmutable();

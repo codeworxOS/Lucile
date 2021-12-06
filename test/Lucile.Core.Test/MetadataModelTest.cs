@@ -387,6 +387,60 @@ namespace Tests
         }
 
         [Fact]
+        public void TestNoneClrForeignKeyProperty_Expects_Ok()
+        {
+            var builder = new MetadataModelBuilder();
+
+            var article = builder.Entity<Article>();
+            article.PrimaryKey.Add("Id");
+            article.Property(p => p.Id);
+            article.Property("CountryId", typeof(Guid?));
+
+            var nav = new NavigationPropertyBuilder();
+            nav.Name = "Country";
+            nav.ForeignKey.Add("CountryId");
+            nav.Target = new ClrTypeInfo(typeof(Country));
+            nav.Nullable = true;
+            article.Navigations.Add(nav);
+
+            var country = builder.Entity<Country>();
+            country.Property(p => p.Id);
+            country.PrimaryKey.Add("Id");
+
+            var model = builder.ToModel();
+        }
+
+        [Fact]
+        public void TestNoneExistingEntityType_Expects_Ok()
+        {
+            var builder = new MetadataModelBuilder();
+
+            var article = builder.Entity<Article>();
+            article.PrimaryKey.Add("Id");
+            article.Property(p => p.Id);
+
+            var country = builder.Entity<Country>();
+            country.Property(p => p.Id);
+            country.PrimaryKey.Add("Id");
+
+            var current = builder.Entities.ToList();
+
+            var entityBuilder = new EntityMetadataBuilder()
+            {
+                TypeInfo = new ClrTypeInfo { ClrTypeName = "Definitily.None.Existing.SampleEntity, Definitily.None.Existing" },
+            };
+
+            entityBuilder.Properties.Add(new GuidPropertyBuilder { Name = "Id", PropertyType = new ClrTypeInfo(typeof(Guid)) });
+            entityBuilder.PrimaryKey.Add("Id");
+
+            current.Add(entityBuilder);
+
+            builder.Entities = current;
+
+            var model = builder.ToModel();
+        }
+
+        [Fact]
         public void GetTargetNavigationPropertyPerformance()
         {
             var builder = new MetadataModelBuilder();

@@ -90,12 +90,21 @@ namespace Lucile.Data.Metadata.Builder
             }
         }
 
+        public ClrTypeInfo Clone()
+        {
+            return new ClrTypeInfo
+            {
+                _clrType = _clrType,
+                _clrTypeName = _clrTypeName
+            };
+        }
+
         public override bool Equals(object obj)
         {
             var typedObj = obj as ClrTypeInfo;
             if (typedObj != null)
             {
-                return typedObj.ClrType.Equals(_clrType);
+                return typedObj.ClrType?.Equals(_clrType) ?? typedObj.ClrTypeName.Equals(_clrTypeName);
             }
 
             return object.ReferenceEquals(this, obj);
@@ -104,7 +113,7 @@ namespace Lucile.Data.Metadata.Builder
         public override int GetHashCode()
         {
 #pragma warning disable RECS0025 // Non-readonly field referenced in 'GetHashCode()'
-            return _clrType?.GetHashCode() ?? 0;
+            return _clrType?.GetHashCode() ?? _clrTypeName?.GetHashCode() ?? 0;
 #pragma warning restore RECS0025 // Non-readonly field referenced in 'GetHashCode()'
         }
 
