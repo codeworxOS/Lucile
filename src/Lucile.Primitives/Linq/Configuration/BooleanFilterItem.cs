@@ -28,16 +28,16 @@ namespace Lucile.Linq.Configuration
             switch (Operator)
             {
                 case BooleanOperator.IsTrue:
-                    return value;
+                    return Expression.Equal(value, Expression.Constant(true, value.Type));
 
                 case BooleanOperator.IsFalse:
-                    return Expression.Not(value);
+                    return Expression.Equal(value, Expression.Constant(false, value.Type));
 
                 case BooleanOperator.IsNull:
-                    return Expression.Equal(value, Expression.Constant(null, typeof(bool?)));
+                    return Expression.Equal(value, Expression.Constant(null, value.Type));
 
                 case BooleanOperator.IsNotNull:
-                    return Expression.NotEqual(value, Expression.Constant(null, typeof(bool?)));
+                    return Expression.NotEqual(value, Expression.Constant(null, value.Type));
             }
 
             throw new NotSupportedException();

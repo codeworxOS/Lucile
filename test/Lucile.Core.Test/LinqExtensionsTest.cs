@@ -37,6 +37,34 @@ namespace Tests
             Assert.Single(result);
         }
 
+
+        [Fact]
+        public void ApplyBooleanFilterItem_NullableBoolean_Not()
+        {
+            var items = new List<ReceiptDetail>
+            {
+                new ReceiptDetail { Disabled = true, },
+                new ReceiptDetail { Disabled = null, },
+                new ReceiptDetail { Disabled = false, }
+            };
+
+            var query = items.AsQueryable();
+
+            var builder = new BooleanFilterItemBuilder
+            {
+                Value = new PathValueExpressionBuilder { Path = "Disabled" },
+                Operator = BooleanOperator.IsFalse
+            };
+
+
+            var configBuilder = new QueryConfigurationBuilder();
+            configBuilder.FilterItems.Add(builder);
+
+            var result = query.Apply(configBuilder.Build());
+
+            Assert.Single(result);
+        }
+
         [Fact]
         public void ApplyConfig()
         {
