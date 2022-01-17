@@ -64,6 +64,49 @@ namespace Tests
         }
 
         [Fact]
+        public void NotAnyFilterItemTest()
+        {
+            var id1 = Guid.NewGuid();
+            var id2 = Guid.NewGuid();
+
+            var receipt1 = new Invoice
+            {
+                Id = id1,
+            };
+
+            var receipt2 = new Invoice
+            {
+                Id = id2,
+                Details = {
+                    new ReceiptDetail { Price = 100 }
+                }
+            };
+
+            var receipts = new List<Receipt>() {
+                receipt1,
+                receipt2
+            };
+
+            var filterItem = new AnyFilterItemBuilder()
+            {
+                Operator = AnyOperator.NotAny,
+                Path = "Details",
+            };
+
+            var query = receipts.AsQueryable().ApplyFilterItem(filterItem.Build());
+            Assert.Equal(1, query.Count());
+
+            Assert.Equal(id1, query.First().Id);
+
+            filterItem.Operator = AnyOperator.Any;
+
+            query = receipts.AsQueryable().ApplyFilterItem(filterItem.Build());
+            Assert.Equal(1, query.Count());
+
+            Assert.Equal(id2, query.First().Id);
+        }
+
+        [Fact]
         public void GeneratedQueryWithComplexModelEqualityTest()
         {
             var expectedQueryModel = GetSampleModel();

@@ -12,9 +12,19 @@ namespace Lucile.Linq.Configuration
         {
             Path = path;
             Filter = item;
+            Operator = AnyOperator.Any;
+        }
+
+        public AnyFilterItem(PathValueExpression path, FilterItem item, AnyOperator anyOperator)
+        {
+            Path = path;
+            Filter = item;
+            Operator = anyOperator;
         }
 
         public FilterItem Filter { get; }
+
+        public AnyOperator Operator { get; }
 
         public PathValueExpression Path { get; }
 
@@ -41,9 +51,25 @@ namespace Lucile.Linq.Configuration
 
             var param = Expression.Parameter(elementType);
 
-            var lambda = Expression.Lambda(Filter.GetExpression(param), param);
+            Expression result = null;
 
-            return Expression.Call(EnumerableInfo.AnyCondition.MakeGenericMethod(elementType), pathExpression, lambda);
+            if (Filter != null)
+            {
+                var lambda = Expression.Lambda(Filter.GetExpression(param), param);
+
+                result = Expression.Call(EnumerableInfo.AnyCondition.MakeGenericMethod(elementType), pathExpression, lambda);
+            }
+            else
+            {
+                result = Expression.Call(EnumerableInfo.Any.MakeGenericMethod(elementType), pathExpression);
+            }
+
+            if (Operator == AnyOperator.NotAny)
+            {
+                result = Expression.Not(result);
+            }
+
+            return result;
         }
     }
 }
