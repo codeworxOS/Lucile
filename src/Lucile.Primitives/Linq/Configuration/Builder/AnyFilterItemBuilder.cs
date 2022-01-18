@@ -6,7 +6,7 @@ namespace Lucile.Linq.Configuration.Builder
     public class AnyFilterItemBuilder : FilterItemBuilder
     {
         [DataMember(Order = 3)]
-        public AnyOperator Operator { get; set; }
+        public AnyOperator? Operator { get; set; }
 
         [DataMember(Order = 2)]
         public FilterItemBuilder Filter { get; set; }
@@ -29,7 +29,7 @@ namespace Lucile.Linq.Configuration.Builder
 
         protected override FilterItem BuildTarget()
         {
-            return new AnyFilterItem(new PathValueExpression(this.Path), this.Filter?.Build(), Operator);
+            return new AnyFilterItem(new PathValueExpression(this.Path), this.Filter?.Build(), Operator ?? AnyOperator.Any);
         }
     }
 }
