@@ -52,8 +52,12 @@ namespace Lucile.EntityFrameworkCore.Test
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
-
+#if EF3
             modelBuilder.Query<ArticleStatistics>();
+#else
+            modelBuilder.Entity<ArticleStatistics>().HasNoKey();
+#endif
+
 
             modelBuilder.Entity<Order>();
             modelBuilder.Entity<Invoice>();
@@ -67,7 +71,7 @@ namespace Lucile.EntityFrameworkCore.Test
 
             articleEntity.HasOne(p => p.ArticleSettings).WithOne().HasPrincipalKey<Article>(p => p.Id);
             articleEntity.Property<string>("CreatedBy").HasMaxLength(20);
-            
+
             modelBuilder.Entity<ArticleName>().HasKey(p => new { p.ArticleId, p.LanguageId });
 
             modelBuilder.Model.GetEntityTypes()

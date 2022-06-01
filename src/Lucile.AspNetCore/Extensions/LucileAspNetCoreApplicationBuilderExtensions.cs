@@ -1,8 +1,5 @@
 ﻿using Lucile.AspNetCore.ClientSettings;
-
-#if NETCOREAPP3_1
 using Microsoft.AspNetCore.Routing;
-#endif
 
 namespace Microsoft.AspNetCore.Builder
 {
@@ -15,7 +12,6 @@ namespace Microsoft.AspNetCore.Builder
             return app;
         }
 
-#if NETCOREAPP3_1
         public static IEndpointConventionBuilder MapClientSettings(this IEndpointRouteBuilder endpoint, string path)
         {
             var pipeline = endpoint.CreateApplicationBuilder()
@@ -25,6 +21,5 @@ namespace Microsoft.AspNetCore.Builder
             return endpoint.Map(path, pipeline)
                         .WithDisplayName("Client Settings");
         }
-#endif
     }
 }
