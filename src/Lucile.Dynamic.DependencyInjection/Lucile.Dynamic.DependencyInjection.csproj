@@ -2,7 +2,7 @@
 
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
-    <Configurations>Debug;Release;Debug EF31</Configurations>
+    <Configurations>Debug;Release;Debug EF31;Debug EF50;Debug EF60</Configurations>
   </PropertyGroup>
 
   <ItemGroup>

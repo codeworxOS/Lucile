@@ -29,6 +29,14 @@
   <PropertyGroup Condition=" '$(Configuration)' == 'Release' ">
     <DebugSymbols>true</DebugSymbols>
   </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)' == 'Debug EF50' ">
+    <DebugSymbols>true</DebugSymbols>
+    <OutputPath>bin\Debug EF50\</OutputPath>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)' == 'Debug EF60' ">
+    <DebugSymbols>true</DebugSymbols>
+    <OutputPath>bin\Debug EF60\</OutputPath>
+  </PropertyGroup>
   <ItemGroup>
     <None Include="app.ts" />
     <Content Include="package.json" />

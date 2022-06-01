@@ -1,8 +1,8 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <TargetFramework>net461</TargetFramework>
+    <TargetFramework>net6</TargetFramework>
     <TreatWarningsAsErrors>false</TreatWarningsAsErrors>
-    <Configurations>Debug;Release;Debug EF31</Configurations>
+    <Configurations>Debug;Release;Debug EF31;Debug EF50;Debug EF60</Configurations>
   </PropertyGroup>
   <ItemGroup>
     <None Remove="Serialization\previous-model.json" />
