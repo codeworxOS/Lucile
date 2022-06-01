@@ -4,21 +4,13 @@ using Lucile.Data.Metadata;
 using Lucile.Data.Metadata.Builder;
 using Lucile.EntityFrameworkCore;
 using Lucile.EntityFrameworkCore.Test;
-using Lucile.Linq;
 using Lucile.Test.Model;
 using Microsoft.EntityFrameworkCore;
-using ProtoBuf.Meta;
 using Xunit;
 
 namespace Tests
 {
-#if (NETCOREAPP1_1)
-
-    public class EntityFrameworkCoreMetadataExtensions11Test
-#else
-
     public class EntityFrameworkCoreMetadataExtensions20Test
-#endif
     {
         [Fact]
         public void CheckEnumProperties()
@@ -45,6 +37,25 @@ namespace Tests
             Assert.Equal(NumericPropertyType.Byte, ((EnumProperty)nullableEnumProperty).UnderlyingNumericType);
         }
 
+
+        [Fact]
+        public void CheckHasDefautlValue_ExpectsOk()
+        {
+            var builder = new MetadataModelBuilder();
+
+            using (var ctx = new TestContext())
+            {
+                builder.UseDbContext(ctx);
+            }
+
+            var model = builder.ToModel();
+            var entity = model.GetEntityMetadata<Receipt>();
+            var dateProperty = entity.GetProperties().First(p => p.Name == nameof(Receipt.ReceiptDate));
+            var typeProperty = entity.GetProperties().First(p => p.Name == nameof(Receipt.ReceiptType));
+
+            Assert.True(dateProperty.HasDefaultValue);
+            Assert.True(typeProperty.HasDefaultValue);
+        }
 
 
         [Fact]
@@ -124,11 +135,7 @@ namespace Tests
                 var entityType = ctx.Model.FindEntityType(typeof(Article));
                 Assert.NotNull(entityType);
                 Assert.NotNull(entityType.FindProperty("CreatedBy"));
-#if EF3
                 Assert.True(entityType.FindProperty("CreatedBy").IsShadowProperty());
-#else 
-                Assert.True(entityType.FindProperty("CreatedBy").IsShadowProperty);
-#endif
             }
 
             var model = builder.ToModel();
@@ -147,11 +154,7 @@ namespace Tests
                 var entityType = ctx.Model.FindEntityType(typeof(Article));
                 Assert.NotNull(entityType);
                 Assert.NotNull(entityType.FindProperty("CreatedBy"));
-#if EF3
                 Assert.True(entityType.FindProperty("CreatedBy").IsShadowProperty());
-#else 
-                Assert.True(entityType.FindProperty("CreatedBy").IsShadowProperty);
-#endif
             }
 
             var model = builder.ToModel();

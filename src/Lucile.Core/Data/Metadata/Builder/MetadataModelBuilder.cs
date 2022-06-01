@@ -2,8 +2,6 @@
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
-using System.Linq.Expressions;
-using System.Reflection;
 using System.Runtime.Serialization;
 using Lucile.Core.Data.Metadata.Expressions;
 
@@ -30,7 +28,7 @@ namespace Lucile.Data.Metadata.Builder
 
             set
             {
-                var values = value.ToDictionary(p => EntityKey.Get(p.TypeInfo.ClrType), p => p);
+                var values = value.ToDictionary(p => EntityKey.Get(p.TypeInfo), p => p);
                 _entities = new ConcurrentDictionary<EntityKey, EntityMetadataBuilder>(values);
             }
         }
@@ -43,7 +41,12 @@ namespace Lucile.Data.Metadata.Builder
 
         public EntityMetadataBuilder Entity(Type clrType)
         {
-            return Entity(EntityKey.Get(clrType));
+            return Entity(EntityKey.Get(new ClrTypeInfo(clrType)));
+        }
+
+        public EntityMetadataBuilder Entity(ClrTypeInfo typeInfo)
+        {
+            return Entity(EntityKey.Get(typeInfo));
         }
 
         public MetadataModelBuilder Exclude<TEntity>()
@@ -104,51 +107,34 @@ namespace Lucile.Data.Metadata.Builder
             return _entities.GetOrAdd(entityKey, p => p.GetBuilder(this));
         }
 
-        protected abstract class EntityKey
+        protected class EntityKey
         {
-            private static readonly ConcurrentDictionary<Type, Func<EntityKey>> _keys;
+            private static readonly ConcurrentDictionary<ClrTypeInfo, EntityKey> _keys;
+            private readonly ClrTypeInfo _typeInfo;
 
             static EntityKey()
             {
-                _keys = new ConcurrentDictionary<Type, Func<Builder.MetadataModelBuilder.EntityKey>>();
+                _keys = new ConcurrentDictionary<ClrTypeInfo, EntityKey>();
             }
 
-            public static EntityKey Get(Type clrType)
+            private EntityKey(ClrTypeInfo typeInfo)
             {
-                return _keys.GetOrAdd(clrType, CreateEntityKeyDelegate)();
+                _typeInfo = typeInfo;
+            }
+
+            public static EntityKey Get(ClrTypeInfo clrTypeInfo)
+            {
+                return _keys.GetOrAdd(clrTypeInfo, p => new EntityKey(p));
             }
 
             public static EntityKey Get<TEntity>()
             {
-                return EntityKey<TEntity>.Key;
+                return Get(new ClrTypeInfo(typeof(TEntity)));
             }
 
-            public abstract EntityMetadataBuilder GetBuilder(MetadataModelBuilder modelBuilder);
-
-            private static Func<EntityKey> CreateEntityKeyDelegate(Type entityType)
+            public EntityMetadataBuilder GetBuilder(MetadataModelBuilder modelBuilder)
             {
-                var body = Expression.Property(null, typeof(EntityKey<>).MakeGenericType(entityType).GetProperty("Key", BindingFlags.Public | BindingFlags.Static));
-
-                return Expression.Lambda<Func<EntityKey>>(body).Compile();
-            }
-        }
-
-        private class EntityKey<TEntity> : EntityKey
-        {
-            static EntityKey()
-            {
-                Key = new EntityKey<TEntity>();
-            }
-
-            private EntityKey()
-            {
-            }
-
-            public static EntityKey Key { get; }
-
-            public override EntityMetadataBuilder GetBuilder(MetadataModelBuilder modelBuilder)
-            {
-                return new EntityMetadataBuilder(modelBuilder) { TypeInfo = new ClrTypeInfo(typeof(TEntity)) };
+                return new EntityMetadataBuilder(modelBuilder) { TypeInfo = _typeInfo.Clone() };
             }
         }
     }

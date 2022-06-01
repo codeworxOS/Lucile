@@ -14,6 +14,8 @@ namespace Lucile.Test.Model
 
         public bool Enabled { get; set; }
 
+        public bool? Disabled { get; set; }
+
         public Guid Id { get; set; }
 
         public decimal Price { get; set; }

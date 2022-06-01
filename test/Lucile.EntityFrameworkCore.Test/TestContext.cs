@@ -52,13 +52,20 @@ namespace Lucile.EntityFrameworkCore.Test
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
-
+#if EF3
             modelBuilder.Query<ArticleStatistics>();
+#else
+            modelBuilder.Entity<ArticleStatistics>().HasNoKey();
+#endif
+
 
             modelBuilder.Entity<Order>();
             modelBuilder.Entity<Invoice>();
 
             modelBuilder.Entity<Contact>().HasOne<ContactSettings>().WithOne(p => p.Contact).HasPrincipalKey<Contact>(p => p.Id);
+
+            modelBuilder.Entity<Receipt>().Property(p => p.ReceiptDate).HasDefaultValueSql("getdate()");
+            modelBuilder.Entity<Receipt>().Property(p => p.ReceiptType).HasDefaultValue(ReceiptType.Offer);
 
             var articleEntity = modelBuilder.Entity<Article>();
 

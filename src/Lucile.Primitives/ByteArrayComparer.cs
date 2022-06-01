@@ -1,4 +1,4 @@
-﻿#if NETSTANDARD2_0
+﻿#if !NETSTANDARD1_3
 using System.Collections.Generic;
 using System.Runtime.InteropServices;
 

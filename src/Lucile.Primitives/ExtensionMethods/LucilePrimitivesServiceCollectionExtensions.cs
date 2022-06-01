@@ -77,14 +77,7 @@ namespace Microsoft.Extensions.DependencyInjection
 
             if (connected == null)
             {
-                var defaultConnected = serviceProvider.GetService<IDefaultConnected<TService>>();
-
-                if (defaultConnected == null)
-                {
-                    throw new MissingDefaultConnectedException();
-                }
-
-                connected = defaultConnected;
+                connected = serviceProvider.GetService<IDefaultConnected<TService>>();
             }
 
             return connected?.GetService();

@@ -120,6 +120,7 @@ namespace Lucile.Data.Metadata.Builder
             this.ValueGeneration = source.ValueGeneration;
             this.Nullable = source.Nullable;
             this.PropertyType = new ClrTypeInfo(source.PropertyType);
+            this.HasDefaultValue = source.HasDefaultValue;
 
             CopyValues(source);
 

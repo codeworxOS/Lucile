@@ -22,7 +22,7 @@ namespace Lucile.Data.Metadata
         internal PropertyMetadata(EntityMetadata entity, IMetadataBuilder propBuilder)
             : base(propBuilder.Name)
         {
-            var clrProperty = entity.ClrType.GetProperty(propBuilder.Name);
+            var clrProperty = entity.ClrType?.GetProperty(propBuilder.Name);
 
             Entity = entity;
             Nullable = propBuilder.Nullable;

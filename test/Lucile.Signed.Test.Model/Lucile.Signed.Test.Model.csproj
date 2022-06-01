@@ -4,6 +4,7 @@
     <TargetFramework>netstandard2.0</TargetFramework>
     <SignAssembly>true</SignAssembly>
     <AssemblyOriginatorKeyFile>testSignKey.snk</AssemblyOriginatorKeyFile>
+    <Configurations>Debug;Release;Debug EF50;Debug EF60</Configurations>
   </PropertyGroup>
 
 </Project>

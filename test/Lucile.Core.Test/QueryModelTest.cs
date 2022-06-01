@@ -1,17 +1,64 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Linq.Expressions;
 using Lucile.Linq;
 using Lucile.Linq.Configuration;
 using Lucile.Linq.Configuration.Builder;
 using Lucile.Test.Model;
+using Newtonsoft.Json.Serialization;
 using Xunit;
 
 namespace Tests
 {
     public class QueryModelTest
     {
+        [Fact]
+        public void AnyFilterItemNewtonsoftSerializationTest()
+        {
+            var value =
+@"{
+    ""type"": ""AnyFilterItemBuilder"",
+    ""path"": ""Details"",
+    ""operator"": null,
+}";
+            var settings = new Newtonsoft.Json.JsonSerializerSettings();
+            settings.ContractResolver = new CamelCasePropertyNamesContractResolver();
+
+
+            var builder = Newtonsoft.Json.JsonConvert.DeserializeObject<AnyFilterItemBuilder>(value);
+
+            Assert.Equal("Details", builder.Path);
+            Assert.Null(builder.Filter);
+            Assert.Null(builder.Operator);
+        }
+
+        [Fact]
+        public void AnyFilterItemProtobufSerializationTest()
+        {
+            var value = new AnyFilterItemBuilder
+            {
+                Path = "Details",
+            };
+
+            AnyFilterItemBuilder newValue;
+
+            using (var ms = new MemoryStream())
+            {
+                ProtoBuf.Serializer.Serialize(ms, value);
+                ms.Seek(0, SeekOrigin.Begin);
+
+                newValue = ProtoBuf.Serializer.Deserialize<AnyFilterItemBuilder>(ms);
+            }
+
+            Assert.Equal("Details", newValue.Path);
+            Assert.Null(newValue.Filter);
+            Assert.Null(newValue.Operator);
+        }
+
+
+
         [Fact]
         public void AnyFilterItemTest()
         {
@@ -56,6 +103,49 @@ namespace Tests
             Assert.Equal(id1, query.First().Id);
 
             ((NumericFilterItemBuilder)filterItem.Filter).Operator = RelationalCompareOperator.LessThenOrEqual;
+
+            query = receipts.AsQueryable().ApplyFilterItem(filterItem.Build());
+            Assert.Equal(1, query.Count());
+
+            Assert.Equal(id2, query.First().Id);
+        }
+
+        [Fact]
+        public void NotAnyFilterItemTest()
+        {
+            var id1 = Guid.NewGuid();
+            var id2 = Guid.NewGuid();
+
+            var receipt1 = new Invoice
+            {
+                Id = id1,
+            };
+
+            var receipt2 = new Invoice
+            {
+                Id = id2,
+                Details = {
+                    new ReceiptDetail { Price = 100 }
+                }
+            };
+
+            var receipts = new List<Receipt>() {
+                receipt1,
+                receipt2
+            };
+
+            var filterItem = new AnyFilterItemBuilder()
+            {
+                Operator = AnyOperator.NotAny,
+                Path = "Details",
+            };
+
+            var query = receipts.AsQueryable().ApplyFilterItem(filterItem.Build());
+            Assert.Equal(1, query.Count());
+
+            Assert.Equal(id1, query.First().Id);
+
+            filterItem.Operator = AnyOperator.Any;
 
             query = receipts.AsQueryable().ApplyFilterItem(filterItem.Build());
             Assert.Equal(1, query.Count());

@@ -14,7 +14,7 @@ namespace Lucile.Core.Test
     public class MetadataModelCustomAccessorTest
     {
 
-        [Fact]
+        [Fact(Skip = "To be implemented")]
         public void TestCustomAccessor_ExpectsNoError()
         {
             var builder = new MetadataModelBuilder();
