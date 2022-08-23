@@ -6,6 +6,8 @@ using System.Linq.Expressions;
 using System.Reflection;
 using Lucile.Data.Metadata.Builder;
 using Lucile.Linq.Configuration;
+using Lucile.Linq.Expressions;
+using Lucile.Mapper;
 
 namespace Lucile.Linq
 {
@@ -52,12 +54,12 @@ namespace Lucile.Linq
 
         public bool IsSingleSourceQuery { get; }
 
-        public QueryModel<TResult> Build()
+        public QueryModel<TResult> Build(IMapperFactory mapperFactory = null)
         {
             List<PropertyConfiguration> propConfigs;
             List<SourceEntityConfiguration> sourceEntityConfigs;
             Data.Metadata.EntityMetadata entity;
-            BuildModel(out propConfigs, out sourceEntityConfigs, out entity);
+            BuildModel(out propConfigs, out sourceEntityConfigs, out entity, mapperFactory);
 
             return new QueryModel<TResult>(typeof(TSource), entity, sourceEntityConfigs, propConfigs);
         }
@@ -185,16 +187,51 @@ namespace Lucile.Linq
             return methodCallExpression != null && methodCallExpression.Object == param && methodCallExpression.Method.Name == "Get";
         }
 
-        private void BuildModel(out List<PropertyConfiguration> propConfigs, out List<SourceEntityConfiguration> sourceEntityConfigs, out Data.Metadata.EntityMetadata entity)
+        private void BuildModel(out List<PropertyConfiguration> propConfigs, out List<SourceEntityConfiguration> sourceEntityConfigs, out Data.Metadata.EntityMetadata entity, IMapperFactory mapperFactory = null)
         {
             var entityModelBuilder = new MetadataModelBuilder();
             var entityBuilder = entityModelBuilder.Entity<TResult>();
 
             propConfigs = new List<PropertyConfiguration>();
             sourceEntityConfigs = _sourceBuilders.Select(p => p.Value.ToTarget()).ToList();
+
+            var props = new Dictionary<PropertyConfigurationBuilder, LambdaExpression>();
+
             foreach (var item in _propertyBuilders)
             {
                 var expression = item.Value.MappedExpression;
+
+                if (mapperFactory != null)
+                {
+                    var mapVisitor = new FindMapExpressionVisitor();
+                    mapVisitor.Visit(expression);
+                    if (mapVisitor.MapCalls.Any())
+                    {
+                        foreach (var map in mapVisitor.MapCalls)
+                        {
+                            var arguments = map.Method.GetGenericArguments();
+                            var sourceType = arguments[0];
+                            var targetType = arguments[1];
+
+                            var subMapper = mapperFactory.CreateMapper(sourceType, targetType);
+                            if (map.Method.ReturnType == targetType)
+                            {
+                                var subLambda = subMapper.Configuration.ConversionExpression;
+                                var subExpression = subLambda.Body;
+                                subExpression = subExpression.Replace(subLambda.Parameters[0], map.Arguments[0]);
+
+                                expression = expression.Replace(map, subExpression);
+                            }
+                            else if (map.Method.ReturnType == typeof(IEnumerable<>).MakeGenericType(targetType))
+                            {
+                                var selectMethod = DefaultMapperFactory.MethodInfoCache.EnumerableSelectMethod
+                                                        .MakeGenericMethod(sourceType, targetType);
+
+                                expression = expression.Replace(map, Expression.Call(selectMethod, map.Arguments[0], subMapper.Configuration.ConversionExpression));
+                            }
+                        }
+                    }
+                }
 
                 if (expression.Body.NodeType == ExpressionType.New || expression.Body.NodeType == ExpressionType.MemberInit)
                 {
@@ -209,15 +246,17 @@ namespace Lucile.Linq
                     }
                 }
 
+                props.Add(item.Value, expression);
+
                 // TODO: Merge Metadata from mapped Properties
             }
 
             var model = entityModelBuilder.ToModel();
             entity = model.GetEntityMetadata<TResult>();
-            foreach (var item in _propertyBuilders)
+            foreach (var item in props)
             {
-                var prop = entity[item.Value.PropertyName];
-                var config = new PropertyConfiguration(prop, item.Value.Label, item.Value.CanAggregate, item.Value.CanFilter, item.Value.CanSort, item.Value.CustomFilterExpression, item.Value.MappedExpression, !IsSingleSourceQuery);
+                var prop = entity[item.Key.PropertyName];
+                var config = new PropertyConfiguration(prop, item.Key.Label, item.Key.CanAggregate, item.Key.CanFilter, item.Key.CanSort, item.Key.CustomFilterExpression, item.Value, !IsSingleSourceQuery);
                 propConfigs.Add(config);
             }
         }

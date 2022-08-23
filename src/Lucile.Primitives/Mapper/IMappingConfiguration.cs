@@ -3,14 +3,13 @@ using System.Linq.Expressions;
 
 namespace Lucile.Mapper
 {
-    ////[InheritedExport(typeof(IMappingConfiguration))]
     public interface IMappingConfiguration
     {
         Type TargetType { get; }
 
         Type SourceType { get; }
 
-        Expression ConversionExpression { get; }
+        LambdaExpression ConversionExpression { get; }
 
         bool CanConvert(object source);
 

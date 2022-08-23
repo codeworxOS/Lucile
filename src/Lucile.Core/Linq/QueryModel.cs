@@ -6,6 +6,7 @@ using System.Linq.Expressions;
 using System.Reflection;
 using Lucile.Data.Metadata;
 using Lucile.Linq.Configuration;
+using Lucile.Mapper;
 using Lucile.Reflection;
 
 namespace Lucile.Linq
