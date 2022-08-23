@@ -1,19 +1,16 @@
-﻿namespace Lucile
+﻿using System;
+using System.Collections.Concurrent;
+using System.Reflection;
+
+namespace Lucile
 {
-#pragma warning disable RECS0096 // Type parameter is never used
-
-    public static class TypeKey<TType>
-#pragma warning restore RECS0096 // Type parameter is never used
+    public class TypeKey
     {
-#pragma warning disable RECS0108 // Warns about static fields in generic types
-        private static readonly object _key;
-#pragma warning restore RECS0108 // Warns about static fields in generic types
+        private static readonly ConcurrentDictionary<Type, object> _keyCache = new ConcurrentDictionary<Type, object>();
 
-        static TypeKey()
+        public static object ForType(Type type)
         {
-            _key = new object();
+            return _keyCache.GetOrAdd(type, p => typeof(TypeKey<>).MakeGenericType(p).GetProperty("Key", BindingFlags.Static | BindingFlags.Public).GetValue(null));
         }
-
-        public static object Key => _key;
     }
 }
