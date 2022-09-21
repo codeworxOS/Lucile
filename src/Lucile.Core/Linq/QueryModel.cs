@@ -57,8 +57,7 @@ namespace Lucile.Linq
                 var columns = config.Select.ToList();
 
                 var filterPaths = config.TargetFilterItems.SelectMany(p => p.GetValueExpressions()).OfType<PathValueExpression>().Select(p => p.Path).ToList();
-                var fromSortAndFilter = config.Sort.Select(p => p.PropertyPath).Concat(filterPaths)
-                                            .Select(p => p.Split('.').First()).Distinct().ToList();
+                var fromSortAndFilter = config.Sort.Select(p => p.PropertyPath).Concat(filterPaths).ToList();
 
                 foreach (var missing in fromSortAndFilter.Where(p => !columns.Any(x => x.Property == p)).ToList())
                 {
@@ -66,7 +65,7 @@ namespace Lucile.Linq
                 }
 
                 propsToQuery = (from p in PropertyConfigurations
-                                join c in columns on p.Property.Name equals c.Property
+                                join c in columns on p.PropertyPath equals c.Property
                                 select p).ToList();
             }
 
@@ -103,9 +102,22 @@ namespace Lucile.Linq
             var filter = new FilterItemGroup(config.FilterItems);
             baseQuery = baseQuery.ApplyFilterItem(filter);
 
-            var members = propsToQuery.ToDictionary(p => (MemberInfo)p.PropertyInfo, p => p.MappedExpression.Body.Replace(p.MappedExpression.Parameters.First(), param));
+            IEnumerable<PropertyConfiguration> append = propsToQuery.ToList();
 
-            var initExpression = GetResultInitExpression(members);
+            do
+            {
+                append = append.Where(p => p.Parent != null).Select(p => p.Parent).Distinct().ToList();
+                foreach (var item in append)
+                {
+                    if (!propsToQuery.Contains(item))
+                    {
+                        propsToQuery.Add(item);
+                    }
+                }
+            }
+            while (append.Any());
+
+            var initExpression = GetResultInitExpression(propsToQuery, param);
             var selectExpresssion = Expression.Lambda(initExpression, param);
             var queryExpression = Expression.Call(
                                         QueryableInfo.Select.MakeGenericMethod(SourceType, ResultType),
@@ -214,9 +226,18 @@ namespace Lucile.Linq
             return baseQuery.Provider.CreateQuery(baseExpression);
         }
 
-        private Expression GetResultInitExpression(IDictionary<MemberInfo, Expression> memberInitis)
+        private Expression GetResultInitExpression(IEnumerable<PropertyConfiguration> members, ParameterExpression parameter, PropertyConfiguration parent = null)
         {
-            return GetInitExpression(ResultType, memberInitis, p => PropertyConfigurations.FirstOrDefault(x => x.PropertyInfo == p)?.Property?.Default);
+            var children = members.Where(p => p.Parent == parent).ToList();
+
+            if (!children.Any() && parent != null)
+            {
+                return parent.MappedExpression.Body.Replace(parent.MappedExpression.Parameters[0], parameter);
+            }
+
+            var resultType = parent == null ? ResultType : parent.Property.PropertyType;
+            var memberInits = children.ToDictionary(p => (MemberInfo)p.PropertyInfo, p => GetResultInitExpression(members, parameter, p));
+            return GetInitExpression(resultType, memberInits, p => PropertyConfigurations.FirstOrDefault(x => x.PropertyInfo == p)?.Property?.Default);
         }
 
         private Expression GetInitExpression(Type sourceType, IDictionary<MemberInfo, Expression> memberInitis)

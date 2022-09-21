@@ -6,7 +6,9 @@ using System.Linq.Expressions;
 using Lucile.Linq;
 using Lucile.Linq.Configuration;
 using Lucile.Linq.Configuration.Builder;
+using Lucile.Mapper;
 using Lucile.Test.Model;
+using Microsoft.Extensions.DependencyInjection;
 using Newtonsoft.Json.Serialization;
 using Xunit;
 
@@ -875,6 +877,53 @@ namespace Tests
             Assert.NotNull(query);
         }
 
+
+        [Fact]
+        public void QueryModelSelectWithCascadedPathAsync()
+        {
+            var dataSource = new DummyQuerySource();
+            var dummyReceipt = CreateDummyReceipt();
+            dataSource.RegisterData(new[] { dummyReceipt.Customer });
+
+            var builder = QueryModel.Create(
+                p => p.Get<Contact>(),
+                p => new ContactListItem
+                {
+
+                    Id = p.Id,
+                    FirstName = p.FirstName,
+                    LastName = p.LastName,
+                    Street = p.Street,
+                    Country = new Lucile.Core.Test.Model.Target.CountryInfo
+                    {
+                        Id = p.Country.Id,
+                        DisplayText = p.Country.CountryName,
+                    }
+                });
+
+            var model = builder.Build();
+
+            var queryConfig = new QueryConfiguration(
+                new[] {
+                    new SelectItem("Id", Aggregate.None),
+                    new SelectItem("Country.Id", Aggregate.None),
+                    new SelectItem("LastName", Aggregate.None)
+                });
+
+            var query = model.GetQuery(dataSource, queryConfig).ToList();
+
+            Assert.NotEmpty(query);
+
+            Assert.All(query, p =>
+            {
+                Assert.Null(p.Street);
+                Assert.Null(p.FirstName);
+                Assert.NotNull(p.LastName);
+                Assert.NotEqual(default, p.Country.Id);
+                Assert.Null(p.Country.DisplayText);
+            });
+        }
+
         [Fact]
         public void QueryModelSingleSourceAsync()
         {
@@ -951,6 +1000,77 @@ namespace Tests
                 Assert.Null(p.Description);
                 Assert.NotNull(p.ArticleNumber);
             });
+        }
+
+        [Fact]
+        public void QueryModelMapperTest()
+        {
+            var receipt = CreateDummyReceipt();
+            var source = new DummyQuerySource();
+            source.RegisterData(receipt.Details);
+
+            var services = new ServiceCollection();
+
+            services
+                .AddMapper()
+                    .AddMapping<ReceiptDetail>()
+                        .Configure(builder => builder.To(p => new ReceiptDetailInfo
+                        {
+                            Id = p.Id,
+                            DisplayText = p.Article.CurrentName,
+                        }));
+
+
+            var builder = QueryModel.Create(
+                        p => new
+                        {
+                            ReceiptDetail = p.Get<ReceiptDetail>(),
+                            CustomerStatistics = p.Get<CustomerStatistics>(),
+                            ArticleStatistics = p.Get<ArticleStatistics>(),
+                            Whatever = p.Get<Whatever>()
+                        },
+                        p => new
+                        {
+                            Id = p.ReceiptDetail.Id,
+                            Price = p.ReceiptDetail.Price,
+                            DetailInfo = p.ReceiptDetail.Map<ReceiptDetail, ReceiptDetailInfo>(),
+                        });
+            builder.HasKey(p => p.Id);
+            builder.Source(p => p.ArticleStatistics)
+                .Join(p => p.ArticleId, p => p.ReceiptDetail.ArticleId);
+            builder.Source(p => p.CustomerStatistics)
+                .Join(p => p.CustomerId, p => p.ReceiptDetail.Receipt.CustomerId);
+            builder.Source(p => p.Whatever)
+                .Join(p => new
+                {
+                    LastDate = p.LastPurchaseDate,
+                    ArticleNumber = p.ArticleNumber
+                },
+                p => new
+                {
+                    LastDate = p.CustomerStatistics.LastPurchase,
+                    ArticleNumber = p.ArticleStatistics.ArticleNumber
+                });
+
+            using (var sp = services.BuildServiceProvider())
+            {
+                var factory = sp.GetRequiredService<IMapperFactory>();
+
+                var model = builder.Build(factory);
+                var receiptDetail = model.SourceEntityConfigurations.First(p => p.Name == "ReceiptDetail");
+                var articleStatistics = model.SourceEntityConfigurations.First(p => p.Name == "ArticleStatistics");
+                var customerStatistics = model.SourceEntityConfigurations.First(p => p.Name == "CustomerStatistics");
+                var whatever = model.SourceEntityConfigurations.First(p => p.Name == "Whatever");
+
+                Assert.Equal(receiptDetail.DependsOn, new string[] { });
+                Assert.Equal(articleStatistics.DependsOn, new string[] { "ReceiptDetail" });
+                Assert.Equal(customerStatistics.DependsOn, new string[] { "ReceiptDetail" });
+                Assert.Equal(whatever.DependsOn.OrderBy(p => p), new string[] { "ArticleStatistics", "CustomerStatistics" });
+
+                var result = model.GetQuery(source, new QueryConfiguration()).ToList();
+
+                Assert.All(result, p => Assert.NotNull(p.DetailInfo));
+            }
         }
 
         [Fact]
@@ -1364,6 +1484,12 @@ namespace Tests
             public decimal CustomerRevenueMonth { get; set; }
             public decimal CustomerRevenueLastMonth { get; set; }
             public DateTime CustomerLastPurchase { get; set; }
+        }
+
+        private class ReceiptDetailInfo
+        {
+            public Guid Id { get; set; }
+            public string DisplayText { get; set; }
         }
     }
 }

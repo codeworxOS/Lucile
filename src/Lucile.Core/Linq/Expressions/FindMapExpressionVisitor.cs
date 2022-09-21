@@ -1,9 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
+using Lucile.Mapper;
 
 namespace Lucile.Linq.Expressions
 {
@@ -15,7 +15,7 @@ namespace Lucile.Linq.Expressions
 
         static FindMapExpressionVisitor()
         {
-            _mapMethods = typeof(MappingExtensions).GetMethods(BindingFlags.Public | BindingFlags.Static).Where(p => p.Name == "Map").ToList();
+            _mapMethods = typeof(MappingExtensions).GetMethods(BindingFlags.Public | BindingFlags.Static).Where(p => p.Name == nameof(MappingExtensions.Map)).ToList();
         }
 
         public FindMapExpressionVisitor()

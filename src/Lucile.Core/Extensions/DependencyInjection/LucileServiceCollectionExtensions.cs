@@ -2,6 +2,7 @@
 using System.Reflection;
 using Lucile.Configuration.Plugin;
 using Lucile.Extensions.DependencyInjection;
+using Lucile.Mapper;
 
 namespace Microsoft.Extensions.DependencyInjection
 {
@@ -44,6 +45,17 @@ namespace Microsoft.Extensions.DependencyInjection
             }
 
             return collection;
+        }
+
+        public static IMappingRegistrationBuilder<TSource> AddMapping<TSource>(this IServiceCollection services)
+        {
+            return new DefaultMappingRegistrationBuilder<TSource>(services);
+        }
+
+        public static IServiceCollection AddMapper(this IServiceCollection services)
+        {
+            return services.AddSingleton<IMapperFactory, DefaultMapperFactory>()
+                .AddSingleton(typeof(IMapper<,>), typeof(MapperProxy<,>));
         }
     }
 }
