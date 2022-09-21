@@ -877,6 +877,53 @@ namespace Tests
             Assert.NotNull(query);
         }
 
+
+        [Fact]
+        public void QueryModelSelectWithCascadedPathAsync()
+        {
+            var dataSource = new DummyQuerySource();
+            var dummyReceipt = CreateDummyReceipt();
+            dataSource.RegisterData(new[] { dummyReceipt.Customer });
+
+            var builder = QueryModel.Create(
+                p => p.Get<Contact>(),
+                p => new ContactListItem
+                {
+
+                    Id = p.Id,
+                    FirstName = p.FirstName,
+                    LastName = p.LastName,
+                    Street = p.Street,
+                    Country = new Lucile.Core.Test.Model.Target.CountryInfo
+                    {
+                        Id = p.Country.Id,
+                        DisplayText = p.Country.CountryName,
+                    }
+                });
+
+            var model = builder.Build();
+
+            var queryConfig = new QueryConfiguration(
+                new[] {
+                    new SelectItem("Id", Aggregate.None),
+                    new SelectItem("Country.Id", Aggregate.None),
+                    new SelectItem("LastName", Aggregate.None)
+                });
+
+            var query = model.GetQuery(dataSource, queryConfig).ToList();
+
+            Assert.NotEmpty(query);
+
+            Assert.All(query, p =>
+            {
+                Assert.Null(p.Street);
+                Assert.Null(p.FirstName);
+                Assert.NotNull(p.LastName);
+                Assert.NotEqual(default, p.Country.Id);
+                Assert.Null(p.Country.DisplayText);
+            });
+        }
+
         [Fact]
         public void QueryModelSingleSourceAsync()
         {

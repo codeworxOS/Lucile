@@ -19,7 +19,7 @@ namespace Lucile.Mapper
             _serviceProvider = serviceProvider;
         }
 
-        public IMappingBuilder<TSource, TNewTarget> Extend<TNewTarget>(System.Linq.Expressions.Expression<Func<TSource, TTarget>> mapping)
+        public IMappingBuilder<TSource, TNewTarget> Extend<TNewTarget>(System.Linq.Expressions.Expression<Func<TSource, TNewTarget>> mapping)
             where TNewTarget : TTarget
         {
             Dictionary<MemberInfo, Expression> members = new Dictionary<MemberInfo, Expression>();

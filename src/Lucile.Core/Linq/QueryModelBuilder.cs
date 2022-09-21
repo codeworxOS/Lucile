@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
+using Lucile.Data.Metadata;
 using Lucile.Data.Metadata.Builder;
 using Lucile.Linq.Configuration;
 using Lucile.Linq.Expressions;
@@ -195,7 +196,7 @@ namespace Lucile.Linq
             propConfigs = new List<PropertyConfiguration>();
             sourceEntityConfigs = _sourceBuilders.Select(p => p.Value.ToTarget()).ToList();
 
-            var props = new Dictionary<PropertyConfigurationBuilder, LambdaExpression>();
+            var props = new List<PropertySetup>();
 
             foreach (var item in _propertyBuilders)
             {
@@ -233,32 +234,85 @@ namespace Lucile.Linq
                     }
                 }
 
-                if (expression.Body.NodeType == ExpressionType.New || expression.Body.NodeType == ExpressionType.MemberInit)
-                {
-                    var nav = entityBuilder.Navigation(item.Value.PropertyName);
-                }
-                else
-                {
-                    entityBuilder.Property(item.Value.PropertyName, item.Value.PropertyType);
-                    if (item.Value.IsPrimaryKey)
-                    {
-                        entityBuilder.PrimaryKey.Add(item.Value.PropertyName);
-                    }
-                }
-
-                props.Add(item.Value, expression);
+                props.Add(Process(expression, item.Value, entityBuilder, entityModelBuilder));
 
                 // TODO: Merge Metadata from mapped Properties
             }
 
             var model = entityModelBuilder.ToModel();
             entity = model.GetEntityMetadata<TResult>();
+
+            propConfigs.AddRange(FlattenProperties(model, props));
+        }
+
+        private IEnumerable<PropertyConfiguration> FlattenProperties(MetadataModel model, List<PropertySetup> props, PropertyConfiguration parent = null)
+        {
             foreach (var item in props)
             {
-                var prop = entity[item.Key.PropertyName];
-                var config = new PropertyConfiguration(prop, item.Key.Label, item.Key.CanAggregate, item.Key.CanFilter, item.Key.CanSort, item.Key.CustomFilterExpression, item.Value, !IsSingleSourceQuery);
-                propConfigs.Add(config);
+                var entity = model.GetEntityMetadata(item.EntityType);
+                var prop = entity[item.PropertyBuilder.PropertyName];
+
+                var current = new PropertyConfiguration(
+                                    prop,
+                                    item.PropertyBuilder.Label,
+                                    item.PropertyBuilder.CanAggregate,
+                                    item.PropertyBuilder.CanFilter,
+                                    item.PropertyBuilder.CanSort,
+                                    item.PropertyBuilder.CustomFilterExpression,
+                                    item.Expression,
+                                    parent,
+                                    !IsSingleSourceQuery);
+
+                yield return current;
+
+                foreach (var child in FlattenProperties(model, item.Children, current))
+                {
+                    yield return child;
+                }
             }
+        }
+
+        private PropertySetup Process(LambdaExpression expression, PropertyConfigurationBuilder value, EntityMetadataBuilder entityBuilder, MetadataModelBuilder entityModelBuilder)
+        {
+            var result = new PropertySetup
+            {
+                EntityType = entityBuilder.TypeInfo.ClrType,
+                Expression = expression,
+                PropertyBuilder = value
+            };
+
+            if (expression.Body.NodeType == ExpressionType.New || expression.Body.NodeType == ExpressionType.MemberInit)
+            {
+                var nav = entityBuilder.Navigation(value.PropertyName);
+                var targetEntity = entityModelBuilder.Entity(nav.Target.ClrType);
+                result.Children.AddRange(expression.GetPropertyLambda().Select(p => Process(p.Value, value.Property(p.Key), targetEntity, entityModelBuilder)));
+            }
+            else
+            {
+                entityBuilder.Property(value.PropertyName, value.PropertyType);
+                if (value.IsPrimaryKey)
+                {
+                    entityBuilder.PrimaryKey.Add(value.PropertyName);
+                }
+            }
+
+            return result;
+        }
+
+        private class PropertySetup
+        {
+            public PropertySetup()
+            {
+                this.Children = new List<PropertySetup>();
+            }
+
+            public List<PropertySetup> Children { get; }
+
+            public Type EntityType { get; set; }
+
+            public LambdaExpression Expression { get; set; }
+
+            public PropertyConfigurationBuilder PropertyBuilder { get; set; }
         }
     }
 }

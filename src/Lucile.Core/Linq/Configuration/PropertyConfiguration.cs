@@ -10,9 +10,10 @@ namespace Lucile.Linq.Configuration
 {
     public class PropertyConfiguration
     {
-        public PropertyConfiguration(PropertyMetadata property, Func<string> label, bool canAggregate, bool canFilter, bool canSort, Func<object, LambdaExpression> customFilterExpression, LambdaExpression mappedExpression, bool calculcateDependencies = true)
+        public PropertyConfiguration(PropertyMetadata property, Func<string> label, bool canAggregate, bool canFilter, bool canSort, Func<object, LambdaExpression> customFilterExpression, LambdaExpression mappedExpression, PropertyConfiguration parent = null, bool calculcateDependencies = true)
         {
             Property = property;
+            Parent = parent;
 
             // TODO replace with propertyInfo from PropertyMetadata object
             PropertyInfo = property.Entity.ClrType.GetProperty(property.Name);
@@ -50,6 +51,10 @@ namespace Lucile.Linq.Configuration
 
         public PropertyMetadata Property { get; }
 
+        public PropertyConfiguration Parent { get; }
+
         public PropertyInfo PropertyInfo { get; }
+
+        public string PropertyPath => Parent != null ? $"{Parent.PropertyPath}.{Property.Name}" : Property.Name;
     }
 }

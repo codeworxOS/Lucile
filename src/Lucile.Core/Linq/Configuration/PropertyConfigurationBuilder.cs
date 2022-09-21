@@ -14,10 +14,6 @@ namespace Lucile.Linq.Configuration
             DeclaringType = propInfo.DeclaringType;
         }
 
-        public Func<string> Label { get; set; }
-
-        public bool IsPrimaryKey { get; set; }
-
         public bool CanAggregate { get; set; }
 
         public bool CanFilter { get; set; }
@@ -28,12 +24,18 @@ namespace Lucile.Linq.Configuration
 
         public Type DeclaringType { get; }
 
-        public string PropertyName { get; }
+        public bool IsPrimaryKey { get; set; }
+
+        public Func<string> Label { get; set; }
+
+        public abstract LambdaExpression MappedExpression { get; set; }
 
         public PropertyInfo PropertyInfo { get; }
 
+        public string PropertyName { get; }
+
         public Type PropertyType { get; }
 
-        public LambdaExpression MappedExpression { get; set; }
+        public abstract PropertyConfigurationBuilder Property(PropertyInfo child);
     }
 }
