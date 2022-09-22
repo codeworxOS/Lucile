@@ -37,7 +37,7 @@ namespace Lucile.Core.Test
         }
 
         [Fact]
-        public void SourceTargetMapping_Base_Success()
+        public void SourceTargetMapping_Base_Extend_Success()
         {
             var services = new ServiceCollection();
 
@@ -60,11 +60,12 @@ namespace Lucile.Core.Test
             {
                 var mapper = sp.GetRequiredService<IMapper<Customer, CustomerInfo>>();
 
-                var source = new Customer { Id = 1, FirstName = "John", LastName = "Doe", BirthDay = new DateTime(1980, 10, 10) };
+                var source = new Customer { Id = 1, FirstName = "John", LastName = "Doe", BirthDay = new DateTime(1980, 10, 10), Contact = "Contact" };
                 var target = mapper.Map(source);
 
                 Assert.Equal(source.Id, target.Id);
                 Assert.Equal(source.FirstName + " " + source.LastName, target.DisplayName);
+                Assert.Equal(source.Contact, target.Contact);
             }
         }
 
