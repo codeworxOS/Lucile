@@ -9,6 +9,8 @@ namespace Lucile.Mapper
 
         IMappingBuilder<TSource, TTarget> Base<TTarget>();
 
+        IMappingBuilder<TSource, TTarget> Base<TBaseSource, TTarget>();
+
         IMappingBuilder<TSource, TTarget> To<TTarget>(Expression<Func<TSource, TTarget>> mapping);
     }
 }
