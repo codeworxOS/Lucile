@@ -50,7 +50,8 @@ namespace Lucile.Mapper
                     Expression.Lambda<Func<TSource, TNewTarget>>(
                         Expression.MemberInit(
                             init.NewExpression,
-                            members.Select(p => Expression.Bind(p.Key, p.Value)))));
+                            members.Select(p => Expression.Bind(p.Key, p.Value))),
+                        mapping.Parameters.First()));
         }
 
         public IMappingBuilder<TSource, TTarget> Partial<TPartial>()

@@ -1,15 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace Lucile.Core.Test.Model.Target
+﻿namespace Lucile.Core.Test.Model.Target
 {
-    public class CustomerInfo
+    public class CustomerInfo : PersonInfo
     {
-        public int Id { get; set; }
-
-        public string DisplayName { get; set; }
+        public string Contact { get; set; }
     }
 }
