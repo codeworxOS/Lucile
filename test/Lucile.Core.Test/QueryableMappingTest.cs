@@ -53,5 +53,50 @@ namespace Lucile.Core.Test
                 });
             }
         }
+
+        [Fact]
+        public void SourceTargetWithSubMapping_Expects_Success()
+        {
+            var services = new ServiceCollection();
+
+            services
+                .AddMapper()
+                .AddMapping<Country>()
+                    .Configure(builder => builder.To(p => new CountryInfo
+                    {
+                        Id = p.Id,
+                        DisplayText = p.Name + " (" + p.Iso2 + ")",
+                    }));
+            services
+                .AddMapping<Address>()
+                    .Configure(builder => builder.To(p => new AddressInfo
+                    {
+                        Id = p.Id,
+                        City = p.City,
+                        Country = p.Country.Map<Country, CountryInfo>()
+                    }));
+
+
+            using (var sp = services.BuildServiceProvider())
+            {
+                var mapperInfo = sp.GetRequiredService<IMapper<Address, AddressInfo>>();
+
+                var sources = new[]{
+                    new Address { Id = 1, City = "SampleCity", Country = new Country { Id = 2, Iso2 = "AT", Name = "Austria" } },
+                };
+
+                var targetInfo = mapperInfo.Query(sources.AsQueryable());
+
+                Assert.All(targetInfo.ToList(), (p, i) =>
+                {
+
+                     Assert.Equal(sources[i].Id, p.Id);
+                     Assert.Equal(sources[i].City, p.City);
+
+                     Assert.Equal(sources[i].Country.Id, p.Country.Id);
+                     Assert.Equal(sources[i].Country.Name + " (" + sources[i].Country.Iso2 + ")", p.Country.DisplayText);
+                });
+            }
+        }
     }
 }
