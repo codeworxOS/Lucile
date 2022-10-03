@@ -36,6 +36,111 @@ namespace Lucile.Core.Test
             }
         }
 
+
+        [Fact]
+        public void SourceTargetMapping_Partial_Success()
+        {
+            var services = new ServiceCollection();
+
+            services
+                .AddMapper()
+                .AddMapping<Customer>()
+                .Configure(builder => builder.To(p => new PersonInfo
+                {
+                    Id = p.Id,
+                    DisplayName = p.FirstName + " " + p.LastName,
+                }));
+
+            services.AddMapping<Customer>()
+                .Configure(builder => builder.To(c => new CustomerInfo
+                {
+                    Contact = c.Contact
+                })
+                .Partial<PersonInfo>())
+                ;
+
+            using (var sp = services.BuildServiceProvider())
+            {
+                var mapper = sp.GetRequiredService<IMapper<Customer, CustomerInfo>>();
+
+                var source = new Customer { Id = 1, FirstName = "John", LastName = "Doe", BirthDay = new DateTime(1980, 10, 10), Contact = "Contact" };
+                var target = mapper.Map(source);
+
+                Assert.Equal(source.Id, target.Id);
+                Assert.Equal(source.FirstName + " " + source.LastName, target.DisplayName);
+                Assert.Equal(source.Contact, target.Contact);
+            }
+        }
+
+        [Fact]
+        public void SourceTargetMapping_Partial_NewSource_Success()
+        {
+            var services = new ServiceCollection();
+
+            services
+                .AddMapper()
+                .AddMapping<Person>()
+                .Configure(builder => builder.To(p => new PersonInfo
+                {
+                    Id = p.Id,
+                    DisplayName = p.FirstName + " " + p.LastName,
+                }));
+
+            services.AddMapping<Customer>()
+                .Configure(builder => builder.To(c => new CustomerInfo
+                {
+                    Contact = c.Contact
+                })
+                .Partial<Person, PersonInfo>())
+                ;
+
+            using (var sp = services.BuildServiceProvider())
+            {
+                var mapper = sp.GetRequiredService<IMapper<Customer, CustomerInfo>>();
+
+                var source = new Customer { Id = 1, FirstName = "John", LastName = "Doe", BirthDay = new DateTime(1980, 10, 10), Contact = "Contact" };
+                var target = mapper.Map(source);
+
+                Assert.Equal(source.Id, target.Id);
+                Assert.Equal(source.FirstName + " " + source.LastName, target.DisplayName);
+                Assert.Equal(source.Contact, target.Contact);
+            }
+        }
+
+
+        [Fact]
+        public void SourceTargetMapping_Base_Extend_Success()
+        {
+            var services = new ServiceCollection();
+
+            services
+                .AddMapper()
+                .AddMapping<Person>()
+                .Configure(builder => builder.To(p => new PersonInfo
+                {
+                    Id = p.Id,
+                    DisplayName = p.FirstName + " " + p.LastName,
+                }));
+
+            services.AddMapping<Customer>()
+                .Configure(builder => builder.Base<Person, PersonInfo>().Extend(c => new CustomerInfo
+                {
+                    Contact = c.Contact
+                }));
+
+            using (var sp = services.BuildServiceProvider())
+            {
+                var mapper = sp.GetRequiredService<IMapper<Customer, CustomerInfo>>();
+
+                var source = new Customer { Id = 1, FirstName = "John", LastName = "Doe", BirthDay = new DateTime(1980, 10, 10), Contact = "Contact" };
+                var target = mapper.Map(source);
+
+                Assert.Equal(source.Id, target.Id);
+                Assert.Equal(source.FirstName + " " + source.LastName, target.DisplayName);
+                Assert.Equal(source.Contact, target.Contact);
+            }
+        }
+
         [Fact]
         public void SourceTargetMapping_FromFactory_Expects_Success()
         {

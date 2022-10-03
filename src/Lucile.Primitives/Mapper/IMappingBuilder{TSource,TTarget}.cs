@@ -10,6 +10,8 @@ namespace Lucile.Mapper
 
         IMappingBuilder<TSource, TTarget> Partial<TPartial>();
 
+        IMappingBuilder<TSource, TTarget> Partial<TPartialSource, TPartial>();
+
         IMappingConfiguration<TSource, TTarget> ToConfiguration();
     }
 }

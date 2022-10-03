@@ -50,10 +50,16 @@ namespace Lucile.Mapper
                     Expression.Lambda<Func<TSource, TNewTarget>>(
                         Expression.MemberInit(
                             init.NewExpression,
-                            members.Select(p => Expression.Bind(p.Key, p.Value)))));
+                            members.Select(p => Expression.Bind(p.Key, p.Value))),
+                        mapping.Parameters.First()));
         }
 
         public IMappingBuilder<TSource, TTarget> Partial<TPartial>()
+        {
+            return Partial<TSource, TPartial>();
+        }
+
+        public IMappingBuilder<TSource, TTarget> Partial<TPartialSource, TPartial>()
         {
             var partialType = typeof(TPartial);
             var targetType = typeof(TTarget);
@@ -63,29 +69,37 @@ namespace Lucile.Mapper
                 throw new NotSupportedException();
             }
 
-            var mapper = _serviceProvider.GetService<IMappingConfiguration<TSource, TPartial>>();
+            var partialSourceType = typeof(TPartialSource);
+            var sourceType = typeof(TSource);
+
+            if (!sourceType.GetBaseTypeStructure().Any(p => p.Value == partialSourceType) && !sourceType.GetInterfaces().Contains(partialSourceType))
+            {
+                throw new NotSupportedException();
+            }
+
+            var mapper = _serviceProvider.GetService<IMappingConfiguration<TPartialSource, TPartial>>();
 
             Dictionary<MemberInfo, Expression> members = new Dictionary<MemberInfo, Expression>();
 
-            var init = _expression.Body as MemberInitExpression;
-            if (init == null)
+            var currentInit = _expression.Body as MemberInitExpression;
+            if (currentInit == null)
             {
                 throw new NotSupportedException("Only MemberInit expressions are supported!");
             }
 
-            foreach (var item in init.Bindings.OfType<MemberAssignment>())
+            foreach (var item in currentInit.Bindings.OfType<MemberAssignment>())
             {
                 members[item.Member] = item.Expression;
             }
 
-            init = mapper.Expression.Body as MemberInitExpression;
+            var partialInit = mapper.Expression.Body as MemberInitExpression;
             var visitor = new ReplaceExpressionVisitor(mapper.Expression.Parameters.First(), _expression.Parameters.First());
-            if (init == null)
+            if (partialInit == null)
             {
                 throw new NotSupportedException("Only MemberInit expressions are supported!");
             }
 
-            foreach (var item in init.Bindings.OfType<MemberAssignment>())
+            foreach (var item in partialInit.Bindings.OfType<MemberAssignment>())
             {
                 members[item.Member] = visitor.Visit(item.Expression);
             }
@@ -94,8 +108,9 @@ namespace Lucile.Mapper
                    _serviceProvider,
                    Expression.Lambda<Func<TSource, TTarget>>(
                        Expression.MemberInit(
-                           init.NewExpression,
-                           members.Select(p => Expression.Bind(p.Key, p.Value)))));
+                           currentInit.NewExpression,
+                           members.Select(p => Expression.Bind(p.Key, p.Value))),
+                       _expression.Parameters.First()));
         }
 
         public IMappingConfiguration<TSource, TTarget> ToConfiguration()
