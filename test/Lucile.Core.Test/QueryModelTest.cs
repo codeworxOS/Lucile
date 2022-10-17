@@ -60,6 +60,142 @@ namespace Tests
         }
 
 
+        [Fact]
+        public void PathConvertSyntax_ExpectsOK()
+        {
+            var id1 = Guid.NewGuid();
+            var id2 = Guid.NewGuid();
+
+            var date = DateTime.Now;
+
+            var receipt1 = new Invoice
+            {
+                Id = id1,
+                ExpectedDeliveryDate = date,
+                ReceiptType = ReceiptType.Invoice,
+            };
+
+            receipt1.Details.Add(new ReceiptDetail { Price = 101, Receipt = receipt1 });
+
+            var receipt2 = new Invoice
+            {
+                Id = id2,
+                ReceiptType = ReceiptType.Invoice,
+            };
+
+            receipt2.Details.Add(new ReceiptDetail { Price = 100, Receipt = receipt2 });
+
+            var receipt3 = new Order
+            {
+                Id = id2,
+                ReceiptType = ReceiptType.Offer,
+            };
+
+            receipt3.Details.Add(new ReceiptDetail { Price = 50, Receipt = receipt3 });
+
+
+            var receipts = new List<Receipt>() {
+                receipt1,
+                receipt2,
+                receipt3
+            };
+
+            var details = receipts.SelectMany(p => p.Details);
+
+            var filterItem =
+                new FilterItemGroupBuilder
+                {
+                    GroupType = Linq.Configuration.GroupType.And,
+                    Children = {
+                        new NumericFilterItemBuilder
+                        {
+                            Left = new PathValueExpressionBuilder{ Path = "Receipt.ReceiptType"},
+                            Operator = RelationalCompareOperator.Equal,
+                            Right = new NumericConstantValueBuilder { Value = 0},
+                        },
+                        new DateTimeFilterItemBuilder()
+                        {
+
+                            Left = new PathValueExpressionBuilder { Path = "Receipt.<Invoice>.ExpectedDeliveryDate" },
+                            Operator = RelationalCompareOperator.Equal,
+                            Right = new DateTimeConstantValueBuilder { Value = date },
+
+                        },
+                    }
+                };
+
+            var query = details.AsQueryable().ApplyFilterItem(filterItem.Build());
+            Assert.Equal(1, query.Count());
+            Assert.Equal(receipt1.Details[0], query.First());
+        }
+
+        [Fact]
+        public void PathConvertSyntaxRoot_ExpectsOK()
+        {
+            var id1 = Guid.NewGuid();
+            var id2 = Guid.NewGuid();
+
+            var date = DateTime.Now;
+
+            var receipt1 = new Invoice
+            {
+                Id = id1,
+                ExpectedDeliveryDate = date,
+                ReceiptType = ReceiptType.Invoice,
+            };
+
+            receipt1.Details.Add(new ReceiptDetail { Price = 101, Receipt = receipt1 });
+
+            var receipt2 = new Invoice
+            {
+                Id = id2,
+                ReceiptType = ReceiptType.Invoice,
+            };
+
+            receipt2.Details.Add(new ReceiptDetail { Price = 100, Receipt = receipt2 });
+
+            var receipt3 = new Order
+            {
+                Id = id2,
+                ReceiptType = ReceiptType.Offer,
+            };
+
+            receipt3.Details.Add(new ReceiptDetail { Price = 50, Receipt = receipt3 });
+
+
+            var receipts = new List<Receipt>() {
+                receipt1,
+                receipt2,
+                receipt3
+            };
+
+
+            var filterItem =
+                new FilterItemGroupBuilder
+                {
+                    GroupType = Linq.Configuration.GroupType.And,
+                    Children = {
+                        new NumericFilterItemBuilder
+                        {
+                            Left = new PathValueExpressionBuilder{ Path = "ReceiptType"},
+                            Operator = RelationalCompareOperator.Equal,
+                            Right = new NumericConstantValueBuilder { Value = 0},
+                        },
+                        new DateTimeFilterItemBuilder()
+                        {
+
+                            Left = new PathValueExpressionBuilder { Path = "<Invoice>.ExpectedDeliveryDate" },
+                            Operator = RelationalCompareOperator.Equal,
+                            Right = new DateTimeConstantValueBuilder { Value = date },
+
+                        },
+                    }
+                };
+
+            var query = receipts.AsQueryable().ApplyFilterItem(filterItem.Build());
+            Assert.Equal(1, query.Count());
+            Assert.Equal(receipt1, query.First());
+        }
 
         [Fact]
         public void AnyFilterItemTest()
