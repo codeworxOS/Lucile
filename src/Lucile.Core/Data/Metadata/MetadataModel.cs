@@ -18,14 +18,14 @@ namespace Lucile.Data.Metadata
         {
             var scope = new ModelCreationScope(modelBuilder, valueAccessorFactory);
             var unordered = GetSorted(modelBuilder.Entities).Where(p => !p.IsExcluded).Select(p => scope.GetEntity(p.TypeInfo)).ToList();
-            var targetList = unordered.Where(p => p.BaseEntity == null).OrderBy(p => p.Name).ToList();
+            var targetList = unordered.Where(p => p.BaseEntity == null).OrderBy(p => p.Name, StringComparer.Ordinal).ToList();
 
             targetList.ForEach(p => unordered.Remove(p));
 
             while (unordered.Any())
             {
                 var nextLayer = unordered.Where(p => targetList.Contains(p.BaseEntity)).ToList();
-                foreach (var item in nextLayer.OrderByDescending(p => p.Name))
+                foreach (var item in nextLayer.OrderByDescending(p => p.Name, StringComparer.Ordinal))
                 {
                     unordered.Remove(item);
                     targetList.Insert(0, item);
@@ -95,7 +95,7 @@ namespace Lucile.Data.Metadata
 
         private IEnumerable<EntityMetadataBuilder> GetSorted(IEnumerable<EntityMetadataBuilder> entities)
         {
-            return entities.OrderBy(p => p.BaseEntity == null && entities.Any(x => x.BaseEntity == p) ? 0 : 1).ThenBy(p => p.Name);
+            return entities.OrderBy(p => p.BaseEntity == null && entities.Any(x => x.BaseEntity == p) ? 0 : 1).ThenBy(p => p.Name, StringComparer.Ordinal);
         }
 
         private bool IsPrincipalEnd(NavigationPropertyMetadata prop)
