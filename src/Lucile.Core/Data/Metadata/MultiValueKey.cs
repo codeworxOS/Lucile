@@ -40,7 +40,7 @@ namespace Lucile.Data.Metadata
         public override int GetHashCode()
         {
             var hash = 0;
-            foreach (var item in Values.Keys.OrderBy(p => p))
+            foreach (var item in Values.Keys.OrderBy(p => p, StringComparer.Ordinal))
             {
                 hash = hash ^ item.GetHashCode();
             }
