@@ -1210,6 +1210,74 @@ namespace Tests
         }
 
         [Fact]
+        public void QueryModelMapperOnRootTest()
+        {
+            var receipt = CreateDummyReceipt();
+            var source = new DummyQuerySource();
+            source.RegisterData(receipt.Details);
+
+            var services = new ServiceCollection();
+
+            services
+                .AddMapper()
+                    .AddMapping<ReceiptDetail>()
+                        .Configure(builder => builder.To(p => new ReceiptDetailInfo
+                        {
+                            Id = p.Id,
+                            DisplayText = p.Article.CurrentName,
+                        }));
+
+
+            var builder = QueryModel.Create(
+                        p => new
+                        {
+                            ReceiptDetail = p.Get<ReceiptDetail>(),
+                            CustomerStatistics = p.Get<CustomerStatistics>(),
+                            ArticleStatistics = p.Get<ArticleStatistics>(),
+                            Whatever = p.Get<Whatever>()
+                        },
+                        p => p.ReceiptDetail.Map<ReceiptDetail, ReceiptDetailInfo>());
+
+            builder.HasKey(p => p.Id);
+            builder.Source(p => p.ArticleStatistics)
+                .Join(p => p.ArticleId, p => p.ReceiptDetail.ArticleId);
+            builder.Source(p => p.CustomerStatistics)
+                .Join(p => p.CustomerId, p => p.ReceiptDetail.Receipt.CustomerId);
+            builder.Source(p => p.Whatever)
+                .Join(p => new
+                {
+                    LastDate = p.LastPurchaseDate,
+                    ArticleNumber = p.ArticleNumber
+                },
+                p => new
+                {
+                    LastDate = p.CustomerStatistics.LastPurchase,
+                    ArticleNumber = p.ArticleStatistics.ArticleNumber
+                });
+
+            using (var sp = services.BuildServiceProvider())
+            {
+                var factory = sp.GetRequiredService<IMapperFactory>();
+
+                var model = builder.Build(factory);
+                var receiptDetail = model.SourceEntityConfigurations.First(p => p.Name == "ReceiptDetail");
+                var articleStatistics = model.SourceEntityConfigurations.First(p => p.Name == "ArticleStatistics");
+                var customerStatistics = model.SourceEntityConfigurations.First(p => p.Name == "CustomerStatistics");
+                var whatever = model.SourceEntityConfigurations.First(p => p.Name == "Whatever");
+
+                Assert.Equal(receiptDetail.DependsOn, new string[] { });
+                Assert.Equal(articleStatistics.DependsOn, new string[] { "ReceiptDetail" });
+                Assert.Equal(customerStatistics.DependsOn, new string[] { "ReceiptDetail" });
+                Assert.Equal(whatever.DependsOn.OrderBy(p => p), new string[] { "ArticleStatistics", "CustomerStatistics" });
+
+                var result = model.GetQuery(source, new QueryConfiguration()).ToList();
+
+                Assert.True(result.Any());
+                Assert.All(result, p => Assert.NotNull(p.DisplayText));
+            }
+        }
+
+        [Fact]
         public void QueryModelSourceDependenciesTest()
         {
             var builder = QueryModel.Create(
