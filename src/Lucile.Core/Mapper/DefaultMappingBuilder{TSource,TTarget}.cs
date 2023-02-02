@@ -77,7 +77,7 @@ namespace Lucile.Mapper
                 throw new NotSupportedException();
             }
 
-            var mapper = _serviceProvider.GetService<IMappingConfiguration<TPartialSource, TPartial>>();
+            var mapper = _serviceProvider.GetRequiredService<IMappingConfiguration<TPartialSource, TPartial>>();
 
             Dictionary<MemberInfo, Expression> members = new Dictionary<MemberInfo, Expression>();
 

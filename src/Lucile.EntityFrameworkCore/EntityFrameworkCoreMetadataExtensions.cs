@@ -80,32 +80,21 @@ namespace Lucile.EntityFrameworkCore
             foreach (var nav in entityType.GetNavigations().Where(p => p.DeclaringEntityType == entityType))
             {
                 NavigationPropertyBuilder navBuilder = null;
-#if EF3
-                var inverse = nav.FindInverse();
-                Type targetType = nav.GetTargetType().ClrType;
-#else
+
                 var inverse = nav.Inverse;
                 Type targetType = nav.TargetEntityType.ClrType;
-#endif
                 string targetPropertyName = inverse?.Name;
                 List<string> foreignKeys = new List<string>();
 
                 NavigationPropertyMultiplicity multiplicity = NavigationPropertyMultiplicity.One;
                 NavigationPropertyMultiplicity targetMultiplicity = NavigationPropertyMultiplicity.One;
-#if EF3
-                if (nav.IsCollection())
-#else
+
                 if (nav.IsCollection)
-#endif
                 {
                     multiplicity = NavigationPropertyMultiplicity.Many;
                     targetMultiplicity = nav.ForeignKey.IsRequired ? NavigationPropertyMultiplicity.One : NavigationPropertyMultiplicity.ZeroOrOne;
                 }
-#if EF3
-                else if (nav.IsDependentToPrincipal())
-#else
                 else if (nav.IsOnDependent)
-#endif
                 {
                     multiplicity = nav.ForeignKey.IsRequired ? NavigationPropertyMultiplicity.One : NavigationPropertyMultiplicity.ZeroOrOne;
                     targetMultiplicity = nav.ForeignKey.IsUnique ? NavigationPropertyMultiplicity.ZeroOrOne : NavigationPropertyMultiplicity.Many;

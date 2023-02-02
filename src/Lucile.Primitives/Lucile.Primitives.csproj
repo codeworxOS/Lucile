@@ -1,57 +1,50 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
-  <PropertyGroup>
-    <Description>Core primitives for the Lucile Framework. For detailed Documentation visit http://www.github.com/codeworxOS/Lucile</Description>
-     <AssemblyTitle>Lucile Framework Primitives Library</AssemblyTitle>
-    <TargetFrameworks>netstandard1.3;netstandard2.0;netstandard2.1</TargetFrameworks>
-    <RootNamespace>Lucile</RootNamespace>
-    <Configurations>Debug;Release;Debug EF31;Debug EF50;Debug EF60</Configurations>
-  </PropertyGroup>
+	<PropertyGroup>
+		<Description>Core primitives for the Lucile Framework. For detailed Documentation visit http://www.github.com/codeworxOS/Lucile</Description>
+		<AssemblyTitle>Lucile Framework Primitives Library</AssemblyTitle>
+		<TargetFrameworks>netstandard2.0</TargetFrameworks>
+		<RootNamespace>Lucile</RootNamespace>
+		<Configurations>Debug;Release;Debug EF60;Debug EF70</Configurations>
+		<PackageVersion Condition="'$(LucileCoreVersion)' != ''">$(LucileCoreVersion)</PackageVersion>
+	</PropertyGroup>
 
-  <PropertyGroup Condition="'$(SignAssembly)'=='True'">
-    <DefineConstants>SIGN</DefineConstants>
-  </PropertyGroup>
+	<PropertyGroup Condition="'$(SignAssembly)'=='True'">
+		<DefineConstants>SIGN</DefineConstants>
+	</PropertyGroup>
 
-  <ItemGroup>
-    <PackageReference Include="System.Dynamic.Runtime" Version="4.3.0" />
-    <PackageReference Include="System.Reflection.TypeExtensions" Version="4.6.0" />
-    <PackageReference Include="System.Runtime.Serialization.Primitives" Version="4.3.0" />
-    <PackageReference Include="System.Collections.Immutable" Version="1.6.0" />
-    <PackageReference Include="System.Linq.Queryable" Version="4.3.0" />
-  </ItemGroup>
+	<ItemGroup>
+		<PackageReference Include="System.Dynamic.Runtime" Version="4.3.0" />
+		<PackageReference Include="System.Reflection.TypeExtensions" Version="4.6.0" />
+		<PackageReference Include="System.Runtime.Serialization.Primitives" Version="4.3.0" />
+		<PackageReference Include="System.Collections.Immutable" Version="1.6.0" />
+		<PackageReference Include="System.Linq.Queryable" Version="4.3.0" />
+	</ItemGroup>
 
-  <ItemGroup Condition="'$(TargetFramework)' == 'netstandard1.3'">
-    <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="1.1.0" />
-  </ItemGroup>
+	<ItemGroup>
+		<PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="6.0.0" />
+	</ItemGroup>
 
-  <ItemGroup Condition="'$(TargetFramework)' == 'netstandard2.0'">
-    <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="2.0.0" />
-  </ItemGroup>
+	<ItemGroup>
+		<Folder Include="Configuration\Linq\" />
+	</ItemGroup>
 
-  <ItemGroup Condition="'$(TargetFramework)' == 'netstandard2.1'">
-    <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="3.0.0" />
-  </ItemGroup>
+	<ItemGroup>
+		<None Update="Data\DynamicTuple.tt">
+			<Generator>TextTemplatingFileGenerator</Generator>
+			<LastGenOutput>DynamicTuple.cs</LastGenOutput>
+		</None>
+	</ItemGroup>
 
-  <ItemGroup>
-    <Folder Include="Configuration\Linq\" />
-  </ItemGroup>
+	<ItemGroup>
+		<Service Include="{508349b6-6b84-4df5-91f0-309beebad82d}" />
+	</ItemGroup>
 
-  <ItemGroup>
-    <None Update="Data\DynamicTuple.tt">
-      <Generator>TextTemplatingFileGenerator</Generator>
-      <LastGenOutput>DynamicTuple.cs</LastGenOutput>
-    </None>
-  </ItemGroup>
-
-  <ItemGroup>
-    <Service Include="{508349b6-6b84-4df5-91f0-309beebad82d}" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <Compile Update="Data\DynamicTuple.cs">
-      <DesignTime>True</DesignTime>
-      <AutoGen>True</AutoGen>
-      <DependentUpon>DynamicTuple.tt</DependentUpon>
-    </Compile>
-  </ItemGroup>
+	<ItemGroup>
+		<Compile Update="Data\DynamicTuple.cs">
+			<DesignTime>True</DesignTime>
+			<AutoGen>True</AutoGen>
+			<DependentUpon>DynamicTuple.tt</DependentUpon>
+		</Compile>
+	</ItemGroup>
 </Project>
