@@ -1,10 +1,10 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFrameworks>net461;netstandard2.1</TargetFrameworks>
+    <TargetFrameworks>net462;netstandard2.1</TargetFrameworks>
     <AssemblyName>Lucile.EntityFramework</AssemblyName>
     <PackageId>Lucile.EntityFramework</PackageId>
-    <Configurations>Debug;Release;Debug EF31;Debug EF50;Debug EF60</Configurations>
+    <Configurations>Debug;Release;Debug EF60;Debug EF70</Configurations>
   </PropertyGroup>
 
   <ItemGroup>

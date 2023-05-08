@@ -4,12 +4,12 @@
     <TargetFramework>net6</TargetFramework>
     <TreatWarningsAsErrors>false</TreatWarningsAsErrors>
     <IsPackable>false</IsPackable>
-    <Configurations>Debug;Release;Debug EF31;Debug EF50;Debug EF60</Configurations>
+    <Configurations>Debug;Release;Debug EF60;Debug EF70</Configurations>
   </PropertyGroup>
 
   <ItemGroup>
     <PackageReference Remove="StyleCop.Analyzers" />
-    <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="2.0.0" />
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="6.0.0" />
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.3.0" />
     <PackageReference Include="System.ComponentModel.Annotations" Version="4.6.0" />
     <PackageReference Include="xunit" Version="2.4.2" />

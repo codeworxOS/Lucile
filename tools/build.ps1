@@ -14,40 +14,31 @@ $projects = "..\src\Lucile.Primitives\Lucile.Primitives.csproj",
 
 $coreVersion =  New-NugetPackages `
                     -Projects $projects `
-                    -NugetServerUrl "https://www.myget.org/F/codeworx/api/v2" `
+                    -NugetServerUrl "https://www.nuget.org/api/v2" `
                     -VersionPackage "Lucile.Core" `
                     -OutputPath "..\dist\nuget" `
                     -MsBuildParams "SignAssembly=true;AssemblyOriginatorKeyFile=..\..\private\lucile_signkey.snk"
 
 $projects = "..\src\Lucile.EntityFrameworkCore\Lucile.EntityFrameworkCore.csproj"
 
-
-New-NugetPackages `
-    -projects $projects `
-    -NugetServerUrl "https://www.myget.org/f/codeworx/api/v2" `
-    -versionPackage "Lucile.EntityFrameworkCore" `
-    -VersionFilePath "..\version_ef3.json" `
-    -DoNotCleanOutput `
-    -OutputPath "..\dist\nuget" `
-    -MsBuildParams "SignAssembly=true;AssemblyOriginatorKeyFile=..\..\private\lucile_signkey.snk;EfVersion=3;LucileCoreVersion=$($coreVersion.NugetVersion)"
-
-New-NugetPackages `
-    -Projects $projects `
-    -NugetServerUrl "https://www.myget.org/F/codeworx/api/v2" `
-    -VersionPackage "Lucile.EntityFrameworkCore" `
-    -VersionFilePath "..\version_ef5.json" `
-    -DoNotCleanOutput `
-    -OutputPath "..\dist\nuget" `
-    -MsBuildParams "SignAssembly=true;AssemblyOriginatorKeyFile=..\..\private\lucile_signkey.snk;EfVersion=5;LucileCoreVersion=$($coreVersion.NugetVersion)"
-
     New-NugetPackages `
     -Projects $projects `
-    -NugetServerUrl "https://www.myget.org/F/codeworx/api/v2" `
+    -NugetServerUrl "https://www.nuget.org/api/v2" `
     -VersionPackage "Lucile.EntityFrameworkCore" `
     -VersionFilePath "..\version_ef6.json" `
     -DoNotCleanOutput `
     -OutputPath "..\dist\nuget" `
     -MsBuildParams "SignAssembly=true;AssemblyOriginatorKeyFile=..\..\private\lucile_signkey.snk;EfVersion=6;LucileCoreVersion=$($coreVersion.NugetVersion)"
+
+    New-NugetPackages `
+    -Projects $projects `
+    -NugetServerUrl "https://www.nuget.org/api/v2" `
+    -VersionPackage "Lucile.EntityFrameworkCore" `
+    -VersionFilePath "..\version_ef7.json" `
+    -DoNotCleanOutput `
+    -OutputPath "..\dist\nuget" `
+    -MsBuildParams "SignAssembly=true;AssemblyOriginatorKeyFile=..\..\private\lucile_signkey.snk;EfVersion=7;LucileCoreVersion=$($coreVersion.NugetVersion)"
+
 
 
 Write-Host "##vso[build.updatebuildnumber]$($coreVersion.NugetVersion)"

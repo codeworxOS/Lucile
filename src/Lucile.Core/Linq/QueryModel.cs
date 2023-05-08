@@ -66,7 +66,7 @@ namespace Lucile.Linq
 
                 propsToQuery = (from p in PropertyConfigurations
                                 join c in columns on p.PropertyPath equals c.Property
-                                select p).ToList();
+                                select p).Distinct().ToList();
             }
 
             var columnDependencies = propsToQuery.SelectMany(p => p.DependsOn).Distinct().ToList();
@@ -79,7 +79,7 @@ namespace Lucile.Linq
 
             while (dict.Any())
             {
-                var items = dict.Where(p => !p.Value.Any()).OrderBy(p => p.Key).Select(p => p.Key).ToList();
+                var items = dict.Where(p => !p.Value.Any()).OrderBy(p => p.Key, StringComparer.Ordinal).Select(p => p.Key).ToList();
                 if (!items.Any())
                 {
                     throw new InvalidOperationException("Circular dependency found!");
@@ -282,7 +282,7 @@ namespace Lucile.Linq
             {
                 return Expression.MemberInit(
                     Expression.New(ctr),
-                    localInits.OrderBy(p => p.Key.Name).Select(p => Expression.Bind(p.Key, p.Value)));
+                    localInits.OrderBy(p => p.Key.Name, StringComparer.Ordinal).Select(p => Expression.Bind(p.Key, p.Value)));
             }
         }
 

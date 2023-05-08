@@ -1,34 +1,14 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
 	<PropertyGroup>
-		<TargetFrameworks>netcoreapp3.1;net5;net6</TargetFrameworks>
+		<TargetFrameworks>net6;net7;</TargetFrameworks>
 		<AssemblyName>Lucile.EntityFrameworkCore.Test</AssemblyName>
 		<PackageId>Lucile.EntityFrameworkCore.Test</PackageId>
 		<GenerateRuntimeConfigurationFiles>true</GenerateRuntimeConfigurationFiles>
 		<TreatWarningsAsErrors>false</TreatWarningsAsErrors>
-		<Configurations>Debug;Release;Debug EF31;Debug EF50;Debug EF60</Configurations>
-	</PropertyGroup>
-	<PropertyGroup Condition="'$(Configuration)' == 'Debug EF60'">
-		<TargetFrameworks>net6</TargetFrameworks>
-	</PropertyGroup>
-	<PropertyGroup Condition="'$(Configuration)' == 'Debug EF50'">
-		<TargetFrameworks>net5</TargetFrameworks>
-	</PropertyGroup>
-	<PropertyGroup Condition="'$(Configuration)' == 'Debug EF31'">
-		<TargetFrameworks>netcoreapp3.1</TargetFrameworks>
-	</PropertyGroup>
-	
-	<PropertyGroup Condition="'$(TargetFramework)' == 'netcoreapp3.1'">
-		<DefineConstants>EF3</DefineConstants>
+		<Configurations>Debug;Release;Debug EF31;Debug EF50;Debug EF60;Debug EF70</Configurations>
 	</PropertyGroup>
 
-	<PropertyGroup Condition="'$(TargetFramework)' == 'net5'">
-		<DefineConstants>EF5</DefineConstants>
-	</PropertyGroup>
-
-	<PropertyGroup Condition="'$(TargetFramework)' == 'net6'">
-		<DefineConstants>EF6</DefineConstants>
-	</PropertyGroup>
 	<ItemGroup>
 		<ProjectReference Include="..\..\src\Lucile.EntityFrameworkCore\Lucile.EntityFrameworkCore.csproj" />
 		<ProjectReference Include="..\Lucile.Test.Model\Lucile.Test.Model.csproj" />
@@ -47,18 +27,13 @@
 		<PackageReference Include="xunit" Version="2.4.2" />
 	</ItemGroup>
 
-	<ItemGroup Condition="'$(TargetFramework)' == 'netcoreapp3.1'">
-		<PackageReference Include="Microsoft.EntityFrameworkCore.InMemory" Version="3.1.0" />
-		<PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="3.1.0" />
-	</ItemGroup>
-
-	<ItemGroup Condition="'$(TargetFramework)' == 'net5'">
-		<PackageReference Include="Microsoft.EntityFrameworkCore.InMemory" Version="5.0.0" />
-		<PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="5.0.0" />
-	</ItemGroup>
 	<ItemGroup Condition="'$(TargetFramework)' == 'net6'">
 		<PackageReference Include="Microsoft.EntityFrameworkCore.InMemory" Version="6.0.0" />
 		<PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="6.0.0" />
+	</ItemGroup>
+	<ItemGroup Condition="'$(TargetFramework)' == 'net7'">
+		<PackageReference Include="Microsoft.EntityFrameworkCore.InMemory" Version="7.0.0" />
+		<PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="7.0.0" />
 	</ItemGroup>
 
 	<ItemGroup>

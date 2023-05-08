@@ -2,7 +2,7 @@
 
   <PropertyGroup>
     <TargetFramework>net6</TargetFramework>
-    <Configurations>Debug;Release;Debug EF50;Debug EF60</Configurations>
+    <Configurations>Debug;Release;Debug EF50;Debug EF60;Debug EF70</Configurations>
   </PropertyGroup>
 
   <ItemGroup>
