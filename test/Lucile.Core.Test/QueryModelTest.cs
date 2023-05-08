@@ -3,6 +3,9 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Linq.Expressions;
+
+using Linq.Configuration;
+
 using Lucile.Linq;
 using Lucile.Linq.Configuration;
 using Lucile.Linq.Configuration.Builder;
@@ -567,6 +570,33 @@ namespace Tests
             Assert.Equal<string>(new string[] { "ArticleStatistics" }, soldLastMonthProp.DependsOn);
             Assert.Equal<string>(new string[] { "CustomerStatistics" }, lastPurchaseProp.DependsOn);
             Assert.Equal<string>(new string[] { "Whatever", "ReceiptDetail" }, whateverProp.DependsOn);
+        }
+
+        [Fact]
+        public void QueryModelMultipleFiltersForSameProperty()
+        {
+            var model = GetSampleModel();
+
+            var receipt = CreateDummyReceipt();
+            var source = new DummyQuerySource();
+            source.RegisterData(receipt.Details);
+
+            FilterItem[] filterItems = {
+                new StringBinaryFilterItem(new PathValueExpression("ArticleNumber"), new ConstantValueExpression<string>("12345"), StringOperator.Equal),
+                new StringBinaryFilterItem(new PathValueExpression("ArticleNumber"), new ConstantValueExpression<string>("notexisting"), StringOperator.Equal)
+            };
+            FilterItem[] filterItemGroup =
+            {
+                new FilterItemGroup(filterItems, GroupType.Or)
+            };
+            SelectItem[] selectItems =
+            {
+                new SelectItem("ReceiptNumber")
+            };
+            var config = new QueryConfiguration(selectItems, Enumerable.Empty<SortItem>(), Enumerable.Empty<FilterItem>(), filterItemGroup);
+
+            var query = model.GetQuery(source, config);
+            Assert.Equal(2, query.Cast<object>().Count());
         }
 
         [Fact]
