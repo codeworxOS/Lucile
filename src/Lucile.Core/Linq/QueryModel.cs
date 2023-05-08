@@ -66,7 +66,7 @@ namespace Lucile.Linq
 
                 propsToQuery = (from p in PropertyConfigurations
                                 join c in columns on p.PropertyPath equals c.Property
-                                select p).ToList();
+                                select p).Distinct().ToList();
             }
 
             var columnDependencies = propsToQuery.SelectMany(p => p.DependsOn).Distinct().ToList();

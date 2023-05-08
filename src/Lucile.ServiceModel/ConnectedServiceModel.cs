@@ -69,7 +69,7 @@ namespace Lucile.ServiceModel
             }
             else
             {
-#if NETSTANDARD1_3
+#if NETSTANDARD2_0_OR_GREATER
                 throw new NotSupportedException($"Duplex Services are not supported on net standard");
 #else
                 var instance = _serviceProvider.GetRequiredService(callback);

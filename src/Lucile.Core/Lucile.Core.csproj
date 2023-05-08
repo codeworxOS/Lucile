@@ -3,8 +3,8 @@
   <PropertyGroup>
     <Description>Core components for the Lucile Framework. For detailed Documentation visit http://www.github.com/codeworxOS/Lucile</Description>
     <AssemblyTitle>Lucile Framework Core Library</AssemblyTitle>
-    <TargetFrameworks>netstandard1.3;netstandard2.0;netstandard2.1</TargetFrameworks>
-    <Configurations>Debug;Release;Debug EF31;Debug EF50;Debug EF60</Configurations>
+    <TargetFrameworks>netstandard2.0;</TargetFrameworks>
+    <Configurations>Debug;Release;Debug EF60;Debug EF70</Configurations>
     <PackageVersion Condition="'$(LucileCoreVersion)' != ''">$(LucileCoreVersion)</PackageVersion>
   </PropertyGroup>
 
@@ -18,16 +18,8 @@
     <ProjectReference Include="..\Lucile.Primitives\Lucile.Primitives.csproj" />
   </ItemGroup>
 
-  <ItemGroup Condition="'$(TargetFramework)' == 'netstandard1.3'">
-    <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="1.1.0" />
-  </ItemGroup>
-
-  <ItemGroup Condition="'$(TargetFramework)' == 'netstandard2.0'">
-    <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="2.0.0" />
-  </ItemGroup>
-
-  <ItemGroup Condition="'$(TargetFramework)' == 'netstandard2.1'">
-    <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="3.0.0" />
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="6.0.0" />
   </ItemGroup>
 
 

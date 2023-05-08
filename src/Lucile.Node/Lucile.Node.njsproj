@@ -37,6 +37,9 @@
     <DebugSymbols>true</DebugSymbols>
     <OutputPath>bin\Debug EF60\</OutputPath>
   </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)' == 'Debug EF70' ">
+    <OutputPath>bin\Debug EF70\</OutputPath>
+  </PropertyGroup>
   <ItemGroup>
     <None Include="app.ts" />
     <Content Include="package.json" />

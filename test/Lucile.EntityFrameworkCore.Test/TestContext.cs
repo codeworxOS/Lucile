@@ -52,12 +52,7 @@ namespace Lucile.EntityFrameworkCore.Test
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
-#if EF3
-            modelBuilder.Query<ArticleStatistics>();
-#else
             modelBuilder.Entity<ArticleStatistics>().HasNoKey();
-#endif
-
 
             modelBuilder.Entity<Order>();
             modelBuilder.Entity<Invoice>();

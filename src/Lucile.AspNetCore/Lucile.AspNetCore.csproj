@@ -1,9 +1,9 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
 	<PropertyGroup>
-		<TargetFrameworks>netcoreapp3.1;net5;net6</TargetFrameworks>
+		<TargetFrameworks>net6;net7</TargetFrameworks>
 		<LangVersion>8</LangVersion>
-		<Configurations>Debug;Release;Debug EF50;Debug EF60</Configurations>
+		<Configurations>Debug;Release;Debug EF60;Debug EF70</Configurations>
 	</PropertyGroup>
 
 	<ItemGroup Condition="'$(TargetFramework)' == 'netstandard2.0'">
