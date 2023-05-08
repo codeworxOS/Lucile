@@ -18,6 +18,7 @@ namespace Lucile.Linq
     {
         private readonly ConcurrentDictionary<PropertyInfo, PropertyConfigurationBuilder> _propertyBuilders;
         private readonly ConcurrentDictionary<object, SourceEntityConfigurationBuilder> _sourceBuilders;
+        private Expression<Func<TSource, TResult>> _mapExpression;
 
         public QueryModelBuilder(Expression<Func<QuerySourceBuilder, TSource>> sourceSelector)
         {
@@ -57,6 +58,17 @@ namespace Lucile.Linq
 
         public QueryModel<TResult> Build(IMapperFactory mapperFactory = null)
         {
+            if (_mapExpression != null)
+            {
+                if (mapperFactory == null)
+                {
+                    throw new NotSupportedException("Query expression contains mapping expression, but no mapper factory was provided.");
+                }
+
+                var replaced = (Expression<Func<TSource, TResult>>)ReplaceMapCalls(mapperFactory, _mapExpression);
+                Map(replaced);
+            }
+
             List<PropertyConfiguration> propConfigs;
             List<SourceEntityConfiguration> sourceEntityConfigs;
             Data.Metadata.EntityMetadata entity;
@@ -94,6 +106,7 @@ namespace Lucile.Linq
         {
             var init = mapExpression.Body as NewExpression;
             var memberInit = mapExpression.Body as MemberInitExpression;
+            var methodCall = mapExpression.Body as MethodCallExpression;
 
             Dictionary<PropertyInfo, Expression> propertyMapping = null;
 
@@ -105,10 +118,17 @@ namespace Lucile.Linq
             {
                 propertyMapping = memberInit.Bindings.OfType<MemberAssignment>().ToDictionary(p => (PropertyInfo)p.Member, p => p.Expression);
             }
+            else if (methodCall != null && methodCall.Method.Name == nameof(MappingExtensions.Map) && methodCall.Method.DeclaringType == typeof(MappingExtensions))
+            {
+                _mapExpression = mapExpression;
+                return this;
+            }
             else
             {
                 throw new ArgumentException(nameof(mapExpression));
             }
+
+            _mapExpression = null;
 
             foreach (var item in propertyMapping)
             {
@@ -188,6 +208,40 @@ namespace Lucile.Linq
             return methodCallExpression != null && methodCallExpression.Object == param && methodCallExpression.Method.Name == "Get";
         }
 
+        private static LambdaExpression ReplaceMapCalls(IMapperFactory mapperFactory, LambdaExpression expression)
+        {
+            var mapVisitor = new FindMapExpressionVisitor();
+            mapVisitor.Visit(expression);
+            if (mapVisitor.MapCalls.Any())
+            {
+                foreach (var map in mapVisitor.MapCalls)
+                {
+                    var arguments = map.Method.GetGenericArguments();
+                    var sourceType = arguments[0];
+                    var targetType = arguments[1];
+
+                    var subMapper = mapperFactory.CreateMapper(sourceType, targetType);
+                    if (map.Method.ReturnType == targetType)
+                    {
+                        var subLambda = subMapper.Configuration.ConversionExpression;
+                        var subExpression = subLambda.Body;
+                        subExpression = subExpression.Replace(subLambda.Parameters[0], map.Arguments[0]);
+
+                        expression = expression.Replace(map, subExpression);
+                    }
+                    else if (map.Method.ReturnType == typeof(IEnumerable<>).MakeGenericType(targetType))
+                    {
+                        var selectMethod = DefaultMapperFactory.MethodInfoCache.EnumerableSelectMethod
+                                                .MakeGenericMethod(sourceType, targetType);
+
+                        expression = expression.Replace(map, Expression.Call(selectMethod, map.Arguments[0], subMapper.Configuration.ConversionExpression));
+                    }
+                }
+            }
+
+            return expression;
+        }
+
         private void BuildModel(out List<PropertyConfiguration> propConfigs, out List<SourceEntityConfiguration> sourceEntityConfigs, out Data.Metadata.EntityMetadata entity, IMapperFactory mapperFactory = null)
         {
             var entityModelBuilder = new MetadataModelBuilder();
@@ -204,34 +258,7 @@ namespace Lucile.Linq
 
                 if (mapperFactory != null)
                 {
-                    var mapVisitor = new FindMapExpressionVisitor();
-                    mapVisitor.Visit(expression);
-                    if (mapVisitor.MapCalls.Any())
-                    {
-                        foreach (var map in mapVisitor.MapCalls)
-                        {
-                            var arguments = map.Method.GetGenericArguments();
-                            var sourceType = arguments[0];
-                            var targetType = arguments[1];
-
-                            var subMapper = mapperFactory.CreateMapper(sourceType, targetType);
-                            if (map.Method.ReturnType == targetType)
-                            {
-                                var subLambda = subMapper.Configuration.ConversionExpression;
-                                var subExpression = subLambda.Body;
-                                subExpression = subExpression.Replace(subLambda.Parameters[0], map.Arguments[0]);
-
-                                expression = expression.Replace(map, subExpression);
-                            }
-                            else if (map.Method.ReturnType == typeof(IEnumerable<>).MakeGenericType(targetType))
-                            {
-                                var selectMethod = DefaultMapperFactory.MethodInfoCache.EnumerableSelectMethod
-                                                        .MakeGenericMethod(sourceType, targetType);
-
-                                expression = expression.Replace(map, Expression.Call(selectMethod, map.Arguments[0], subMapper.Configuration.ConversionExpression));
-                            }
-                        }
-                    }
+                    expression = ReplaceMapCalls(mapperFactory, expression);
                 }
 
                 props.Add(Process(expression, item.Value, entityBuilder, entityModelBuilder));

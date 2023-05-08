@@ -21,7 +21,7 @@ namespace Lucile.Data.Metadata
             var propertyListBuilder = ImmutableList.CreateBuilder<ScalarProperty>();
             var navigationListBuilder = ImmutableList.CreateBuilder<NavigationPropertyMetadata>();
 
-            var properties = builder.Properties.OrderBy(p => builder.PrimaryKey.Contains(p.Name) ? builder.PrimaryKey.ToList().IndexOf(p.Name) : builder.PrimaryKey.Count).ThenBy(p => p.Name).ToList();
+            var properties = builder.Properties.OrderBy(p => builder.PrimaryKey.Contains(p.Name) ? builder.PrimaryKey.ToList().IndexOf(p.Name) : builder.PrimaryKey.Count).ThenBy(p => p.Name, StringComparer.Ordinal).ToList();
 
             foreach (var item in properties.Where(p => !p.IsExcluded))
             {
