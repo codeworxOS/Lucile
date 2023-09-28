@@ -130,6 +130,8 @@ function New-NugetPackages {
         }
       
         $projects | foreach { 
+            Write-Host "Restore Project $_"
+
             dotnet msbuild $_ -property:"$params" -target:restore
 
             if ($LASTEXITCODE -ne 0) {
@@ -138,6 +140,8 @@ function New-NugetPackages {
         }
 
         $projects | foreach { 
+            Write-Host "Pack Project $_"
+
             dotnet msbuild $_ -property:"$params" -target:pack
 
             if ($LASTEXITCODE -ne 0) {
@@ -268,9 +272,13 @@ function Get-NugetVersionInfo {
 
             Write-Host "Downloading old Package..."
             Invoke-WebRequest -Uri $downloadUri -OutFile "$tempFile.zip"
+        
+            Write-Host "Unpacking Package..."
             Unzip "$tempFile.zip" "$tempPath"
             Remove-Item -Path "$tempFile.zip"
         
+            Write-Host "Getting dll from Package..."
+          
             $versionInfos = Get-ChildItem -Path "$tempPath\lib\" -Filter "$Package.dll" -Recurse | Select-Object -ExpandProperty VersionInfo -First 0 -Last 1
         
             $fileVersion = [version]$versionInfos.FileVersion
@@ -285,6 +293,8 @@ function Get-NugetVersionInfo {
                 $result.Release = [int]::Parse($splitted[2]) + 1
             }
 
+            Write-Host "Remove temporary files..."
+         
             Get-ChildItem -Path $tempPath -Recurse | Remove-Item -force -recurse
             Remove-Item $tempPath -Force 
         }
