@@ -132,7 +132,7 @@ function New-NugetPackages {
         $projects | foreach { 
             Write-Host "Restore Project $_"
 
-            dotnet restore $_ -property:"$params"
+            dotnet msbuild $_ -property:"$params" -target:restore
 
             if ($LASTEXITCODE -ne 0) {
                 Write-Error "restore failed with exit code $LASTEXITCODE" -ErrorAction 'Stop'
