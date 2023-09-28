@@ -12,6 +12,8 @@ namespace Lucile.Test.Model
 
         public DateTime DateTimeProperty { get; set; }
 
+        public TimeSpan TimeSpanProperty { get; set; }
+
         public decimal DecimalProperty { get; set; }
 
         public double DoubleProperty { get; set; }
@@ -31,6 +33,8 @@ namespace Lucile.Test.Model
         public DateTimeOffset? NullableDateTimeOffsetProperty { get; set; }
 
         public DateTime? NullableDateTimeProperty { get; set; }
+
+        public TimeSpan? NullableTimeSpanProperty { get; set; }
 
         public decimal? NullableDecimalProperty { get; set; }
 

@@ -277,6 +277,16 @@ namespace Lucile.Data.Metadata.Builder
             return (DateTimePropertyBuilder)_innerBuilder.Property(propertySelector.GetPropertyName(), typeof(DateTime?));
         }
 
+        public TimeSpanPropertyBuilder Property(Expression<Func<TEntity, TimeSpan>> propertySelector)
+        {
+            return (TimeSpanPropertyBuilder)_innerBuilder.Property(propertySelector.GetPropertyName(), typeof(TimeSpan));
+        }
+
+        public TimeSpanPropertyBuilder Property(Expression<Func<TEntity, TimeSpan?>> propertySelector)
+        {
+            return (TimeSpanPropertyBuilder)_innerBuilder.Property(propertySelector.GetPropertyName(), typeof(TimeSpan?));
+        }
+
         public DateTimePropertyBuilder Property(Expression<Func<TEntity, DateTimeOffset>> propertySelector)
         {
             return (DateTimePropertyBuilder)_innerBuilder.Property(propertySelector.GetPropertyName(), typeof(DateTimeOffset));

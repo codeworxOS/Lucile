@@ -173,6 +173,30 @@ namespace Tests
         }
 
         [Fact]
+        public void EntityMetadataBuilderTimeSpanProperty()
+        {
+            var builder = new MetadataModelBuilder();
+            var prop = builder.Entity<AllTypesEntity>()
+                        .Property(p => p.TimeSpanProperty);
+
+            Assert.IsType<TimeSpanPropertyBuilder>(prop);
+            Assert.Equal("TimeSpanProperty", prop.Name);
+            Assert.False(prop.Nullable);
+        }
+
+        [Fact]
+        public void EntityMetadataBuilderNullableTimeSpanProperty()
+        {
+            var builder = new MetadataModelBuilder();
+            var prop = builder.Entity<AllTypesEntity>()
+                        .Property(p => p.NullableTimeSpanProperty);
+
+            Assert.IsType<TimeSpanPropertyBuilder>(prop);
+            Assert.Equal("NullableTimeSpanProperty", prop.Name);
+            Assert.True(prop.Nullable);
+        }
+
+        [Fact]
         public void EntityMetadataBuilderGenericTextProperty()
         {
             var builder = new MetadataModelBuilder();

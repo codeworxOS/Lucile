@@ -16,6 +16,7 @@ namespace Lucile.Data.Metadata.Builder
     [KnownType(typeof(GeometryPropertyBuilder))]
     [KnownType(typeof(GeographyPropertyBuilder))]
     [KnownType(typeof(EnumPropertyBuilder))]
+    [KnownType(typeof(TimeSpanPropertyBuilder))]
     [ProtoInclude(101, typeof(TextPropertyBuilder))]
     [ProtoInclude(102, typeof(NumericPropertyBuilder))]
     [ProtoInclude(103, typeof(BooleanPropertyBuilder))]
@@ -25,6 +26,7 @@ namespace Lucile.Data.Metadata.Builder
     [ProtoInclude(107, typeof(GeometryPropertyBuilder))]
     [ProtoInclude(108, typeof(GeographyPropertyBuilder))]
     [ProtoInclude(109, typeof(EnumPropertyBuilder))]
+    [ProtoInclude(110, typeof(TimeSpanPropertyBuilder))]
     [JsonConverter(typeof(JsonInheritanceConverter), "type")]
     public abstract class ScalarPropertyBuilder : IMetadataBuilder
     {
@@ -79,6 +81,10 @@ namespace Lucile.Data.Metadata.Builder
             else if (type == typeof(DateTime))
             {
                 return new DateTimePropertyBuilder { PropertyType = typeInfo, Name = propertyName, Nullable = nullable != null, DateTimeType = DateTimePropertyType.DateTime };
+            }
+            else if (type == typeof(TimeSpan))
+            {
+                return new TimeSpanPropertyBuilder { PropertyType = typeInfo, Name = propertyName, Nullable = nullable != null };
             }
             else if (type == typeof(DateTimeOffset))
             {
