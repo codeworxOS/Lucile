@@ -3,7 +3,7 @@
   <PropertyGroup>
     <Description>Core components for the Lucile Framework. For detailed Documentation visit http://www.github.com/codeworxOS/Lucile</Description>
     <AssemblyTitle>Lucile Framework Core Library</AssemblyTitle>
-    <TargetFrameworks>netstandard2.0;</TargetFrameworks>
+    <TargetFramework>netstandard2.0</TargetFramework>
     <Configurations>Debug;Release;Debug EF60;Debug EF70</Configurations>
     <PackageVersion Condition="'$(LucileCoreVersion)' != ''">$(LucileCoreVersion)</PackageVersion>
   </PropertyGroup>
