@@ -5,7 +5,7 @@
 # https://aka.ms/yaml
 
 pool:
-  vmImage: windows-2022
+  vmImage: windows-latest
 
 steps:
 - task: DownloadSecureFile@1
