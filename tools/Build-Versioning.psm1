@@ -107,12 +107,16 @@ function New-NugetPackages {
             Write-Host "Cleaning output folder:"
             Remove-Item "$output\*.nupkg" -ErrorAction Ignore
         }
+
+        Write-Host "Cleaning output completed!"
         
         $data = Get-Content $versionFile.FullName | ConvertFrom-Json
 
         if (Test-Path env:BUILD_PRERELEASE) {
             $data = $data | Add-Member -NotePropertyMembers @{prerelease = $env:BUILD_PRERELEASE } -PassThru
         }
+
+        Write-Host "Getting NuGet Version..."
 
         $nextVersion = Get-NugetVersionInfo -NugetServerUrl $NugetServerUrl -Package $VersionPackage -Major $data.major -Minor $data.minor -BuildNumberPrefix $data.buildNumberPrefix -Prerelease $data.prerelease    
         
