@@ -241,9 +241,15 @@ function Get-NugetVersionInfo {
         }
 
         $packageSource = New-Guid;
+
+        Write-Host "Register Package Source..."
+
         Register-PackageSource -Name $packageSource -Location $NugetServerUrl -ProviderName NuGet
+        
+        Write-Host "Find Package..."
         $packageResponse = Find-Package $Package -source $packageSource -MinimumVersion $lower -MaximumVersion $upper -AllVersions -AllowPrereleaseVersions -ErrorAction Ignore
         $versions = $packageResponse | Select-Object -Property Version
+        Write-Host "Unregister Package Source..."
         Unregister-PackageSource $packageSource
 
         if ( (-Not $versions.Count -And $versions) -Or ($versions.Count -gt 0) ) {
@@ -260,6 +266,7 @@ function Get-NugetVersionInfo {
 
             $downloadUri = Get-NugetDownloadUri -Server $NugetServerUrl -Package $Package -Version $latest;
 
+            Write-Host "Downloading old Package..."
             Invoke-WebRequest -Uri $downloadUri -OutFile "$tempFile.zip"
             Unzip "$tempFile.zip" "$tempPath"
             Remove-Item -Path "$tempFile.zip"
