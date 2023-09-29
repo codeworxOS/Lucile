@@ -140,19 +140,9 @@ function New-NugetPackages {
         }
 
         $projects | foreach { 
-            Write-Host "Build Project $_"
-
-            dotnet msbuild $_ -property:"$params" -target:build
-
-            if ($LASTEXITCODE -ne 0) {
-                Write-Error "pack failed with exit code $LASTEXITCODE" -ErrorAction 'Stop'
-            }
-        }
-
-        $projects | foreach { 
             Write-Host "Pack Project $_"
 
-            dotnet msbuild $_ -property:"$params" -target:pack
+            Start-Process dotnet -ArgumentList "msbuild $_ -property:`"$params`" -target:pack" -NoNewWindow -PassThru -Wait
 
             if ($LASTEXITCODE -ne 0) {
                 Write-Error "pack failed with exit code $LASTEXITCODE" -ErrorAction 'Stop'
