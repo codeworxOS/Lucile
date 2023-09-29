@@ -134,7 +134,7 @@ function New-NugetPackages {
         }
 
         $projects | foreach { 
-            dotnet msbuild $_ -property:"$params" -target:pack
+            dotnet msbuild $_ -nodeReuse:false -verbosity:n -p:UseRazorBuildServer=false -p:UseSharedCompilation=false -property:"$params" -target:pack
 
             if ($LASTEXITCODE -ne 0) {
                 Write-Error "pack failed with exit code $LASTEXITCODE" -ErrorAction 'Stop'
