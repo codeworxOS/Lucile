@@ -142,7 +142,7 @@ function New-NugetPackages {
         $projects | foreach { 
             Write-Host "Pack Project $_"
 
-            Start-Process dotnet -ArgumentList "msbuild $_ -verbosity:n -property:`"$params`" -target:pack" -NoNewWindow -PassThru -Wait
+            Start-Process dotnet -ArgumentList "msbuild $_ -nodeReuse:false -verbosity:n -property:`"$params`" -target:pack" -NoNewWindow -PassThru -Wait
 
             if ($LASTEXITCODE -ne 0) {
                 Write-Error "pack failed with exit code $LASTEXITCODE" -ErrorAction 'Stop'
