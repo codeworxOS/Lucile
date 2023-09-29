@@ -17,14 +17,14 @@
 	<ItemGroup>
 
 		<PackageReference Remove="StyleCop.Analyzers" />
-		<PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.3.0" />
+		<PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.7.2" />
 		<PackageReference Include="protobuf-net" Version="2.4.4" />
-		<PackageReference Include="xunit.runner.visualstudio" Version="2.4.5">
+		<PackageReference Include="xunit.runner.visualstudio" Version="2.5.1">
 			<PrivateAssets>all</PrivateAssets>
 			<IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
 		</PackageReference>
 		<PackageReference Include="System.Runtime.Serialization.Primitives" Version="4.3.0" />
-		<PackageReference Include="xunit" Version="2.4.2" />
+		<PackageReference Include="xunit" Version="2.5.1" />
 	</ItemGroup>
 
 	<ItemGroup Condition="'$(TargetFramework)' == 'net6'">
