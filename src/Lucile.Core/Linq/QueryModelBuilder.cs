@@ -314,6 +314,23 @@ namespace Lucile.Linq
                 var targetEntity = entityModelBuilder.Entity(nav.Target.ClrType);
                 result.Children.AddRange(expression.GetPropertyLambda().Select(p => Process(p.Value, value.Property(p.Key), targetEntity, entityModelBuilder)));
             }
+            else if (IsNavigationList(value.PropertyType, out var elementType))
+            {
+                var nav = entityBuilder.Navigation(value.PropertyName);
+                var targetEntity = entityModelBuilder.Entity(elementType);
+
+                var found = expression.Body.Find<LambdaExpression>(p => (p.Body.NodeType == ExpressionType.New || p.Body.NodeType == ExpressionType.MemberInit) && p.Body.Type == elementType).LastOrDefault();
+
+                if (found == null)
+                {
+                    throw new NotSupportedException($"The expression for property {value.PropertyType} is not supported.");
+                }
+
+                foreach (var property in found.GetPropertyLambda())
+                {
+                    Process(property.Value, value.Property(property.Key), targetEntity, entityModelBuilder);
+                }
+            }
             else
             {
                 entityBuilder.Property(value.PropertyName, value.PropertyType);
@@ -324,6 +341,33 @@ namespace Lucile.Linq
             }
 
             return result;
+        }
+
+        private bool IsNavigationList(Type propertyType, out Type elementType)
+        {
+            Type found = null;
+
+            if (propertyType == typeof(string))
+            {
+                elementType = null;
+                return false;
+            }
+
+            if (propertyType.IsGenericType && propertyType.GetGenericTypeDefinition() == typeof(IEnumerable<>))
+            {
+                found = propertyType;
+            }
+
+            found = found ?? propertyType.GetInterfaces().FirstOrDefault(p => p.IsGenericType && p.GetGenericTypeDefinition() == typeof(IEnumerable<>));
+
+            if (found != null)
+            {
+                elementType = found.GetGenericArguments().First();
+                return true;
+            }
+
+            elementType = null;
+            return false;
         }
 
         private class PropertySetup
