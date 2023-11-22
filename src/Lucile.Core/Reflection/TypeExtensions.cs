@@ -40,7 +40,9 @@ namespace System
 
         public static bool IsCollectionType(this Type type, out Type itemType)
         {
-            var enumerable = type.GetTypeInfo().ImplementedInterfaces.FirstOrDefault(p => p.GetTypeInfo().IsGenericType && p.GetGenericTypeDefinition() == typeof(IEnumerable<>));
+            var enumerable = type.IsGenericType && type.GetGenericTypeDefinition() == typeof(IEnumerable<>) ? type : null;
+
+            enumerable = enumerable ?? type.GetTypeInfo().ImplementedInterfaces.FirstOrDefault(p => p.GetTypeInfo().IsGenericType && p.GetGenericTypeDefinition() == typeof(IEnumerable<>));
 
             if (enumerable != null)
             {

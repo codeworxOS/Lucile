@@ -17,6 +17,7 @@ $coreVersion =  New-NugetPackages `
                     -NugetServerUrl "https://www.nuget.org/api/v2" `
                     -VersionPackage "Lucile.Core" `
                     -OutputPath "..\dist\nuget" `
+                    -VersionFilePath "..\version.json" `
                     -MsBuildParams "SignAssembly=true;AssemblyOriginatorKeyFile=..\..\private\lucile_signkey.snk"
 
 $projects = "..\src\Lucile.EntityFrameworkCore\Lucile.EntityFrameworkCore.csproj"

@@ -37,6 +37,28 @@ namespace Tests
             Assert.Equal(NumericPropertyType.Byte, ((EnumProperty)nullableEnumProperty).UnderlyingNumericType);
         }
 
+        [Fact]
+        public void CheckTimeSpanProperties()
+        {
+            var builder = new MetadataModelBuilder();
+
+            using (var ctx = new TestContext())
+            {
+                builder.UseDbContext(ctx);
+            }
+
+            var model = builder.ToModel();
+
+            var timeSpanProperty = model.GetEntityMetadata<AllTypesEntity>().GetProperties().First(p => p.Name == nameof(AllTypesEntity.TimeSpanProperty));
+            var nullableTimeSpanProperty = model.GetEntityMetadata<AllTypesEntity>().GetProperties().First(p => p.Name == nameof(AllTypesEntity.NullableTimeSpanProperty));
+
+            Assert.IsType<TimeSpanProperty>(timeSpanProperty);
+            Assert.IsType<TimeSpanProperty>(nullableTimeSpanProperty);
+
+            Assert.False(timeSpanProperty.Nullable);
+            Assert.True(nullableTimeSpanProperty.Nullable);
+        }
+
 
         [Fact]
         public void CheckHasDefautlValue_ExpectsOk()

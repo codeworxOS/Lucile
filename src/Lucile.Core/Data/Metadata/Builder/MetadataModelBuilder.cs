@@ -36,17 +36,33 @@ namespace Lucile.Data.Metadata.Builder
         public EntityMetadataBuilder<TEntity> Entity<TEntity>()
             where TEntity : class
         {
+            return Entity<TEntity>(false);
+        }
+
+        public EntityMetadataBuilder<TEntity> Entity<TEntity>(bool addBase)
+            where TEntity : class
+        {
             return new EntityMetadataBuilder<TEntity>(Entity(EntityKey.Get<TEntity>()));
         }
 
         public EntityMetadataBuilder Entity(Type clrType)
         {
-            return Entity(EntityKey.Get(new ClrTypeInfo(clrType)));
+            return Entity(clrType, false);
         }
 
         public EntityMetadataBuilder Entity(ClrTypeInfo typeInfo)
         {
-            return Entity(EntityKey.Get(typeInfo));
+            return Entity(typeInfo, false);
+        }
+
+        public EntityMetadataBuilder Entity(Type clrType, bool addBase)
+        {
+            return Entity(EntityKey.Get(new ClrTypeInfo(clrType)), addBase);
+        }
+
+        public EntityMetadataBuilder Entity(ClrTypeInfo typeInfo, bool addBase)
+        {
+            return Entity(EntityKey.Get(typeInfo), addBase);
         }
 
         public MetadataModelBuilder Exclude<TEntity>()
@@ -104,7 +120,12 @@ namespace Lucile.Data.Metadata.Builder
 
         protected EntityMetadataBuilder Entity(EntityKey entityKey)
         {
-            return _entities.GetOrAdd(entityKey, p => p.GetBuilder(this));
+            return Entity(entityKey, false);
+        }
+
+        protected EntityMetadataBuilder Entity(EntityKey entityKey, bool addBase)
+        {
+            return _entities.GetOrAdd(entityKey, p => p.GetBuilder(this, addBase));
         }
 
         protected class EntityKey
@@ -134,7 +155,22 @@ namespace Lucile.Data.Metadata.Builder
 
             public EntityMetadataBuilder GetBuilder(MetadataModelBuilder modelBuilder)
             {
-                return new EntityMetadataBuilder(modelBuilder) { TypeInfo = _typeInfo.Clone() };
+                return GetBuilder(modelBuilder, false);
+            }
+
+            public EntityMetadataBuilder GetBuilder(MetadataModelBuilder modelBuilder, bool addBase)
+            {
+                var result = new EntityMetadataBuilder(modelBuilder) { TypeInfo = _typeInfo.Clone() };
+
+                if (addBase && result.BaseEntity == null)
+                {
+                    if (result.TypeInfo.ClrType.BaseType != typeof(object))
+                    {
+                        result.BaseEntity = modelBuilder.Entity(result.TypeInfo.ClrType.BaseType);
+                    }
+                }
+
+                return result;
             }
         }
     }

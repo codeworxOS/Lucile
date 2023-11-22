@@ -245,7 +245,7 @@ namespace Lucile.Linq
         private void BuildModel(out List<PropertyConfiguration> propConfigs, out List<SourceEntityConfiguration> sourceEntityConfigs, out Data.Metadata.EntityMetadata entity, IMapperFactory mapperFactory = null)
         {
             var entityModelBuilder = new MetadataModelBuilder();
-            var entityBuilder = entityModelBuilder.Entity<TResult>();
+            var entityBuilder = entityModelBuilder.Entity<TResult>(true);
 
             propConfigs = new List<PropertyConfiguration>();
             sourceEntityConfigs = _sourceBuilders.Select(p => p.Value.ToTarget()).ToList();
@@ -311,8 +311,25 @@ namespace Lucile.Linq
             if (expression.Body.NodeType == ExpressionType.New || expression.Body.NodeType == ExpressionType.MemberInit)
             {
                 var nav = entityBuilder.Navigation(value.PropertyName);
-                var targetEntity = entityModelBuilder.Entity(nav.Target.ClrType);
+                var targetEntity = entityModelBuilder.Entity(nav.Target.ClrType, true);
                 result.Children.AddRange(expression.GetPropertyLambda().Select(p => Process(p.Value, value.Property(p.Key), targetEntity, entityModelBuilder)));
+            }
+            else if (IsNavigationList(value.PropertyType, out var elementType))
+            {
+                var nav = entityBuilder.Navigation(value.PropertyName);
+                var targetEntity = entityModelBuilder.Entity(elementType, true);
+
+                var found = expression.Body.Find<LambdaExpression>(p => (p.Body.NodeType == ExpressionType.New || p.Body.NodeType == ExpressionType.MemberInit) && p.Body.Type == elementType).LastOrDefault();
+
+                if (found == null)
+                {
+                    throw new NotSupportedException($"The expression for property {value.PropertyType} is not supported.");
+                }
+
+                foreach (var property in found.GetPropertyLambda())
+                {
+                    Process(property.Value, value.Property(property.Key), targetEntity, entityModelBuilder);
+                }
             }
             else
             {
@@ -324,6 +341,33 @@ namespace Lucile.Linq
             }
 
             return result;
+        }
+
+        private bool IsNavigationList(Type propertyType, out Type elementType)
+        {
+            Type found = null;
+
+            if (propertyType == typeof(string))
+            {
+                elementType = null;
+                return false;
+            }
+
+            if (propertyType.IsGenericType && propertyType.GetGenericTypeDefinition() == typeof(IEnumerable<>))
+            {
+                found = propertyType;
+            }
+
+            found = found ?? propertyType.GetInterfaces().FirstOrDefault(p => p.IsGenericType && p.GetGenericTypeDefinition() == typeof(IEnumerable<>));
+
+            if (found != null)
+            {
+                elementType = found.GetGenericArguments().First();
+                return true;
+            }
+
+            elementType = null;
+            return false;
         }
 
         private class PropertySetup

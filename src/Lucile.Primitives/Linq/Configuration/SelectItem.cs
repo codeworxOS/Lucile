@@ -16,5 +16,11 @@
         public Aggregate Aggregate { get; }
 
         public string Property { get; }
+
+        public bool IsBaseOf(string other)
+        {
+            return Property == other ||
+                other.StartsWith($"{Property}.");
+        }
     }
 }

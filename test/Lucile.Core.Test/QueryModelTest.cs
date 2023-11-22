@@ -1,11 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.IO;
 using System.Linq;
 using System.Linq.Expressions;
 
 using Linq.Configuration;
-
+using Lucile.Data.Metadata;
 using Lucile.Linq;
 using Lucile.Linq.Configuration;
 using Lucile.Linq.Configuration.Builder;
@@ -14,6 +15,7 @@ using Lucile.Test.Model;
 using Microsoft.Extensions.DependencyInjection;
 using Newtonsoft.Json.Serialization;
 using Xunit;
+using Xunit.Sdk;
 
 namespace Tests
 {
@@ -695,6 +697,191 @@ namespace Tests
             var result = query.ToList();
             Assert.NotEmpty(result);
             Assert.Equal(2, result.Count);
+        }
+
+        [Fact]
+        public void QueryModelBuilderCreateCompoundTypeEnumerableInSelect()
+        {
+            var receipt = CreateDummyReceipt();
+            var source = new DummyQuerySource();
+            source.RegisterData(receipt.Details);
+
+            var builder = QueryModel.Create(
+                p => p.Get<Receipt>(),
+                p => new
+                {
+                    p.Id,
+                    p.ReceiptNumber,
+                    Details = p.Details.Select(x => new { Id = x.Id, Article = x.Article.ArticleNumber })
+                });
+            var model = builder.Build();
+
+            var details = model.Entity.GetNavigations().Where(p => p.Name == "Details").FirstOrDefault();
+
+            Assert.NotNull(details);
+            Assert.NotNull(details.TargetEntity);
+            Assert.Null(details.TargetNavigationProperty);
+            Assert.Equal(NavigationPropertyMultiplicity.Many, details.Multiplicity);
+
+            Assert.Contains(details.TargetEntity.GetProperties(), p => p.Name == "Id");
+            Assert.Contains(details.TargetEntity.GetProperties(), p => p.Name == "Article");
+        }
+
+
+        [Fact]
+        public void QueryModelBuilderCreateCompoundTypeListInSelect()
+        {
+            var receipt = CreateDummyReceipt();
+            var source = new DummyQuerySource();
+            source.RegisterData(receipt.Details);
+
+            var builder = QueryModel.Create(
+                p => p.Get<Receipt>(),
+                p => new
+                {
+                    p.Id,
+                    p.ReceiptNumber,
+                    Details = p.Details.Select(x => new { Id = x.Id, Article = x.Article.ArticleNumber }).ToList(),
+                });
+            var model = builder.Build();
+
+            var details = model.Entity.GetNavigations().Where(p => p.Name == "Details").FirstOrDefault();
+
+            Assert.NotNull(details);
+            Assert.NotNull(details.TargetEntity);
+            Assert.Null(details.TargetNavigationProperty);
+            Assert.Equal(NavigationPropertyMultiplicity.Many, details.Multiplicity);
+
+            Assert.Contains(details.TargetEntity.GetProperties(), p => p.Name == "Id");
+            Assert.Contains(details.TargetEntity.GetProperties(), p => p.Name == "Article");
+        }
+
+
+
+        [Fact]
+        public void QueryModelBuilderCreateCompoundTypeListSelectProperty()
+        {
+            var receipt = CreateDummyReceipt();
+            var source = new DummyQuerySource();
+            source.RegisterData(new[] { receipt });
+
+            var builder = QueryModel.Create(
+                p => p.Get<Receipt>(),
+                p => new
+                {
+                    p.Id,
+                    p.ReceiptNumber,
+                    Details = p.Details.Select(x => new { Id = x.Id, Article = x.Article.ArticleNumber }).ToList(),
+                });
+            var model = builder.Build();
+
+            var details = model.Entity.GetNavigations().Where(p => p.Name == "Details").FirstOrDefault();
+
+            Assert.NotNull(details);
+            Assert.NotNull(details.TargetEntity);
+            Assert.Null(details.TargetNavigationProperty);
+            Assert.Equal(NavigationPropertyMultiplicity.Many, details.Multiplicity);
+
+            Assert.Contains(details.TargetEntity.GetProperties(), p => p.Name == "Id");
+            Assert.Contains(details.TargetEntity.GetProperties(), p => p.Name == "Article");
+
+            var queryConfiguration = new QueryConfiguration(
+                new[] { new SelectItem("Id"), new SelectItem("Details") },
+                Enumerable.Empty<SortItem>(),
+                Enumerable.Empty<FilterItem>(),
+                Enumerable.Empty<FilterItem>());
+
+            var query = model.GetQuery(source, queryConfiguration);
+            var result = query.ToList();
+
+            Assert.True(result.Any());
+            Assert.All(result, p => Assert.Null(p.ReceiptNumber));
+            Assert.All(result, p => Assert.NotEqual(default(Guid), p.Id));
+            Assert.All(result, p => Assert.True(p.Details.Any()));
+        }
+
+        [Fact]
+        public void QueryModelBuilderCreateCompoundTypeListExcludeProperty()
+        {
+            var receipt = CreateDummyReceipt();
+            var source = new DummyQuerySource();
+            source.RegisterData(new[] { receipt });
+
+            var builder = QueryModel.Create(
+                p => p.Get<Receipt>(),
+                p => new
+                {
+                    p.Id,
+                    p.ReceiptNumber,
+                    Details = p.Details.Select(x => new { Id = x.Id, Article = x.Article.ArticleNumber }).ToList(),
+                });
+            var model = builder.Build();
+
+            var details = model.Entity.GetNavigations().Where(p => p.Name == "Details").FirstOrDefault();
+
+            Assert.NotNull(details);
+            Assert.NotNull(details.TargetEntity);
+            Assert.Null(details.TargetNavigationProperty);
+            Assert.Equal(NavigationPropertyMultiplicity.Many, details.Multiplicity);
+
+            Assert.Contains(details.TargetEntity.GetProperties(), p => p.Name == "Id");
+            Assert.Contains(details.TargetEntity.GetProperties(), p => p.Name == "Article");
+
+            var queryConfiguration = new QueryConfiguration(
+                new[] { new SelectItem("Id"), new SelectItem("ReceiptNumber") },
+                Enumerable.Empty<SortItem>(),
+                Enumerable.Empty<FilterItem>(),
+                Enumerable.Empty<FilterItem>());
+
+            var query = model.GetQuery(source, queryConfiguration);
+            var result = query.ToList();
+
+            Assert.True(result.Any());
+            Assert.All(result, p => Assert.NotNull(p.ReceiptNumber));
+            Assert.All(result, p => Assert.NotEqual(default(Guid), p.Id));
+            Assert.All(result, p => Assert.Null(p.Details));
+        }
+
+        [Fact]
+        public void QueryModelBuilderCreateCompoundTypeListTargetFilter()
+        {
+            var receipt = CreateDummyReceipt();
+            var receipt2 = CreateDummyReceipt();
+            receipt2.Details.Clear();
+
+            var source = new DummyQuerySource();
+            source.RegisterData(new[] { receipt, receipt2 });
+
+            var builder = QueryModel.Create(
+                p => p.Get<Receipt>(),
+                p => new
+                {
+                    p.Id,
+                    p.ReceiptNumber,
+                    Details = p.Details.Select(x => new { Id = x.Id, Article = x.Article.ArticleNumber }).ToList(),
+                });
+            var model = builder.Build();
+
+            var details = model.Entity.GetNavigations().Where(p => p.Name == "Details").FirstOrDefault();
+
+            Assert.NotNull(details);
+            Assert.NotNull(details.TargetEntity);
+            Assert.Null(details.TargetNavigationProperty);
+            Assert.Equal(NavigationPropertyMultiplicity.Many, details.Multiplicity);
+
+            Assert.Contains(details.TargetEntity.GetProperties(), p => p.Name == "Id");
+            Assert.Contains(details.TargetEntity.GetProperties(), p => p.Name == "Article");
+
+            var queryConfiguration = new QueryConfiguration(
+                Enumerable.Empty<SelectItem>(),
+                Enumerable.Empty<SortItem>(),
+                Enumerable.Empty<FilterItem>(),
+                new FilterItem[] { new AnyFilterItem(new PathValueExpression("Details"), null) });
+
+            var query = model.GetQuery(source, queryConfiguration);
+            var result = query.ToList();
+
+            Assert.Single(result);
         }
 
         [Fact]
