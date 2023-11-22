@@ -245,7 +245,7 @@ namespace Lucile.Linq
         private void BuildModel(out List<PropertyConfiguration> propConfigs, out List<SourceEntityConfiguration> sourceEntityConfigs, out Data.Metadata.EntityMetadata entity, IMapperFactory mapperFactory = null)
         {
             var entityModelBuilder = new MetadataModelBuilder();
-            var entityBuilder = entityModelBuilder.Entity<TResult>();
+            var entityBuilder = entityModelBuilder.Entity<TResult>(true);
 
             propConfigs = new List<PropertyConfiguration>();
             sourceEntityConfigs = _sourceBuilders.Select(p => p.Value.ToTarget()).ToList();
@@ -311,13 +311,13 @@ namespace Lucile.Linq
             if (expression.Body.NodeType == ExpressionType.New || expression.Body.NodeType == ExpressionType.MemberInit)
             {
                 var nav = entityBuilder.Navigation(value.PropertyName);
-                var targetEntity = entityModelBuilder.Entity(nav.Target.ClrType);
+                var targetEntity = entityModelBuilder.Entity(nav.Target.ClrType, true);
                 result.Children.AddRange(expression.GetPropertyLambda().Select(p => Process(p.Value, value.Property(p.Key), targetEntity, entityModelBuilder)));
             }
             else if (IsNavigationList(value.PropertyType, out var elementType))
             {
                 var nav = entityBuilder.Navigation(value.PropertyName);
-                var targetEntity = entityModelBuilder.Entity(elementType);
+                var targetEntity = entityModelBuilder.Entity(elementType, true);
 
                 var found = expression.Body.Find<LambdaExpression>(p => (p.Body.NodeType == ExpressionType.New || p.Body.NodeType == ExpressionType.MemberInit) && p.Body.Type == elementType).LastOrDefault();
 

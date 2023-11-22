@@ -59,7 +59,7 @@ namespace Lucile.Linq
                 var filterPaths = config.TargetFilterItems.SelectMany(p => p.GetValueExpressions()).OfType<PathValueExpression>().Select(p => p.Path).ToList();
                 var fromSortAndFilter = config.Sort.Select(p => p.PropertyPath).Concat(filterPaths).ToList();
 
-                foreach (var missing in fromSortAndFilter.Where(p => !columns.Any(x => x.Property == p)).ToList())
+                foreach (var missing in fromSortAndFilter.Where(p => !columns.Any(x => x.IsBaseOf(p))).ToList())
                 {
                     columns.Add(new SelectItem(missing));
                 }
