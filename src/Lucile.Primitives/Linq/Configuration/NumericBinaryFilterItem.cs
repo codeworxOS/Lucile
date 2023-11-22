@@ -67,7 +67,8 @@ namespace Lucile.Linq.Configuration
             return Expression.Lambda<Func<object, Expression>>(
                             Expression.Call(
                                 _getExpressionMethod.MakeGenericMethod(arg),
-                                Expression.Convert(param, arg)), param).Compile();
+                                Expression.Convert(param, arg)),
+                            param).Compile();
         }
 
         private static Expression GetEnumExpression<T>(T enumValue)

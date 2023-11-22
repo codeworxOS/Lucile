@@ -107,12 +107,16 @@ function New-NugetPackages {
             Write-Host "Cleaning output folder:"
             Remove-Item "$output\*.nupkg" -ErrorAction Ignore
         }
+
+        Write-Host "Cleaning output completed!"
         
         $data = Get-Content $versionFile.FullName | ConvertFrom-Json
 
         if (Test-Path env:BUILD_PRERELEASE) {
             $data = $data | Add-Member -NotePropertyMembers @{prerelease = $env:BUILD_PRERELEASE } -PassThru
         }
+
+        Write-Host "Getting NuGet Version..."
 
         $nextVersion = Get-NugetVersionInfo -NugetServerUrl $NugetServerUrl -Package $VersionPackage -Major $data.major -Minor $data.minor -BuildNumberPrefix $data.buildNumberPrefix -Prerelease $data.prerelease    
         
@@ -126,6 +130,8 @@ function New-NugetPackages {
         }
       
         $projects | foreach { 
+            Write-Host "Restore Project $_"
+
             dotnet msbuild $_ -property:"$params" -target:restore
 
             if ($LASTEXITCODE -ne 0) {
@@ -134,7 +140,9 @@ function New-NugetPackages {
         }
 
         $projects | foreach { 
-            dotnet msbuild $_ -property:"$params" -target:pack
+            Write-Host "Pack Project $_"
+
+            Start-Process dotnet -ArgumentList "msbuild $_ -nodeReuse:false -verbosity:n -p:UseRazorBuildServer=false -p:UseSharedCompilation=false -property:`"$params`" -target:pack" -NoNewWindow -PassThru -Wait
 
             if ($LASTEXITCODE -ne 0) {
                 Write-Error "pack failed with exit code $LASTEXITCODE" -ErrorAction 'Stop'
@@ -237,9 +245,15 @@ function Get-NugetVersionInfo {
         }
 
         $packageSource = New-Guid;
+
+        Write-Host "Register Package Source..."
+
         Register-PackageSource -Name $packageSource -Location $NugetServerUrl -ProviderName NuGet
+        
+        Write-Host "Find Package..."
         $packageResponse = Find-Package $Package -source $packageSource -MinimumVersion $lower -MaximumVersion $upper -AllVersions -AllowPrereleaseVersions -ErrorAction Ignore
         $versions = $packageResponse | Select-Object -Property Version
+        Write-Host "Unregister Package Source..."
         Unregister-PackageSource $packageSource
 
         if ( (-Not $versions.Count -And $versions) -Or ($versions.Count -gt 0) ) {
@@ -256,10 +270,15 @@ function Get-NugetVersionInfo {
 
             $downloadUri = Get-NugetDownloadUri -Server $NugetServerUrl -Package $Package -Version $latest;
 
+            Write-Host "Downloading old Package..."
             Invoke-WebRequest -Uri $downloadUri -OutFile "$tempFile.zip"
+        
+            Write-Host "Unpacking Package..."
             Unzip "$tempFile.zip" "$tempPath"
             Remove-Item -Path "$tempFile.zip"
         
+            Write-Host "Getting dll from Package..."
+          
             $versionInfos = Get-ChildItem -Path "$tempPath\lib\" -Filter "$Package.dll" -Recurse | Select-Object -ExpandProperty VersionInfo -First 0 -Last 1
         
             $fileVersion = [version]$versionInfos.FileVersion
@@ -274,6 +293,8 @@ function Get-NugetVersionInfo {
                 $result.Release = [int]::Parse($splitted[2]) + 1
             }
 
+            Write-Host "Remove temporary files..."
+         
             Get-ChildItem -Path $tempPath -Recurse | Remove-Item -force -recurse
             Remove-Item $tempPath -Force 
         }
