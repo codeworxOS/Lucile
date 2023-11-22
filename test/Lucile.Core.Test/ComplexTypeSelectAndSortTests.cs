@@ -33,7 +33,7 @@ namespace Lucile.Core.Test
                 }));
 
             var queryConfiguration = new QueryConfiguration(
-                selectItems: new[] { new SelectItem("Name")/*, new SelectItem("Company")*/ },
+                selectItems: new[] { new SelectItem("Name"), new SelectItem("Company") },
                 sortItems: new[] { new SortItem("Company.SortOrder", SortDirection.Ascending) },
                 filterItems: Enumerable.Empty<FilterItem>());
 
