@@ -42,7 +42,7 @@ namespace Lucile.Data.Metadata.Builder
         public EntityMetadataBuilder<TEntity> Entity<TEntity>(bool addBase)
             where TEntity : class
         {
-            return new EntityMetadataBuilder<TEntity>(Entity(EntityKey.Get<TEntity>()));
+            return new EntityMetadataBuilder<TEntity>(Entity(EntityKey.Get<TEntity>(), addBase));
         }
 
         public EntityMetadataBuilder Entity(Type clrType)
