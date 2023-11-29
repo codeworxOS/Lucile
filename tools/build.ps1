@@ -40,6 +40,16 @@ $projects = "..\src\Lucile.EntityFrameworkCore\Lucile.EntityFrameworkCore.csproj
     -OutputPath "..\dist\nuget" `
     -MsBuildParams "SignAssembly=true;AssemblyOriginatorKeyFile=..\..\private\lucile_signkey.snk;EfVersion=7;LucileCoreVersion=$($coreVersion.NugetVersion)"
 
+    New-NugetPackages `
+    -Projects $projects `
+    -NugetServerUrl "https://www.nuget.org/api/v2" `
+    -VersionPackage "Lucile.EntityFrameworkCore" `
+    -VersionFilePath "..\version_ef8.json" `
+    -DoNotCleanOutput `
+    -OutputPath "..\dist\nuget" `
+    -MsBuildParams "SignAssembly=true;AssemblyOriginatorKeyFile=..\..\private\lucile_signkey.snk;EfVersion=8;LucileCoreVersion=$($coreVersion.NugetVersion)"
+
+
 
 
 Write-Host "##vso[build.updatebuildnumber]$($coreVersion.NugetVersion)"
