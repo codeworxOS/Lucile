@@ -1,12 +1,12 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk.Web">
 
 	<PropertyGroup>
-		<TargetFrameworks>net6;net7</TargetFrameworks>
+		<TargetFrameworks>net6;net7;net8</TargetFrameworks>
 		<LangVersion>latest</LangVersion>
 		<OutputType>Library</OutputType>
 		<IsPackable>true</IsPackable>
 		<UseRazorBuildServer>false</UseRazorBuildServer>
-		<Configurations>Debug;Release;Debug EF60;Debug EF70</Configurations>
+		<Configurations>Debug;Release;Debug EF60;Debug EF70;Debug EF80</Configurations>
 	</PropertyGroup>
 
 </Project>

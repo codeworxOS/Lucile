@@ -4,7 +4,7 @@
     <TargetFramework>net6</TargetFramework>
     <TreatWarningsAsErrors>false</TreatWarningsAsErrors>
     <IsPackable>false</IsPackable>
-    <Configurations>Debug;Release;Debug EF60;Debug EF70</Configurations>
+    <Configurations>Debug;Release;Debug EF60;Debug EF70;Debug EF80</Configurations>
   </PropertyGroup>
 
   <ItemGroup>

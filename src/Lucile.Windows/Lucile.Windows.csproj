@@ -6,7 +6,7 @@
     <Authors>Raphael Schwarz</Authors>
     <TargetFrameworks>net461;net6-windows;net7-windows</TargetFrameworks>
     <UseWpf>True</UseWpf>
-    <Configurations>Debug;Release;Debug EF60;Debug EF70</Configurations>
+    <Configurations>Debug;Release;Debug EF60;Debug EF70;Debug EF80</Configurations>
   </PropertyGroup>
 
   <ItemGroup>

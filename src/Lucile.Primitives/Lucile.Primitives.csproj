@@ -5,7 +5,7 @@
 		<AssemblyTitle>Lucile Framework Primitives Library</AssemblyTitle>
 		<TargetFrameworks>netstandard2.0</TargetFrameworks>
 		<RootNamespace>Lucile</RootNamespace>
-		<Configurations>Debug;Release;Debug EF60;Debug EF70</Configurations>
+		<Configurations>Debug;Release;Debug EF60;Debug EF70;Debug EF80</Configurations>
 		<PackageVersion Condition="'$(LucileCoreVersion)' != ''">$(LucileCoreVersion)</PackageVersion>
 	</PropertyGroup>
 

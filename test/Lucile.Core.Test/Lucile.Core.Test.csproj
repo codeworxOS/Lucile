@@ -2,7 +2,7 @@
   <PropertyGroup>
     <TargetFramework>net6</TargetFramework>
     <TreatWarningsAsErrors>false</TreatWarningsAsErrors>
-    <Configurations>Debug;Release;Debug EF60;Debug EF70</Configurations>
+    <Configurations>Debug;Release;Debug EF60;Debug EF70;Debug EF80</Configurations>
   </PropertyGroup>
   <ItemGroup>
     <None Remove="Serialization\previous-model.json" />

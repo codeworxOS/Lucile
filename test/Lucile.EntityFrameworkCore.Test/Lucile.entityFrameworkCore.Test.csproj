@@ -1,13 +1,27 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
 	<PropertyGroup>
-		<TargetFrameworks>net6;net7;</TargetFrameworks>
+		<TargetFrameworks>net6;net7;net8</TargetFrameworks>
 		<AssemblyName>Lucile.EntityFrameworkCore.Test</AssemblyName>
 		<PackageId>Lucile.EntityFrameworkCore.Test</PackageId>
 		<GenerateRuntimeConfigurationFiles>true</GenerateRuntimeConfigurationFiles>
 		<TreatWarningsAsErrors>false</TreatWarningsAsErrors>
-		<Configurations>Debug;Release;Debug EF31;Debug EF50;Debug EF60;Debug EF70</Configurations>
+		<Configurations>Debug;Release;Debug EF31;Debug EF50;Debug EF60;Debug EF70;Debug EF80</Configurations>
 	</PropertyGroup>
+
+
+	<PropertyGroup Condition="'$(Configuration)'=='Debug EF60'">
+		<TargetFrameworks>net6</TargetFrameworks>
+	</PropertyGroup>
+
+	<PropertyGroup Condition="'$(Configuration)'=='Debug EF70'">
+		<TargetFrameworks>net7</TargetFrameworks>
+	</PropertyGroup>
+
+	<PropertyGroup Condition="'$(Configuration)'=='Debug EF80'">
+		<TargetFrameworks>net8</TargetFrameworks>
+	</PropertyGroup>
+
 
 	<ItemGroup>
 		<ProjectReference Include="..\..\src\Lucile.EntityFrameworkCore\Lucile.EntityFrameworkCore.csproj" />
@@ -34,6 +48,11 @@
 	<ItemGroup Condition="'$(TargetFramework)' == 'net7'">
 		<PackageReference Include="Microsoft.EntityFrameworkCore.InMemory" Version="7.0.0" />
 		<PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="7.0.0" />
+	</ItemGroup>
+
+	<ItemGroup Condition="'$(TargetFramework)' == 'net8'">
+		<PackageReference Include="Microsoft.EntityFrameworkCore.InMemory" Version="8.0.0" />
+		<PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="8.0.0" />
 	</ItemGroup>
 
 	<ItemGroup>

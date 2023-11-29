@@ -5,7 +5,7 @@
     <AssemblyTitle>Lucile Framework Service Model Library</AssemblyTitle>
     <Authors>codeworx GmbH</Authors>
     <TargetFrameworks>netstandard2.0;net461</TargetFrameworks>
-    <Configurations>Debug;Release;Debug EF60;Debug EF70</Configurations>
+    <Configurations>Debug;Release;Debug EF60;Debug EF70;Debug EF80</Configurations>
   </PropertyGroup>
 
   <ItemGroup>

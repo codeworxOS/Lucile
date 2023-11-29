@@ -36,7 +36,11 @@ namespace Lucile.EntityFrameworkCore
                 entityBuilder.BaseEntity = baseEntityBuilder;
             }
 
+#if NET8_0_OR_GREATER
+            var properties = entityType.GetProperties().Where(p => p.DeclaringType == entityType);
+#else
             var properties = entityType.GetProperties().Where(p => p.DeclaringEntityType == entityType);
+#endif
 
             foreach (var prop in properties)
             {
