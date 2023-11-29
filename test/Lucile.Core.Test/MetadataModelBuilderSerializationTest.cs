@@ -18,7 +18,7 @@ namespace Tests
         public void DataContractSerializationPreviousVersionDeserializationTest()
         {
             MetadataModelBuilder builder = null;
-            
+
             using (var ms = typeof(MetadataModelBuilderSerializationTest).Assembly.GetManifestResourceStream("Lucile.Core.Test.Serialization.previous-model.xml"))
             {
                 var ser = new DataContractSerializer(typeof(MetadataModelBuilder));
@@ -27,7 +27,7 @@ namespace Tests
 
             var model = builder.ToModel();
 
-            TestModelValidations.ValidateInvoiceArticleDefaultModel(model);
+            TestModelValidations.ValidateInvoiceArticleDefaultModel(model, 8);
         }
 
         [Fact]
@@ -42,7 +42,7 @@ namespace Tests
 
             var model = builder.ToModel();
 
-            TestModelValidations.ValidateInvoiceArticleDefaultModel(model);
+            TestModelValidations.ValidateInvoiceArticleDefaultModel(model, 8);
         }
 
         [Fact]
@@ -56,7 +56,7 @@ namespace Tests
                 json.Converters.Add(new LucileJsonInheritanceConverter());
 
                 var serializer = JsonSerializer.Create(json);
-              
+
                 using (var streamReader = new StreamReader(ms))
                 using (var jsonReader = new JsonTextReader(streamReader))
                 {
@@ -66,7 +66,7 @@ namespace Tests
 
             var model = builder.ToModel();
 
-            TestModelValidations.ValidateInvoiceArticleDefaultModel(model);
+            TestModelValidations.ValidateInvoiceArticleDefaultModel(model, 8);
         }
 
 
@@ -98,6 +98,8 @@ namespace Tests
             var builder = new MetadataModelBuilder();
             builder.Entity<Invoice>();
             builder.Entity<Article>().HasOne(p => p.ArticleSettings).WithPrincipal();
+            builder.Entity<ArticleName>().PrimaryKey.AddRange(new[] { nameof(ArticleName.ArticleId), nameof(ArticleName.LanguageId) });
+            builder.Entity<ArticleName>().HasMany(p => p.History).WithOne(p => p.ArticleName);
             builder.ApplyConventions();
 
             MetadataModel model = null;

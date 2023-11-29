@@ -554,10 +554,40 @@ namespace Lucile.Data
                     joinPrimary = Expression.Property(param2, prop.ForeignKeyProperties.First().Principal.Name);
                     joinForeign = Expression.Property(param, prop.ForeignKeyProperties.First().Dependant.Name);
                 }
+                else if (prop.ForeignKeyProperties.Count > 1)
+                {
+                    var primaryKeys = new Expression[prop.ForeignKeyProperties.Count];
+                    var foreignKeys = new Expression[primaryKeys.Length];
+
+                    var types = new Type[primaryKeys.Length];
+
+                    for (int i = 0; i < types.Length; i++)
+                    {
+                        primaryKeys[i] = Expression.Property(param2, prop.ForeignKeyProperties.First().Principal.Name);
+                        foreignKeys[i] = Expression.Property(param, prop.ForeignKeyProperties.First().Dependant.Name);
+
+                        types[i] = primaryKeys[i].Type;
+                    }
+
+                    var keyType = EntityKey.Get(types);
+
+                    var primaryKeysBindings = new MemberAssignment[types.Length];
+                    var foreignKeysBindings = new MemberAssignment[types.Length];
+
+                    for (int i = 0; i < types.Length; i++)
+                    {
+                        var member = keyType.GetProperty($"Value{i}");
+
+                        primaryKeysBindings[i] = Expression.Bind(member, primaryKeys[i]);
+                        foreignKeysBindings[i] = Expression.Bind(member, foreignKeys[i]);
+                    }
+
+                    joinPrimary = Expression.MemberInit(Expression.New(keyType), primaryKeysBindings);
+                    joinForeign = Expression.MemberInit(Expression.New(keyType), foreignKeysBindings);
+                }
                 else
                 {
-                    // Dieser Fall existiert momentan im Datenmodel noch nicht. Betrifft zusammengesetzte ForeignKeys.
-                    throw new NotImplementedException();
+                    throw new NotSupportedException("the navigation property needs at least one foreign key!");
                 }
             }
 

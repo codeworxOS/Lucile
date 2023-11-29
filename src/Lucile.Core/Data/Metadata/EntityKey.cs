@@ -33,7 +33,7 @@ namespace Lucile.Data
 
         public override int GetHashCode()
         {
-            var result = Entity.GetHashCode();
+            var result = Entity?.GetHashCode() ?? 0;
 
             for (int i = 0; i < KeyCount; i++)
             {
@@ -51,7 +51,7 @@ namespace Lucile.Data
                 return false;
             }
 
-            if (typed.Entity.Equals(Entity))
+            if (Object.Equals(typed.Entity, Entity))
             {
                 if (typed.KeyCount == KeyCount)
                 {
