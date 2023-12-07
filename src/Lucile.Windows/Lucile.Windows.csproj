@@ -4,7 +4,7 @@
     <Description>Windows components for the Lucile Framework. For detailed Documentation visit http://www.github.com/codeworxOS/Lucile</Description>
     <AssemblyTitle>Lucile Framework Windows Library</AssemblyTitle>
     <Authors>Raphael Schwarz</Authors>
-    <TargetFrameworks>net461;net6-windows;net7-windows</TargetFrameworks>
+    <TargetFrameworks>net461;net6-windows;net7-windows;net8-windows</TargetFrameworks>
     <UseWpf>True</UseWpf>
     <Configurations>Debug;Release;Debug EF60;Debug EF70;Debug EF80</Configurations>
   </PropertyGroup>
