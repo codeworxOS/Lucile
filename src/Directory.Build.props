@@ -2,6 +2,6 @@
 
  <PropertyGroup>
     <EnablePackageValidation>true</EnablePackageValidation>
-    <PackageValidationBaselineVersion>2.0.17</PackageValidationBaselineVersion>
+    <PackageValidationBaselineVersion>2.0.18</PackageValidationBaselineVersion>
   </PropertyGroup>
 </Project>
