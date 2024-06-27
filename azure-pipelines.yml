@@ -69,7 +69,7 @@ steps:
     packagesToPack: '$(projects)'
     configuration: '$(buildConfiguration)'
     versioningScheme: 'off'
-    buildProperties: 'Version=$(PackageVersion);FileVersion=$(PackageVersionFileVersion);AssemblyVersion=$(major).0.0.0;SignAssembly=true;AssemblyOriginatorKeyFile=..\..\private\lucile_signkey.snk'
+    buildProperties: 'Version=$(PackageVersion);FileVersion=$(PackageVersionFileVersion);AssemblyVersion=$(major).0.0.0;SignAssembly=true;AssemblyOriginatorKeyFile=..\..\private\lucile_signkey.snk;ApiCompatGenerateSuppressionFile=true'
 
 - task: DotNetCoreCLI@2
   displayName: "Get next PackageVersion EF 6"
