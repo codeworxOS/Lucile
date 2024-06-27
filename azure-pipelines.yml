@@ -53,15 +53,6 @@ steps:
     Contents: 'lucile_signkey.snk'
     TargetFolder: './private'
 
-- task: DotNetCoreCLI@2
-  displayName: "run dotnet pack"
-  inputs:
-    command: 'pack'
-    packagesToPack: '$(projects)'
-    configuration: '$(buildConfiguration)'
-    versioningScheme: 'off'
-    buildProperties: 'Version=$(PackageVersion);FileVersion=$(PackageVersionFileVersion);AssemblyVersion=$(major).0.0.0;SignAssembly=true;AssemblyOriginatorKeyFile=..\..\private\lucile_signkey.snk'
-
 - task: Bash@3
   displayName: "Update build version"
   inputs:
@@ -72,14 +63,23 @@ steps:
       echo '##vso[task.setvariable variable=CorePackageVersion;]$(PackageVersion)'
 
 - task: DotNetCoreCLI@2
-  displayName: "Get next PackageVersion"
+  displayName: "run dotnet pack"
+  inputs:
+    command: 'pack'
+    packagesToPack: '$(projects)'
+    configuration: '$(buildConfiguration)'
+    versioningScheme: 'off'
+    buildProperties: 'Version=$(PackageVersion);FileVersion=$(PackageVersionFileVersion);AssemblyVersion=$(major).0.0.0;SignAssembly=true;AssemblyOriginatorKeyFile=..\..\private\lucile_signkey.snk'
+
+- task: DotNetCoreCLI@2
+  displayName: "Get next PackageVersion EF 6"
   inputs:
     command: 'custom'
     custom: 'package-version'
     arguments: '$(efPackageName) -m $(major) -n $(minor)6000 -o DevOps -p $(prerelease)'
 
 - task: DotNetCoreCLI@2
-  displayName: "run dotnet pack"
+  displayName: "run dotnet pack EF6"
   inputs:
     command: 'pack'
     packagesToPack: '$(projects)'
@@ -88,14 +88,14 @@ steps:
     buildProperties: 'LucileCoreVersion=$(CorePackageVersion);EfVersion=6;Version=$(PackageVersion);FileVersion=$(PackageVersionFileVersion);AssemblyVersion=$(major).0.0.0;SignAssembly=true;AssemblyOriginatorKeyFile=..\..\private\lucile_signkey.snk'
 
 - task: DotNetCoreCLI@2
-  displayName: "Get next PackageVersion"
+  displayName: "Get next PackageVersion EF7"
   inputs:
     command: 'custom'
     custom: 'package-version'
     arguments: '$(efPackageName) -m $(major) -n $(minor)7000 -o DevOps -p $(prerelease)'
 
 - task: DotNetCoreCLI@2
-  displayName: "run dotnet pack"
+  displayName: "run dotnet pack EF7"
   inputs:
     command: 'pack'
     packagesToPack: '$(projects)'
@@ -104,14 +104,14 @@ steps:
     buildProperties: 'LucileCoreVersion=$(CorePackageVersion);EfVersion=7;Version=$(PackageVersion);FileVersion=$(PackageVersionFileVersion);AssemblyVersion=$(major).0.0.0;SignAssembly=true;AssemblyOriginatorKeyFile=..\..\private\lucile_signkey.snk'
 
 - task: DotNetCoreCLI@2
-  displayName: "Get next PackageVersion"
+  displayName: "Get next PackageVersion EF8"
   inputs:
     command: 'custom'
     custom: 'package-version'
     arguments: '$(efPackageName) -m $(major) -n $(minor)8000 -o DevOps -p $(prerelease)'
 
 - task: DotNetCoreCLI@2
-  displayName: "run dotnet pack"
+  displayName: "run dotnet pack EF8"
   inputs:
     command: 'pack'
     packagesToPack: '$(projects)'
