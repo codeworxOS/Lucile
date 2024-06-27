@@ -4,28 +4,121 @@
 # Add steps that build, run tests, deploy, and more:
 # https://aka.ms/yaml
 
+trigger:
+- dev
+
 pool:
   vmImage: windows-latest
 
+variables:
+  major: 2
+  minor: 0
+  packageName: 'Lucile.Primitives'
+  efPackageName: 'Lucile.EntityFrameworkCore'
+  projects: 'src/Lucile.Primitives;src/Lucile.AspNetCore;src/Lucile.Core;src/Lucile.Dynamic;src/Lucile.Dynamic.DependencyInjection;src/Lucile.ServiceModel;src/Lucile.ServiceModel.DependencyInjection;src/Lucile.Windows'
+  efProjects: 'src/Lucile.Lucile.EntityFrameworkCore'
+  testProjects: './test/*.csproj'
+  buildPlatform: 'Any CPU'
+  buildConfiguration: 'Release'
+
 steps:
+- task: DotNetCoreCLI@2
+  displayName: Run dotnet test
+  inputs:
+    command: 'test'
+    projects: '$(testProjects)'
+    feedsToUse: 'select'
+    versioningScheme: 'off'
+- task: DotNetCoreCLI@2
+  displayName: "Install package-version tool"
+  inputs:
+    command: 'custom'
+    custom: 'tool'
+    arguments: 'install Codeworx.PackageVersion -g'
+
+- task: DotNetCoreCLI@2
+  displayName: "Get next PackageVersion"
+  inputs:
+    command: 'custom'
+    custom: 'package-version'
+    arguments: '$(packageName) -m $(major) -n $(minor) -o DevOps -p $(prerelease)'
+
 - task: DownloadSecureFile@1
   inputs:
     secureFile: 'lucile_signkey.snk'
+
 - task: CopyFiles@2
   inputs:
     SourceFolder: '$(Agent.TempDirectory)'
     Contents: 'lucile_signkey.snk'
     TargetFolder: './private'
-- task: PowerShell@2
+
+- task: DotNetCoreCLI@2
+  displayName: "run dotnet pack"
   inputs:
-    filePath: './tools/build.ps1'
-    workingDirectory: './tools'
-  displayName: 'Run the build script'
-- task: CopyFiles@2
+    command: 'pack'
+    packagesToPack: '$(projects)'
+    configuration: '$(buildConfiguration)'
+    versioningScheme: 'off'
+    buildProperties: 'Version=$(PackageVersion);FileVersion=$(PackageVersionFileVersion);AssemblyVersion=$(major).0.0.0;SignAssembly=true;AssemblyOriginatorKeyFile=..\..\private\lucile_signkey.snk'
+
+- task: Bash@3
+  displayName: "Update build version"
   inputs:
-    SourceFolder: './dist/nuget'
-    Contents: '*'
-    TargetFolder: '$(Build.ArtifactStagingDirectory)'
+    targetType: 'inline'
+    script: |
+      # Write your commands here
+      echo '##vso[build.updatebuildnumber]$(PackageVersion)'
+      echo '##vso[task.setvariable variable=CorePackageVersion;]$(PackageVersion)'
+
+- task: DotNetCoreCLI@2
+  displayName: "Get next PackageVersion"
+  inputs:
+    command: 'custom'
+    custom: 'package-version'
+    arguments: '$(efPackageName) -m $(major) -n $(minor)6000 -o DevOps -p $(prerelease)'
+
+- task: DotNetCoreCLI@2
+  displayName: "run dotnet pack"
+  inputs:
+    command: 'pack'
+    packagesToPack: '$(projects)'
+    configuration: '$(buildConfiguration)'
+    versioningScheme: 'off'
+    buildProperties: 'LucileCoreVersion=$(CorePackageVersion);EfVersion=6;Version=$(PackageVersion);FileVersion=$(PackageVersionFileVersion);AssemblyVersion=$(major).0.0.0;SignAssembly=true;AssemblyOriginatorKeyFile=..\..\private\lucile_signkey.snk'
+
+- task: DotNetCoreCLI@2
+  displayName: "Get next PackageVersion"
+  inputs:
+    command: 'custom'
+    custom: 'package-version'
+    arguments: '$(efPackageName) -m $(major) -n $(minor)7000 -o DevOps -p $(prerelease)'
+
+- task: DotNetCoreCLI@2
+  displayName: "run dotnet pack"
+  inputs:
+    command: 'pack'
+    packagesToPack: '$(projects)'
+    configuration: '$(buildConfiguration)'
+    versioningScheme: 'off'
+    buildProperties: 'LucileCoreVersion=$(CorePackageVersion);EfVersion=7;Version=$(PackageVersion);FileVersion=$(PackageVersionFileVersion);AssemblyVersion=$(major).0.0.0;SignAssembly=true;AssemblyOriginatorKeyFile=..\..\private\lucile_signkey.snk'
+
+- task: DotNetCoreCLI@2
+  displayName: "Get next PackageVersion"
+  inputs:
+    command: 'custom'
+    custom: 'package-version'
+    arguments: '$(efPackageName) -m $(major) -n $(minor)8000 -o DevOps -p $(prerelease)'
+
+- task: DotNetCoreCLI@2
+  displayName: "run dotnet pack"
+  inputs:
+    command: 'pack'
+    packagesToPack: '$(projects)'
+    configuration: '$(buildConfiguration)'
+    versioningScheme: 'off'
+    buildProperties: 'LucileCoreVersion=$(CorePackageVersion);EfVersion=8;Version=$(PackageVersion);FileVersion=$(PackageVersionFileVersion);AssemblyVersion=$(major).0.0.0;SignAssembly=true;AssemblyOriginatorKeyFile=..\..\private\lucile_signkey.snk'
+
 - task: PublishBuildArtifacts@1
   inputs:
     PathtoPublish: '$(Build.ArtifactStagingDirectory)'
