@@ -17,7 +17,7 @@ variables:
   efPackageName: 'Lucile.EntityFrameworkCore'
   projects: 'src/Lucile.Primitives;src/Lucile.AspNetCore;src/Lucile.Core;src/Lucile.EntityFramework;src/Lucile.Dynamic;src/Lucile.Dynamic.DependencyInjection;src/Lucile.ServiceModel;src/Lucile.ServiceModel.DependencyInjection;src/Lucile.Windows'
   efProjects: 'src/Lucile.EntityFrameworkCore'
-  testProjects: 'test/*.Test.csproj'
+  testProjects: 'test/**/*.Test.csproj'
   buildPlatform: 'Any CPU'
   buildConfiguration: 'Release'
 
