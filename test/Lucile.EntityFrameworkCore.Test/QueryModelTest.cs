@@ -179,35 +179,42 @@ namespace Lucile.EntityFrameworkCore.Test
 
             using (var context = new TestContext(optionsBuilder.Options))
             {
-                await context.Database.EnsureDeletedAsync();
-                await context.Database.EnsureCreatedAsync();
-
-                await FillDatabaseAsync(context);
-
-                var querySource = new DbContextQuerySource(context);
-
-                var queryModel = QueryModel.Create(
-                builder => builder.Get<ReceiptDetail>(),
-                builder => new ReceiptDetailInfo
+                try
                 {
-                    ReceiptId = builder.ReceiptId,
-                    Description = builder.Description,
-                    DeliveryTime = builder.DeliveryTime
+                    await context.Database.EnsureDeletedAsync();
+                    await context.Database.EnsureCreatedAsync();
 
-                })
-                .HasKey(receipt => receipt.ReceiptId)
-                .Build();
+                    await FillDatabaseAsync(context);
 
-                var selectItems = new[] {
+                    var querySource = new DbContextQuerySource(context);
+
+                    var queryModel = QueryModel.Create(
+                    builder => builder.Get<ReceiptDetail>(),
+                    builder => new ReceiptDetailInfo
+                    {
+                        ReceiptId = builder.ReceiptId,
+                        Description = builder.Description,
+                        DeliveryTime = builder.DeliveryTime
+
+                    })
+                    .HasKey(receipt => receipt.ReceiptId)
+                    .Build();
+
+                    var selectItems = new[] {
                     new SelectItem("ReceiptId"),
                     new SelectItem("Description")
                 };
 
-                var queryConfiguration = new QueryConfiguration(selectItems);
-                var query1 = queryModel.GetQuery(querySource, queryConfiguration);
-                var result1 = await query1.ToListAsync();
+                    var queryConfiguration = new QueryConfiguration(selectItems);
+                    var query1 = queryModel.GetQuery(querySource, queryConfiguration);
+                    var result1 = await query1.ToListAsync();
 
-                Assert.All(result1, p => Assembly.Equals(DateTime.MinValue, p.DeliveryTime));
+                    Assert.All(result1, p => Assembly.Equals(DateTime.MinValue, p.DeliveryTime));
+                }
+                finally
+                {
+                    await context.Database.EnsureDeletedAsync();
+                }
             }
         }
 
