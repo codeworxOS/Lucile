@@ -18,7 +18,7 @@
 	</PropertyGroup>
 
 	<PropertyGroup Condition="'$(Configuration)'=='Debug EF60'">
-		<TargetFrameworks>net6</TargetFrameworks>	
+		<TargetFrameworks>net6</TargetFrameworks>
 		<EfVersion>6</EfVersion>
 	</PropertyGroup>
 
@@ -26,10 +26,10 @@
 		<TargetFrameworks>net8</TargetFrameworks>
 		<EfVersion>8</EfVersion>
 	</PropertyGroup>
-	
+
 	<PropertyGroup Condition="'$(Configuration)'=='Debug EF90'">
-	  <TargetFrameworks>net8</TargetFrameworks>
-	  <EfVersion>9</EfVersion>
+		<TargetFrameworks>net8</TargetFrameworks>
+		<EfVersion>9</EfVersion>
 	</PropertyGroup>
 
 
@@ -53,7 +53,6 @@
 	</PropertyGroup>
 	<PropertyGroup Condition="'$(EfVersion)' == '9'">
 		<DefineConstants>EF9</DefineConstants>
-		<EnablePackageValidation>false</EnablePackageValidation>
 		<PackageValidationBaselineVersion>2.9000.0</PackageValidationBaselineVersion>
 	</PropertyGroup>
 
