@@ -7,15 +7,14 @@
 		<GenerateAssemblyConfigurationAttribute>false</GenerateAssemblyConfigurationAttribute>
 		<GenerateAssemblyCompanyAttribute>false</GenerateAssemblyCompanyAttribute>
 		<GenerateAssemblyProductAttribute>false</GenerateAssemblyProductAttribute>
-		<Configurations>Debug;Release;Debug EF60;Debug EF70;Debug EF80</Configurations>
+		<Configurations>Debug;Release;Debug EF60;Debug EF80;Debug EF90</Configurations>
 	</PropertyGroup>
 
 	<ItemGroup>
 		<ProjectReference Include="..\..\src\Lucile.Primitives\Lucile.Primitives.csproj" />
 	</ItemGroup>
-
 	<ItemGroup>
-		<PackageReference Include="System.ServiceModel.Primitives" Version="4.6.0" />
+		<PackageReference Include="System.ServiceModel.Primitives" Version="8.1.1" />
 	</ItemGroup>
 
 </Project>

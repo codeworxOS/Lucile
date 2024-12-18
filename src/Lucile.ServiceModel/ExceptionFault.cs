@@ -7,7 +7,7 @@ namespace Lucile.ServiceModel
     [DataContract]
     public class ExceptionFault
     {
-#if NET461
+#if NET462_OR_GREATER
         private static readonly Action<Exception> _captureDelegate = null;
 
         static ExceptionFault()
@@ -89,7 +89,7 @@ namespace Lucile.ServiceModel
             {
                 throw new ArgumentNullException(nameof(exceptionPayload));
             }
-#if NET461
+#if NET462_OR_GREATER
 
             try
             {
@@ -116,7 +116,7 @@ namespace Lucile.ServiceModel
             {
                 throw new ArgumentNullException(nameof(exception));
             }
-#if NET461
+#if NET462_OR_GREATER
             _captureDelegate(exception);
             try
             {
