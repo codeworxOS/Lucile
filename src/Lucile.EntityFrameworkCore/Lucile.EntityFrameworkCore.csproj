@@ -40,6 +40,7 @@
 		<EfVersion>8</EfVersion>
 	</PropertyGroup>
 	<PropertyGroup Condition="'$(EfVersion)' == '' And '$(TargetFramework)' == 'net9'">
+		<EnablePackageValidation>false</EnablePackageValidation>
 		<EfVersion>9</EfVersion>
 	</PropertyGroup>
 
