@@ -175,46 +175,39 @@ namespace Lucile.EntityFrameworkCore.Test
         {
 
             var optionsBuilder = new DbContextOptionsBuilder<TestContext>();
-            optionsBuilder.UseSqlServer("Data Source=(localdb)\\mssqllocaldb;Initial Catalog=LucileTestContext;Integrated Security=true;");
+            optionsBuilder.UseSqlServer($"Data Source=(localdb)\\mssqllocaldb;Initial Catalog=LucileTestContext{Guid.NewGuid():N};Integrated Security=true;");
 
             using (var context = new TestContext(optionsBuilder.Options))
             {
-                try
+                await context.Database.EnsureDeletedAsync();
+                await context.Database.EnsureCreatedAsync();
+
+                await FillDatabaseAsync(context);
+
+                var querySource = new DbContextQuerySource(context);
+
+                var queryModel = QueryModel.Create(
+                builder => builder.Get<ReceiptDetail>(),
+                builder => new ReceiptDetailInfo
                 {
-                    await context.Database.EnsureDeletedAsync();
-                    await context.Database.EnsureCreatedAsync();
+                    ReceiptId = builder.ReceiptId,
+                    Description = builder.Description,
+                    DeliveryTime = builder.DeliveryTime
 
-                    await FillDatabaseAsync(context);
+                })
+                .HasKey(receipt => receipt.ReceiptId)
+                .Build();
 
-                    var querySource = new DbContextQuerySource(context);
-
-                    var queryModel = QueryModel.Create(
-                    builder => builder.Get<ReceiptDetail>(),
-                    builder => new ReceiptDetailInfo
-                    {
-                        ReceiptId = builder.ReceiptId,
-                        Description = builder.Description,
-                        DeliveryTime = builder.DeliveryTime
-
-                    })
-                    .HasKey(receipt => receipt.ReceiptId)
-                    .Build();
-
-                    var selectItems = new[] {
+                var selectItems = new[] {
                     new SelectItem("ReceiptId"),
                     new SelectItem("Description")
                 };
 
-                    var queryConfiguration = new QueryConfiguration(selectItems);
-                    var query1 = queryModel.GetQuery(querySource, queryConfiguration);
-                    var result1 = await query1.ToListAsync();
+                var queryConfiguration = new QueryConfiguration(selectItems);
+                var query1 = queryModel.GetQuery(querySource, queryConfiguration);
+                var result1 = await query1.ToListAsync();
 
-                    Assert.All(result1, p => Assembly.Equals(DateTime.MinValue, p.DeliveryTime));
-                }
-                finally
-                {
-                    await context.Database.EnsureDeletedAsync();
-                }
+                Assert.All(result1, p => Assembly.Equals(DateTime.MinValue, p.DeliveryTime));
             }
         }
 
