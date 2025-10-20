@@ -1427,6 +1427,58 @@ namespace Tests
         }
 
         [Fact]
+        public void QueryModelMapperWithNullCheckTest()
+        {
+            var source = new DummyQuerySource();
+            source.RegisterData(new List<Node>
+            {
+                new Node
+                {
+                    Id = Guid.Empty,
+                    Name = "Test Node",
+                    StateId = Guid.Empty
+                }
+            });
+
+            var services = new ServiceCollection();
+
+            services
+                .AddMapper()
+                .AddMapping<Enumeration>()
+                    .Configure(builder => builder.To(e => new DisplayValue
+                    {
+                        Id = e.Id,
+                        Name = e.Name
+                    }));
+
+            var builder = QueryModel.Create(
+                p => new
+                {
+                    Node = p.Get<Node>(),
+                    State = p.Get<Enumeration>()
+                },
+                q => new
+                {
+                    q.Node.Id,
+                    q.Node.Name,
+                    State = q.State != null ? q.State.Map<Enumeration, DisplayValue>() : null
+                });
+
+            builder.Source(q => q.Node);
+            builder.Source(q => q.State).Join(e => e.Id, q => q.Node.StateId);
+
+            using var sp = services.BuildServiceProvider();
+            var mapperFactory = sp.GetService<IMapperFactory>();
+            var model = builder.Build(mapperFactory);
+            var query = model.GetQuery(source, new QueryConfiguration());
+            var result = query.ToList();
+
+            Assert.Single(result);
+            Assert.Equal("Test Node", result[0].Name);
+            Assert.Null(result[0].State);
+        }
+
+        [Fact]
         public void QueryModelMapperOnRootTest()
         {
             var receipt = CreateDummyReceipt();
@@ -1911,6 +1963,25 @@ namespace Tests
         {
             public Guid Id { get; set; }
             public string DisplayText { get; set; }
+        }
+
+        private class DisplayValue
+        {
+            public Guid Id { get; set; }
+            public string Name { get; set; }
+        }
+
+        private class Node
+        {
+            public Guid Id { get; set; }
+            public string Name { get; set; }
+            public Guid StateId { get; set; }
+        }
+
+        private class Enumeration
+        {
+            public Guid Id { get; set; }
+            public string Name { get; set; }
         }
     }
 }
