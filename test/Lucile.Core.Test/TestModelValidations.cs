@@ -8,15 +8,15 @@ namespace Tests
 {
     public static class TestModelValidations
     {
-        public static void ValidateInvoiceArticleDefaultModel(MetadataModelBuilder builder)
+        public static void ValidateInvoiceArticleDefaultModel(MetadataModelBuilder builder, int expectedCount = 9)
         {
             var model = builder.ToModel();
-            ValidateInvoiceArticleDefaultModel(model);
+            ValidateInvoiceArticleDefaultModel(model, expectedCount);
         }
 
-        public static void ValidateInvoiceArticleDefaultModel(MetadataModel model)
+        public static void ValidateInvoiceArticleDefaultModel(MetadataModel model, int expectedCount = 9)
         {
-            Assert.Equal(8, model.Entities.Count());
+            Assert.Equal(expectedCount, model.Entities.Count());
 
             Assert.Contains(model.Entities, p => p.Name == "Invoice");
             Assert.Contains(model.Entities, p => p.Name == "Receipt");

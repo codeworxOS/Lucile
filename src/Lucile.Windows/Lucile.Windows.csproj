@@ -4,16 +4,16 @@
     <Description>Windows components for the Lucile Framework. For detailed Documentation visit http://www.github.com/codeworxOS/Lucile</Description>
     <AssemblyTitle>Lucile Framework Windows Library</AssemblyTitle>
     <Authors>Raphael Schwarz</Authors>
-    <TargetFrameworks>net461;net6-windows;net7-windows</TargetFrameworks>
+    <TargetFrameworks>net462;net6-windows;net8-windows;net9-windows</TargetFrameworks>
     <UseWpf>True</UseWpf>
-    <Configurations>Debug;Release;Debug EF60;Debug EF70</Configurations>
+    <Configurations>Debug;Release;Debug EF60;Debug EF80;Debug EF90</Configurations>
   </PropertyGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\Lucile.Primitives\Lucile.Primitives.csproj" />
   </ItemGroup>
 
-  <ItemGroup Condition=" '$(TargetFramework)' == 'net461' ">
+  <ItemGroup Condition=" '$(TargetFramework)' == 'net462' ">
     <Reference Include="PresentationFramework" />
     <Reference Include="WindowsBase" />
     <Reference Include="System.Xaml" />

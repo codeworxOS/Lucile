@@ -57,11 +57,14 @@ namespace Tests
         public void AutomaticFixupTest()
         {
             var metadataModelBuilder = new MetadataModelBuilder();
-            metadataModelBuilder.Entity<ArticleName>().PrimaryKey.AddRange(new[] { "ArticleId", "LanguageId" });
+            var articleNameEntity = metadataModelBuilder.Entity<ArticleName>();
+            articleNameEntity.PrimaryKey.AddRange(new[] { "ArticleId", "LanguageId" });
             var articleEntity = metadataModelBuilder.Entity<Article>();
             metadataModelBuilder.Entity<ReceiptDetail>();
             metadataModelBuilder.Entity<Invoice>().BaseEntity = metadataModelBuilder.Entity(typeof(Receipt));
             var contactSettings = metadataModelBuilder.Entity<ContactSettings>();
+
+            articleNameEntity.HasMany(p => p.History).WithOne(p => p.ArticleName).HasForeignKey("ArticleId", "LanguageId");
 
             articleEntity.HasOne(p => p.ArticleSettings).WithPrincipal();
             contactSettings.HasOne(p => p.Contact).WithDependant();
@@ -97,6 +100,43 @@ namespace Tests
             context.AttachSingle(articleSettings);
 
             Assert.Equal(article.ArticleSettings, articleSettings);
+        }
+
+        [Fact]
+        public void AttachObjectWithCompositeKeyTest()
+        {
+            var model = GetModel();
+            var ctx = new ModelContext(model);
+
+            var article = new Article { Id = Guid.NewGuid(), ArticleNumber = "12314", SupplierId = Guid.NewGuid(), ArticleDescription = "testchen" };
+            var articleName = new ArticleName { ArticleId = article.Id, LanguageId = "de", TranlatedText = "first" };
+
+
+            ctx.AttachSingle(articleName);
+            ctx.AttachSingle(article);
+
+            Assert.NotEmpty(article.Names);
+            Assert.Equal(article.Names.First(), articleName);
+
+            var articleNameHistory = new ArticleNameHistory { Id = Guid.NewGuid(), ArticleId = article.Id, LanguageId = "de", ChangeDate = DateTime.Now };
+
+            ctx.AttachSingle(articleNameHistory);
+
+            Assert.NotNull(articleNameHistory.ArticleName);
+            Assert.Equal(articleName.History.First(), articleNameHistory);
+
+            var history2 = new ArticleNameHistory { Id = Guid.NewGuid(), ArticleId = article.Id, LanguageId = "en", ChangeDate = DateTime.Now };
+
+            ctx.AttachSingle(history2);
+
+            var name2 = new ArticleName { ArticleId = article.Id, LanguageId = "en", TranlatedText = "second" };
+
+            ctx.AttachSingle(name2);
+
+            Assert.NotNull(name2.Article);
+            Assert.NotNull(history2.ArticleName);
+            Assert.Contains(name2.History, p => p == history2);
+            Assert.Contains(article.Names, p => p == name2);
         }
 
         [Fact]
@@ -281,11 +321,19 @@ namespace Tests
         {
             var metadataModelBuilder = new MetadataModelBuilder();
             metadataModelBuilder.Exclude<EntityBase>();
-            metadataModelBuilder.Entity<ArticleName>().PrimaryKey.AddRange(new[] { "ArticleId", "LanguageId" });
+            var articleNameEntity = metadataModelBuilder.Entity<ArticleName>();
+            articleNameEntity.PrimaryKey.AddRange(new[] { "ArticleId", "LanguageId" });
+
+
             var articleEntity = metadataModelBuilder.Entity<Article>();
             metadataModelBuilder.Entity<ReceiptDetail>();
             metadataModelBuilder.Entity<Invoice>().BaseEntity = metadataModelBuilder.Entity(typeof(Receipt));
             var contactSettings = metadataModelBuilder.Entity<ContactSettings>();
+
+            var articleNameHistoryEntity = metadataModelBuilder.Entity<ArticleNameHistory>();
+            articleNameHistoryEntity.HasOne(p => p.ArticleName).WithMany(p => p.History).HasForeignKey("ArticleId", "LanguageId");
+
+            articleNameEntity.HasMany(p => p.History).WithOne(p => p.ArticleName).HasForeignKey("ArticleId", "LanguageId");
 
             articleEntity.HasOne(p => p.ArticleSettings).WithPrincipal();
             contactSettings.HasOne(p => p.Contact).WithDependant();

@@ -245,7 +245,7 @@ namespace Lucile.Dynamic
             il.Emit(OpCodes.Ldarg_0);
             if (this.ImplementationMethod.IsGenericMethod)
             {
-                il.Emit(OpCodes.Ldftn, this.ImplementationMethod.MakeGenericMethod(this.GenericParameters.Select(p => p.AsType()).ToArray()));
+                il.Emit(OpCodes.Ldftn, this.ImplementationMethod.MakeGenericMethod(this.GenericParameters.Select(p => p.GetTypeInfo().AsType()).ToArray()));
             }
             else
             {
@@ -385,7 +385,7 @@ namespace Lucile.Dynamic
             if (type is GenericType)
             {
                 // TODO Raphael check if it works.
-                return this.GenericImplementationParameters.FirstOrDefault(p => p.Name == ((GenericType)type).GenericName)?.AsType();
+                return this.GenericImplementationParameters.FirstOrDefault(p => p.Name == ((GenericType)type).GenericName)?.GetTypeInfo()?.AsType();
             }
 
             return type;

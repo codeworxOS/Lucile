@@ -1,24 +1,24 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>net6</TargetFramework>
+    <TargetFrameworks>net6;net8;net9</TargetFrameworks>
     <TreatWarningsAsErrors>false</TreatWarningsAsErrors>
     <IsPackable>false</IsPackable>
-    <Configurations>Debug;Release;Debug EF60;Debug EF70</Configurations>
+    <Configurations>Debug;Release;Debug EF60;Debug EF80;Debug EF90</Configurations>
   </PropertyGroup>
 
   <ItemGroup>
     <PackageReference Remove="StyleCop.Analyzers" />
-    <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="6.0.0" />
-    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.3.0" />
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="8.0.1" />
+    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.12.0" />
     <PackageReference Include="System.ComponentModel.Annotations" Version="5.0.0" />
-    <PackageReference Include="xunit" Version="2.4.2" />
-    <PackageReference Include="xunit.runner.visualstudio" Version="2.4.5">
+    <PackageReference Include="xunit" Version="2.9.2" />
+    <PackageReference Include="xunit.runner.visualstudio" Version="3.0.0">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
-  </ItemGroup>
 
+  </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\src\Lucile.Core\Lucile.Core.csproj" />
     <ProjectReference Include="..\..\src\Lucile.Dynamic.DependencyInjection\Lucile.Dynamic.DependencyInjection.csproj" />

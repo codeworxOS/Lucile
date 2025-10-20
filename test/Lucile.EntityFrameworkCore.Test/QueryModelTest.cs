@@ -175,7 +175,7 @@ namespace Lucile.EntityFrameworkCore.Test
         {
 
             var optionsBuilder = new DbContextOptionsBuilder<TestContext>();
-            optionsBuilder.UseSqlServer("Data Source=(localdb)\\mssqllocaldb;Initial Catalog=LucileTestContext;Integrated Security=true;");
+            optionsBuilder.UseSqlServer($"Data Source=(localdb)\\mssqllocaldb;Initial Catalog=LucileTestContext{Guid.NewGuid():N};Integrated Security=true;");
 
             using (var context = new TestContext(optionsBuilder.Options))
             {

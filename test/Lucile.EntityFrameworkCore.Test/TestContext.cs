@@ -69,6 +69,10 @@ namespace Lucile.EntityFrameworkCore.Test
 
             modelBuilder.Entity<ArticleName>().HasKey(p => new { p.ArticleId, p.LanguageId });
 
+            modelBuilder.Entity<ArticleNameHistory>()
+                .HasOne(p => p.ArticleName).WithMany(p => p.History)
+                .HasForeignKey(p => new { p.ArticleId, p.LanguageId });
+
             modelBuilder.Model.GetEntityTypes()
                 .SelectMany(p => p.GetProperties())
                 .Where(p => p.ClrType == typeof(Guid))

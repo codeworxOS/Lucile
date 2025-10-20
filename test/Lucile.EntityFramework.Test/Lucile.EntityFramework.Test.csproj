@@ -1,17 +1,17 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>net462</TargetFramework>
-    <Configurations>Debug;Release;Debug EF60;Debug EF70</Configurations>
+    <TargetFramework>net48</TargetFramework>
+    <Configurations>Debug;Release;Debug EF60;Debug EF70;Debug EF80;Debug EF90</Configurations>
   </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="protobuf-net" Version="2.4.4" />
     <PackageReference Include="System.Reflection.TypeExtensions" Version="4.6.0" />
-    <PackageReference Include="xunit.runner.visualstudio" Version="2.5.1">
+    <PackageReference Include="xunit.runner.visualstudio" Version="3.0.0">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
-    <PackageReference Include="xunit" Version="2.5.1" />
+    <PackageReference Include="xunit" Version="2.9.2" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\src\Lucile.EntityFramework\Lucile.EntityFramework.csproj" />

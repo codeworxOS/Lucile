@@ -40,6 +40,13 @@
   <PropertyGroup Condition=" '$(Configuration)' == 'Debug EF70' ">
     <OutputPath>bin\Debug EF70\</OutputPath>
   </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)' == 'Debug EF80' ">
+    <DebugSymbols>true</DebugSymbols>
+    <OutputPath>bin\Debug EF80\</OutputPath>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)' == 'Debug EF90' ">
+    <OutputPath>bin\Debug EF90\</OutputPath>
+  </PropertyGroup>
   <ItemGroup>
     <None Include="app.ts" />
     <Content Include="package.json" />

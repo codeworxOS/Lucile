@@ -2,7 +2,7 @@
 using System.ServiceModel;
 using Lucile.Service;
 
-#if NET461
+#if NET462_OR_GREATER
 using Microsoft.Extensions.DependencyInjection;
 #endif
 
@@ -69,7 +69,7 @@ namespace Lucile.ServiceModel
             }
             else
             {
-#if NETSTANDARD2_0_OR_GREATER
+#if NETSTANDARD2_0_OR_GREATER || NET6_0_OR_GREATER
                 throw new NotSupportedException($"Duplex Services are not supported on net standard");
 #else
                 var instance = _serviceProvider.GetRequiredService(callback);

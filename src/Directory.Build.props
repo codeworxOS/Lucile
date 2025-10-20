@@ -1,0 +1,7 @@
+<Project>
+
+ <PropertyGroup>
+    <EnablePackageValidation>true</EnablePackageValidation>
+    <PackageValidationBaselineVersion>2.0.19</PackageValidationBaselineVersion>
+  </PropertyGroup>
+</Project>
