@@ -237,7 +237,44 @@ namespace Lucile.Linq
 
             var resultType = parent == null ? ResultType : parent.Property.PropertyType;
             var memberInits = children.ToDictionary(p => (MemberInfo)p.PropertyInfo, p => GetResultInitExpression(members, parameter, p));
-            return GetInitExpression(resultType, memberInits, p => PropertyConfigurations.FirstOrDefault(x => x.PropertyInfo == p)?.Property?.Default);
+            var init = GetInitExpression(resultType, memberInits, p => PropertyConfigurations.FirstOrDefault(x => x.PropertyInfo == p)?.Property?.Default);
+
+            if (parent != null)
+            {
+                var result = parent.MappedExpression.Body;
+
+                if (result is MemberInitExpression || result is NewExpression)
+                {
+                    return init;
+                }
+                else
+                {
+                    var body = result.Replace(parent.MappedExpression.Parameters[0], parameter);
+
+                    var inits = body.Find<MemberInitExpression>(p => p.Type == resultType);
+
+                    if (inits.Any())
+                    {
+                        foreach (var item in inits)
+                        {
+                            body = body.Replace(item, init);
+                        }
+                    }
+                    else
+                    {
+                        var newExpressions = body.Find<NewExpression>(p => p.Type == resultType);
+
+                        foreach (var item in newExpressions)
+                        {
+                            body = body.Replace(item, init);
+                        }
+                    }
+
+                    return body;
+                }
+            }
+
+            return init;
         }
 
         private Expression GetInitExpression(Type sourceType, IDictionary<MemberInfo, Expression> memberInitis)

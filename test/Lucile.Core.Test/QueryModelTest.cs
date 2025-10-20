@@ -1478,6 +1478,89 @@ namespace Tests
             Assert.Null(result[0].State);
         }
 
+
+        [Fact]
+        public void QueryModelMapperWithNullCheckExcludeSubPropertyTest()
+        {
+            var node1 = new Node
+            {
+                Id = Guid.NewGuid(),
+                Name = "Test Node",
+                StateId = Guid.NewGuid(),
+            };
+
+            var node2 = new Node
+            {
+                Id = Guid.NewGuid(),
+                Name = "Test Node2",
+                StateId = Guid.Empty,
+            };
+
+            var source = new DummyQuerySource();
+            source.RegisterData(new List<Node>
+            {
+                node1,
+                node2,
+            });
+
+            source.RegisterData(new List<Enumeration>
+            {
+                new Enumeration
+                {
+                    Id = node1.StateId,
+                    Name = "Test State",
+                }
+            });
+
+            var services = new ServiceCollection();
+
+            services
+                .AddMapper()
+                .AddMapping<Enumeration>()
+                    .Configure(builder => builder.To(e => new DisplayValue
+                    {
+                        Id = e.Id,
+                        Name = e.Name
+                    }));
+
+            var builder = QueryModel.Create(
+                p => new
+                {
+                    Node = p.Get<Node>(),
+                    State = p.Get<Enumeration>()
+                },
+                q => new
+                {
+                    q.Node.Id,
+                    q.Node.Name,
+                    State = q.State != null ? q.State.Map<Enumeration, DisplayValue>() : null
+                });
+
+            builder.Source(q => q.Node);
+            builder.Source(q => q.State).Join(e => e.Id, q => q.Node.StateId);
+
+            var selectItems = new[] {
+                new SelectItem("Name"),
+                new SelectItem("State.Name"),
+            };
+
+            using var sp = services.BuildServiceProvider();
+            var mapperFactory = sp.GetService<IMapperFactory>();
+            var model = builder.Build(mapperFactory);
+            var query = model.GetQuery(source, new QueryConfiguration(selectItems));
+            var result = query.ToList();
+
+            Assert.Equal(2, result.Count);
+            Assert.Equal("Test Node", result[0].Name);
+            Assert.NotNull(result[0].State);
+            Assert.NotNull(result[0].Name);
+            Assert.Equal("Test State", result[0].State.Name);
+            Assert.Equal(Guid.Empty, result[0].State.Id);
+
+            Assert.Equal("Test Node2", result[1].Name);
+            Assert.Null(result[1].State);
+        }
+
         [Fact]
         public void QueryModelMapperOnRootTest()
         {

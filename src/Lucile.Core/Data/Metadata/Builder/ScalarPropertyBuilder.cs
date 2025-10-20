@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Data.SqlTypes;
 using System.Reflection;
 using System.Runtime.Serialization;
 using Lucile.Json;
@@ -51,6 +52,26 @@ namespace Lucile.Data.Metadata.Builder
         public static ScalarPropertyBuilder CreateScalar(PropertyInfo propertyInfo)
         {
             return CreateScalar(propertyInfo.Name, propertyInfo.PropertyType);
+        }
+
+        public static bool IsScalar(Type propertyType)
+        {
+            var nullable = System.Nullable.GetUnderlyingType(propertyType);
+
+            var typeInfo = new ClrTypeInfo(propertyType);
+
+            var type = nullable ?? propertyType;
+            var numeric = NumericProperty.GetNumericTypeFromClrType(type);
+
+            return type == typeof(string)
+                || numeric.HasValue
+                || type == typeof(bool)
+                || type == typeof(byte[])
+                || type == typeof(DateTime)
+                || type == typeof(TimeSpan)
+                || type == typeof(DateTimeOffset)
+                || type == typeof(Guid)
+                || type.GetTypeInfo().IsEnum;
         }
 
         public static ScalarPropertyBuilder CreateScalar(string propertyName, Type propertyType)
