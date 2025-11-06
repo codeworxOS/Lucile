@@ -308,11 +308,13 @@ namespace Lucile.Linq
                 PropertyBuilder = value
             };
 
-            if (expression.Body.NodeType == ExpressionType.New || expression.Body.NodeType == ExpressionType.MemberInit)
+            if (ScalarPropertyBuilder.IsScalar(value.PropertyType))
             {
-                var nav = entityBuilder.Navigation(value.PropertyName);
-                var targetEntity = entityModelBuilder.Entity(nav.Target.ClrType, true);
-                result.Children.AddRange(expression.GetPropertyLambda().Select(p => Process(p.Value, value.Property(p.Key), targetEntity, entityModelBuilder)));
+                entityBuilder.Property(value.PropertyName, value.PropertyType);
+                if (value.IsPrimaryKey)
+                {
+                    entityBuilder.PrimaryKey.Add(value.PropertyName);
+                }
             }
             else if (IsNavigationList(value.PropertyType, out var elementType))
             {
@@ -333,11 +335,9 @@ namespace Lucile.Linq
             }
             else
             {
-                entityBuilder.Property(value.PropertyName, value.PropertyType);
-                if (value.IsPrimaryKey)
-                {
-                    entityBuilder.PrimaryKey.Add(value.PropertyName);
-                }
+                var nav = entityBuilder.Navigation(value.PropertyName);
+                var targetEntity = entityModelBuilder.Entity(nav.Target.ClrType, true);
+                result.Children.AddRange(expression.GetPropertyLambda().Select(p => Process(p.Value, value.Property(p.Key), targetEntity, entityModelBuilder)));
             }
 
             return result;
