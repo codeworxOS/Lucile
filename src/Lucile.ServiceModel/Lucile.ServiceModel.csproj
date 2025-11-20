@@ -1,22 +1,16 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <Description>ServiceModel Extensions for the Lucile Framework. For detailed Documentation visit http://www.github.com/codeworxOS/Lucile</Description>
     <AssemblyTitle>Lucile Framework Service Model Library</AssemblyTitle>
     <Authors>codeworx GmbH</Authors>
-    <TargetFrameworks>net462;net6;net8</TargetFrameworks>
-    <Configurations>Debug;Release;Debug EF60;Debug EF80;Debug EF90</Configurations>
+    <TargetFrameworks>$(FullAndCoreTargetFrameworks)</TargetFrameworks>
+    <Configurations>Debug;Release;Debug EF100;Debug EF80;Debug EF90</Configurations>
   </PropertyGroup>
-
-	<ItemGroup Condition="'$(TargetFramework)' != 'net6'">
-    <PackageReference Include="System.ServiceModel.Http" Version="8.1.1" />
-    <PackageReference Include="System.ServiceModel.NetTcp" Version="8.1.1" />
-  </ItemGroup>
-
-	<ItemGroup Condition="'$(TargetFramework)' == 'net6'">
-		<PackageReference Include="System.ServiceModel.Http" Version="6.0.0" />
-		<PackageReference Include="System.ServiceModel.NetTcp" Version="6.0.0" />
-	</ItemGroup>
+<ItemGroup>
+    <PackageReference Include="System.ServiceModel.Http" />
+    <PackageReference Include="System.ServiceModel.NetTcp" />
+</ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\Lucile.Primitives\Lucile.Primitives.csproj" />

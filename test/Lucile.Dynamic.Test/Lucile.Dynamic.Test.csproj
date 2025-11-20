@@ -1,29 +1,30 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
-  <PropertyGroup>
-    <TargetFrameworks>net6;net8;net9</TargetFrameworks>
-    <TreatWarningsAsErrors>false</TreatWarningsAsErrors>
-    <IsPackable>false</IsPackable>
-    <Configurations>Debug;Release;Debug EF60;Debug EF80;Debug EF90</Configurations>
-  </PropertyGroup>
+	<PropertyGroup>
+		<TargetFrameworks>$(DotNetTargetFrameworks)</TargetFrameworks>
+		<TreatWarningsAsErrors>false</TreatWarningsAsErrors>
+		<IsPackable>false</IsPackable>
+		<Configurations>Debug;Release;Debug EF100;Debug EF80;Debug EF90</Configurations>
+		<EnablePackageValidation>false</EnablePackageValidation>
+	</PropertyGroup>
 
-  <ItemGroup>
-    <PackageReference Remove="StyleCop.Analyzers" />
-    <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="8.0.1" />
-    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.12.0" />
-    <PackageReference Include="System.ComponentModel.Annotations" Version="5.0.0" />
-    <PackageReference Include="xunit" Version="2.9.2" />
-    <PackageReference Include="xunit.runner.visualstudio" Version="3.0.0">
-      <PrivateAssets>all</PrivateAssets>
-      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
-    </PackageReference>
+	<ItemGroup>
+		<PackageReference Remove="StyleCop.Analyzers" />
+		<PackageReference Include="Microsoft.Extensions.DependencyInjection" />
+		<PackageReference Include="Microsoft.NET.Test.Sdk" />
+		<PackageReference Include="System.ComponentModel.Annotations" />
+		<PackageReference Include="xunit" />
+		<PackageReference Include="xunit.runner.visualstudio">
+			<PrivateAssets>all</PrivateAssets>
+			<IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+		</PackageReference>
 
-  </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\..\src\Lucile.Core\Lucile.Core.csproj" />
-    <ProjectReference Include="..\..\src\Lucile.Dynamic.DependencyInjection\Lucile.Dynamic.DependencyInjection.csproj" />
-    <ProjectReference Include="..\..\src\Lucile.Dynamic\Lucile.Dynamic.csproj" />
-    <ProjectReference Include="..\..\src\Lucile.Primitives\Lucile.Primitives.csproj" />
-    <ProjectReference Include="..\..\src\Lucile.ServiceModel\Lucile.ServiceModel.csproj" />
-  </ItemGroup>
+	</ItemGroup>
+	<ItemGroup>
+		<ProjectReference Include="..\..\src\Lucile.Core\Lucile.Core.csproj" />
+		<ProjectReference Include="..\..\src\Lucile.Dynamic.DependencyInjection\Lucile.Dynamic.DependencyInjection.csproj" />
+		<ProjectReference Include="..\..\src\Lucile.Dynamic\Lucile.Dynamic.csproj" />
+		<ProjectReference Include="..\..\src\Lucile.Primitives\Lucile.Primitives.csproj" />
+		<ProjectReference Include="..\..\src\Lucile.ServiceModel\Lucile.ServiceModel.csproj" />
+	</ItemGroup>
 </Project>
