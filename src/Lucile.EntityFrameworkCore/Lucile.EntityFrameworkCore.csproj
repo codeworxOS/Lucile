@@ -1,14 +1,14 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
 	<PropertyGroup>
-		<TargetFrameworks>net6;net8;net9</TargetFrameworks>
+		<TargetFrameworks>$(DotNetTargetFrameworks)</TargetFrameworks>
 		<Description>Entity Framework Core components for the Lucile Framework. For detailed Documentation visit http://www.github.com/codeworxOS/Lucile</Description>
 		<AssemblyTitle>Lucile Framework Entity Framework Core Library</AssemblyTitle>
-		<Configurations>Debug;Release;Debug EF60;Debug EF80;Debug EF90</Configurations>
+		<Configurations>Debug;Release;Debug EF100;Debug EF80;Debug EF90</Configurations>
 	</PropertyGroup>
 
-	<PropertyGroup Condition="'$(EfVersion)' == '6'">
-		<TargetFrameworks>net6</TargetFrameworks>
+	<PropertyGroup Condition="'$(EfVersion)' == '10'">
+		<TargetFrameworks>net10.0</TargetFrameworks>
 	</PropertyGroup>
 	<PropertyGroup Condition="'$(EfVersion)' == '8'">
 		<TargetFrameworks>net8</TargetFrameworks>
@@ -17,9 +17,9 @@
 		<TargetFrameworks>net8</TargetFrameworks>
 	</PropertyGroup>
 
-	<PropertyGroup Condition="'$(Configuration)'=='Debug EF60'">
-		<TargetFrameworks>net6</TargetFrameworks>
-		<EfVersion>6</EfVersion>
+	<PropertyGroup Condition="'$(Configuration)'=='Debug EF100'">
+		<TargetFrameworks>net10.0</TargetFrameworks>
+		<EfVersion>10</EfVersion>
 	</PropertyGroup>
 
 	<PropertyGroup Condition="'$(Configuration)'=='Debug EF80'">
@@ -33,8 +33,8 @@
 	</PropertyGroup>
 
 
-	<PropertyGroup Condition="'$(EfVersion)' == '' And '$(TargetFramework)' == 'net6'">
-		<EfVersion>6</EfVersion>
+	<PropertyGroup Condition="'$(EfVersion)' == '' And '$(TargetFramework)' == 'net10.0'">
+		<EfVersion>10</EfVersion>
 	</PropertyGroup>
 	<PropertyGroup Condition="'$(EfVersion)' == '' And '$(TargetFramework)' == 'net8'">
 		<EfVersion>8</EfVersion>
@@ -43,9 +43,10 @@
 		<EfVersion>9</EfVersion>
 	</PropertyGroup>
 
-	<PropertyGroup Condition="'$(EfVersion)' == '6'">
-		<DefineConstants>EF6</DefineConstants>
-		<PackageValidationBaselineVersion>2.6000.0</PackageValidationBaselineVersion>
+	<PropertyGroup Condition="'$(EfVersion)' == '10'">
+		<DefineConstants>EF10</DefineConstants>
+		<EnablePackageValidation>false</EnablePackageValidation>
+		<PackageValidationBaselineVersion>2.1000.0</PackageValidationBaselineVersion>
 	</PropertyGroup>
 	<PropertyGroup Condition="'$(EfVersion)' == '8'">
 		<DefineConstants>EF8</DefineConstants>
@@ -58,14 +59,8 @@
 
 
 
-	<ItemGroup Condition="'$(EfVersion)' == '6'">
-		<PackageReference Include="Microsoft.EntityFrameworkCore" Version="6.0.36" />
-	</ItemGroup>
-	<ItemGroup Condition="'$(EfVersion)' == '8'">
-		<PackageReference Include="Microsoft.EntityFrameworkCore" Version="8.0.11" />
-	</ItemGroup>
-	<ItemGroup Condition="'$(EfVersion)' == '9'">
-		<PackageReference Include="Microsoft.EntityFrameworkCore" Version="9.0.0" />
+	<ItemGroup>
+		<PackageReference Include="Microsoft.EntityFrameworkCore" />
 	</ItemGroup>
 
 	<ItemGroup>

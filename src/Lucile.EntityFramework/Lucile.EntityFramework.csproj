@@ -1,10 +1,10 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <TargetFrameworks>net462;netstandard2.1</TargetFrameworks>
     <AssemblyName>Lucile.EntityFramework</AssemblyName>
     <PackageId>Lucile.EntityFramework</PackageId>
-    <Configurations>Debug;Release;Debug EF60;Debug EF80;Debug EF90</Configurations>
+    <Configurations>Debug;Release;Debug EF100;Debug EF80;Debug EF90</Configurations>
   </PropertyGroup>
 
   <ItemGroup>
@@ -12,7 +12,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="EntityFramework" Version="6.5.1" />
+    <PackageReference Include="EntityFramework" />
   </ItemGroup>
 
   <ItemGroup>

@@ -1,21 +1,22 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
 	<PropertyGroup>
-		<TargetFramework>netstandard2.0</TargetFramework>
+		<TargetFramework>$(NetStandardTargetFrameworks)</TargetFramework>
 		<AssemblyName>Lucile.Test.Model</AssemblyName>
 		<PackageId>Lucile.Test.Model</PackageId>
 		<GenerateAssemblyConfigurationAttribute>false</GenerateAssemblyConfigurationAttribute>
 		<GenerateAssemblyCompanyAttribute>false</GenerateAssemblyCompanyAttribute>
 		<GenerateAssemblyProductAttribute>false</GenerateAssemblyProductAttribute>
-		<Configurations>Debug;Release;Debug EF60;Debug EF70;Debug EF80;Debug EF90</Configurations>
+		<Configurations>Debug;Release;Debug EF100;Debug EF70;Debug EF80;Debug EF90</Configurations>
+		<EnablePackageValidation>false</EnablePackageValidation>
 	</PropertyGroup>
 
 	<ItemGroup>
-		<PackageReference Include="System.ComponentModel.Annotations" Version="5.0.0" />
+		<PackageReference Include="System.ComponentModel.Annotations" />
 	</ItemGroup>
 
 	<ItemGroup>
-	  <ProjectReference Include="..\..\src\Lucile.Primitives\Lucile.Primitives.csproj" />
+		<ProjectReference Include="..\..\src\Lucile.Primitives\Lucile.Primitives.csproj" />
 	</ItemGroup>
 
 </Project>

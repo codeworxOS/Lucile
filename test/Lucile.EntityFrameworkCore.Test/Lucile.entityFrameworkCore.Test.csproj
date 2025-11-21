@@ -1,21 +1,18 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
 	<PropertyGroup>
-		<TargetFrameworks>net6;net8;net9</TargetFrameworks>
+		<TargetFrameworks>$(DotNetTargetFrameworks)</TargetFrameworks>
 		<AssemblyName>Lucile.EntityFrameworkCore.Test</AssemblyName>
 		<PackageId>Lucile.EntityFrameworkCore.Test</PackageId>
 		<GenerateRuntimeConfigurationFiles>true</GenerateRuntimeConfigurationFiles>
 		<TreatWarningsAsErrors>false</TreatWarningsAsErrors>
-		<Configurations>Debug;Release;Debug EF31;Debug EF50;Debug EF60;Debug EF80;Debug EF90</Configurations>
+		<Configurations>Debug;Release;Debug EF31;Debug EF50;Debug EF100;Debug EF80;Debug EF90</Configurations>
+		<EnablePackageValidation>false</EnablePackageValidation>
 	</PropertyGroup>
 
 
-	<PropertyGroup Condition="'$(Configuration)'=='Debug EF60'">
-		<TargetFrameworks>net6</TargetFrameworks>
-	</PropertyGroup>
-
-	<PropertyGroup Condition="'$(Configuration)'=='Debug EF70'">
-		<TargetFrameworks>net7</TargetFrameworks>
+	<PropertyGroup Condition="'$(Configuration)'=='Debug EF100'">
+		<TargetFrameworks>net10</TargetFrameworks>
 	</PropertyGroup>
 
 	<PropertyGroup Condition="'$(Configuration)'=='Debug EF80'">
@@ -35,29 +32,18 @@
 	<ItemGroup>
 
 		<PackageReference Remove="StyleCop.Analyzers" />
-		<PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.12.0" />
-		<PackageReference Include="protobuf-net" Version="2.4.4" />
-		<PackageReference Include="xunit.runner.visualstudio" Version="3.0.0">
+		<PackageReference Include="Microsoft.NET.Test.Sdk" />
+		<PackageReference Include="protobuf-net" />
+		<PackageReference Include="xunit.runner.visualstudio">
 			<PrivateAssets>all</PrivateAssets>
 			<IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
 		</PackageReference>
-		<PackageReference Include="System.Runtime.Serialization.Primitives" Version="4.3.0" />
-		<PackageReference Include="xunit" Version="2.9.2" />
+		<PackageReference Include="xunit" />
 	</ItemGroup>
 
-	<ItemGroup Condition="'$(TargetFramework)' == 'net6'">
-		<PackageReference Include="Microsoft.EntityFrameworkCore.InMemory" Version="6.0.36" />
-		<PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="6.0.36" />
-	</ItemGroup>
-
-	<ItemGroup Condition="'$(TargetFramework)' == 'net8'">
-		<PackageReference Include="Microsoft.EntityFrameworkCore.InMemory" Version="8.0.11" />
-		<PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="8.0.11" />
-	</ItemGroup>
-
-	<ItemGroup Condition="'$(TargetFramework)' == 'net9'">
-		<PackageReference Include="Microsoft.EntityFrameworkCore.InMemory" Version="9.0.0" />
-		<PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="9.0.0" />
+	<ItemGroup>
+		<PackageReference Include="Microsoft.EntityFrameworkCore.InMemory" />
+		<PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" />
 	</ItemGroup>
 
 	<ItemGroup>

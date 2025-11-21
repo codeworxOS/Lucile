@@ -6,7 +6,7 @@
 		<OutputType>Library</OutputType>
 		<IsPackable>true</IsPackable>
 		<UseRazorBuildServer>false</UseRazorBuildServer>
-		<Configurations>Debug;Release;Debug EF60;Debug EF80;Debug EF90</Configurations>
+		<Configurations>Debug;Release;Debug EF60;Debug EF80;Debug EF90;Debug EF100</Configurations>
 	</PropertyGroup>
 
 </Project>

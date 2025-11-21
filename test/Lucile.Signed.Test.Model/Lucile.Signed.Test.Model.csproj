@@ -1,10 +1,11 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
-  <PropertyGroup>
-    <TargetFramework>netstandard2.0</TargetFramework>
-    <SignAssembly>true</SignAssembly>
-    <AssemblyOriginatorKeyFile>testSignKey.snk</AssemblyOriginatorKeyFile>
-    <Configurations>Debug;Release;Debug EF60;Debug EF70;Debug EF80;Debug EF90</Configurations>
-  </PropertyGroup>
+	<PropertyGroup>
+		<TargetFramework>netstandard2.0</TargetFramework>
+		<SignAssembly>true</SignAssembly>
+		<AssemblyOriginatorKeyFile>testSignKey.snk</AssemblyOriginatorKeyFile>
+		<Configurations>Debug;Release;Debug EF60;Debug EF70;Debug EF80;Debug EF90;Debug EF100</Configurations>
+		<EnablePackageValidation>false</EnablePackageValidation>
+	</PropertyGroup>
 
 </Project>
