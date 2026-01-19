@@ -1,20 +1,16 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
-  <PropertyGroup>
-<TargetFramework>$(NetStandardTargetFrameworks)</TargetFramework>
-  <Configurations>Debug;Release;Debug EF100;Debug EF80;Debug EF90</Configurations>
-  </PropertyGroup>
+	<PropertyGroup>
+		<TargetFrameworks>$(NetStandardTargetFrameworks)</TargetFrameworks>
+		<Configurations>Debug;Release;Debug EF100;Debug EF80;Debug EF90</Configurations>
+	</PropertyGroup>
 
-  <ItemGroup>
-    <PackageReference Include="System.Dynamic.Runtime" />
-  </ItemGroup>
+	<ItemGroup>
+		<PackageReference Include="System.Reflection.Emit.ILGeneration" />
+		<PackageReference Include="System.Reflection.Emit" />
+	</ItemGroup>
 
-  <ItemGroup>
-    <PackageReference Include="System.Reflection.Emit.ILGeneration" />
-    <PackageReference Include="System.Reflection.Emit" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <ProjectReference Include="..\Lucile.Primitives\Lucile.Primitives.csproj" />
-  </ItemGroup>
+	<ItemGroup>
+		<ProjectReference Include="..\Lucile.Primitives\Lucile.Primitives.csproj" />
+	</ItemGroup>
 </Project>
