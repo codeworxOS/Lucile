@@ -94,7 +94,28 @@ namespace Lucile.Data.Metadata
 
         private IEnumerable<EntityMetadataBuilder> GetSorted(IEnumerable<EntityMetadataBuilder> entities)
         {
-            return entities.OrderBy(p => p.BaseEntity == null && entities.Any(x => x.BaseEntity == p) ? 0 : 1).ThenBy(p => p.Name, StringComparer.Ordinal);
+            return entities.OrderBy(p => GetHierarchyDepth(p, entities)).ThenBy(p => p.Name, StringComparer.Ordinal);
+        }
+
+        private int GetHierarchyDepth(EntityMetadataBuilder entity, IEnumerable<EntityMetadataBuilder> entities)
+        {
+            if (entities.Any(p => p.BaseEntity != null && p.BaseEntity.Name == entity.Name))
+            {
+                var baseEntity = entity;
+
+                int depth = 0;
+                while (baseEntity.BaseEntity != null)
+                {
+                    baseEntity = baseEntity.BaseEntity;
+                    depth++;
+                }
+
+                return depth;
+            }
+            else
+            {
+                return int.MaxValue;
+            }
         }
 
         private bool IsPrincipalEnd(NavigationPropertyMetadata prop)
