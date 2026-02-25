@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk.Web">
 
   <PropertyGroup>
-    <TargetFramework>net8</TargetFramework>
+    <TargetFramework>net10.0</TargetFramework>
     <Configurations>Debug;Release;Debug EF50;Debug EF60;Debug EF80;Debug EF90;Debug EF100</Configurations>
 	  <EnablePackageValidation>false</EnablePackageValidation>
   </PropertyGroup>

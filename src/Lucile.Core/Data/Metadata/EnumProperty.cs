@@ -11,7 +11,7 @@ namespace Lucile.Data.Metadata
             : base(entity, builder, isPrimaryKey)
         {
             EnumType = builder.EnumTypeInfo.ClrType;
-            IsFlag = builder.EnumTypeInfo.ClrType.GetTypeInfo().CustomAttributes.OfType<FlagsAttribute>().Any();
+            IsFlag = EnumType == null ? false : builder.EnumTypeInfo.ClrType.GetTypeInfo().CustomAttributes.OfType<FlagsAttribute>().Any();
             UnderlyingNumericType = builder.UnderlyingNumericType;
         }
 

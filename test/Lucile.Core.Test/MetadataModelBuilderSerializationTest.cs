@@ -1,13 +1,18 @@
-﻿using Lucile.Core.Test;
-using Lucile.Data.Metadata;
-using Lucile.Data.Metadata.Builder;
-using Lucile.Test.Model;
-using Newtonsoft.Json;
-using System;
+﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
+using System.Linq;
+using System.Reflection;
 using System.Runtime.Serialization;
 using System.Text;
+using Lucile.Core.Test;
+using Lucile.Data.Metadata;
+using Lucile.Data.Metadata.Builder;
+using Lucile.Linq;
+using Lucile.Test.Model;
+using Newtonsoft.Json;
+using ProtoBuf.Meta;
 using Xunit;
 
 namespace Tests
@@ -149,6 +154,28 @@ namespace Tests
             }
 
             TestModelValidations.ValidateInvoiceArticleDefaultModel(model);
+        }
+
+
+        [Fact(Skip = "available only for local tests")]
+        public void VerifyComplexSerializedMetadataModel()
+        {
+            using (var ms = new FileStream(@"c:\\Temp\\MetadataModel.bin", FileMode.Open))
+            {
+                var newBuilder = ProtoBuf.Serializer.Deserialize<MetadataModelBuilder>(ms);
+
+                var model = newBuilder.ToModel();
+            }
+        }
+
+        private string SerializeField(ValueMember field)
+        {
+            var result = field.GetType()
+                .GetProperties()
+                .Select(p => (Name: p.Name, Value: p.GetValue(field)?.ToString()))
+                .Select(p => $"{p.Name}: {p.Value}");
+
+            return string.Join(", ", result);
         }
     }
 }

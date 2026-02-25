@@ -27,7 +27,7 @@ namespace Lucile.Data.Metadata
             Entity = entity;
             Nullable = propBuilder.Nullable;
             PropertyType = propBuilder.PropertyType?.ClrType ?? clrProperty?.PropertyType;
-            Default = _defaultValueCache.GetOrAdd(PropertyType, p => CreateDefaultValue(p));
+            Default = PropertyType == null ? null : _defaultValueCache.GetOrAdd(PropertyType, p => CreateDefaultValue(p));
 
             HasClrProperty = clrProperty != null;
         }

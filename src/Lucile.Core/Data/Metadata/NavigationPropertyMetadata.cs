@@ -35,7 +35,7 @@ namespace Lucile.Data.Metadata
 
             var types = new Type[builder.ForeignKey.Count];
 
-            var principalKeys = this.TargetEntity.GetProperties().Where(p => p.IsPrimaryKey).ToList();
+            var principalKeys = this.TargetEntity.GetProperties(true).Where(p => p.IsPrimaryKey).ToList();
             for (int i = 0; i < builder.ForeignKey.Count; i++)
             {
                 var fk = builder.ForeignKey[i];
@@ -45,7 +45,7 @@ namespace Lucile.Data.Metadata
 
             ForeignKeyProperties = foreignKeyBuilder.ToImmutable();
 
-            if (types.Length > 1)
+            if (types.Length > 1 && entity.ClrType != null)
             {
                 var keyType = EntityKey.Get(types);
                 var param1 = Expression.Parameter(typeof(IEntityMetadata), "meta");
